@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>The Twelve — a visual and musical nomenclature lab</title>
+<style>
+:root{
+  --bg:#0c1117; --panel:#131c25; --panel2:#17232e; --line:#293744;
+  --ink:#edf3f5; --muted:#9aabb5; --soft:#71838e;
+  --cyan:#7bd9d0; --gold:#f3c778; --coral:#f08f79; --violet:#b4a2f4;
+  --radius:18px; --shadow:0 18px 55px rgba(0,0,0,.24);
+  font-synthesis:none; text-rendering:optimizeLegibility;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse at 75% -10%,#1d3540 0,transparent 38%),var(--bg);color:var(--ink);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,select,input{font:inherit}
+button,select{color:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.wrap{max-width:1480px;margin:auto;padding:28px clamp(16px,3vw,42px) 46px}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:34px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:750;letter-spacing:.12em;font-size:12px;text-transform:uppercase;color:#c7d5da}
+.brand-mark{width:34px;height:34px;border:1px solid #54737b;border-radius:50%;display:grid;place-items:center;position:relative;color:var(--cyan);font-size:18px}
+.brand-mark:before,.brand-mark:after{content:"";position:absolute;border:1px solid #54737b;border-radius:50%;inset:6px}
+.brand-mark:after{inset:12px;background:var(--cyan);border:0;box-shadow:0 0 14px #7bd9d088}
+.top-note{font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,360px);gap:30px;align-items:end;margin-bottom:28px}
+.eyebrow{color:var(--cyan);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:750;margin-bottom:10px}
+h1{font-size:clamp(34px,5vw,62px);line-height:.98;letter-spacing:-.055em;margin:0 0 14px;font-weight:760}
+.hero p{margin:0;max-width:760px;color:#b3c2c9;font-size:16px;line-height:1.65}
+.hero-aside{border-left:1px solid #3a505a;padding:8px 0 8px 20px;color:var(--muted);font-size:13px;line-height:1.6}
+.hero-aside strong{color:var(--ink);font-weight:650}
+.app-grid{display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px;align-items:start}
+.sidebar,.main-column{display:grid;gap:18px;min-width:0}
+.panel{background:linear-gradient(145deg,rgba(23,35,46,.97),rgba(17,26,35,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.panel-pad{padding:20px}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:17px}
+.panel-head h2,.panel-head h3{margin:0;font-size:16px;letter-spacing:-.02em;font-weight:700}
+.kicker{display:block;color:var(--soft);font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:750;margin-bottom:5px}
+.subtle{color:var(--muted);font-size:12px}
+.field{display:grid;gap:7px;margin:14px 0}
+.field label,.field-label{color:#aebdc4;font-size:12px;font-weight:650;letter-spacing:.035em}
+select{appearance:none;background:#0d151d;border:1px solid #334552;border-radius:10px;padding:10px 35px 10px 12px;width:100%;font-size:13px;min-height:42px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%239aabb5' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+.segment{display:flex;gap:4px;padding:4px;background:#0c141b;border:1px solid #2a3a46;border-radius:11px}
+.segment button{flex:1;border:0;background:transparent;color:var(--muted);border-radius:8px;padding:8px 10px;font-size:12px}
+.segment button.active{background:#2b414b;color:#e8fbf8;box-shadow:inset 0 0 0 1px #4a7378}
+.key-summary{margin-top:14px;padding:13px 14px;border-radius:12px;background:rgba(9,16,22,.58);border:1px solid #2a3b47}
+.key-summary .key-title{font-size:19px;font-weight:720;letter-spacing:-.025em;margin-bottom:3px}
+.key-summary p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{border:1px solid #3a4e59;background:#1b2a35;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;transition:.18s ease;}
+.btn:hover{background:#273c48;border-color:#5c7b83;transform:translateY(-1px)}
+.btn.primary{background:var(--cyan);border-color:var(--cyan);color:#092026}
+.btn.primary:hover{background:#a1eee5}
+.btn.ghost{background:transparent;color:var(--muted)}
+.btn.stop{border-color:#68413e;color:#f1a092;background:#271b1c}
+.note-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.note-btn{border:1px solid #344651;background:#101a23;border-radius:9px;min-height:42px;padding:6px 2px;font-size:13px;font-weight:700;color:#b9c8ce;position:relative}
+.note-btn:hover{border-color:#75949a;color:#fff}
+.note-btn.in-scale{box-shadow:inset 0 -3px 0 rgba(123,217,208,.55)}
+.note-btn.selected{background:#29434a;border-color:var(--gold);color:#fff;box-shadow:0 0 0 1px #f3c77833,inset 0 -3px 0 var(--gold)}
+.note-btn.root-note:after{content:"ROOT";position:absolute;top:2px;right:3px;font-size:7px;letter-spacing:.05em;color:var(--gold)}
+.note-help{font-size:11px;color:var(--soft);margin:11px 0 0;line-height:1.5}
+.visual-panel{overflow:hidden}
+.visual-top{padding:19px 21px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.visual-top h2{margin:0;font-size:16px}
+.view-toggle{display:flex;gap:5px}
+.view-toggle button{border:1px solid #30424e;background:#101922;color:var(--muted);border-radius:999px;padding:7px 11px;font-size:11px}
+.view-toggle button.active{background:#243b44;color:#d9fffa;border-color:#4b7477}
+.wheel-wrap{height:470px;position:relative;margin:2px 10px 0;overflow:hidden;background:radial-gradient(circle at 50% 49%,rgba(59,91,101,.22),rgba(13,20,27,0) 56%)}
+#wheel{position:absolute;inset:0;width:100%;height:100%;display:block}
+.wheel-labels{position:absolute;inset:0;pointer-events:none}
+.wheel-label{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;border:1px solid #344752;background:#15232d;color:#c3d1d6;border-radius:999px;min-width:45px;height:34px;padding:0 8px;font-size:11px;font-weight:750;box-shadow:0 4px 14px #0005;transition:background .15s,border-color .15s,color .15s}
+.wheel-label:hover{border-color:var(--cyan);color:#fff}
+.wheel-label.in-scale{border-color:#4c7a79;color:#b8eee8}
+.wheel-label.selected{background:#34434a;border-color:var(--gold);color:#fff;box-shadow:0 0 0 3px #f3c77820,0 4px 14px #0007}
+.wheel-label.root-note{box-shadow:0 0 0 2px #f3c77866,0 4px 14px #0007}
+.wheel-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.wheel-center strong{display:block;font-size:30px;line-height:1;color:#edf5f4;letter-spacing:-.06em}
+.wheel-center span{display:block;font-size:9px;letter-spacing:.17em;text-transform:uppercase;color:#92aab2;margin-top:7px}
+.wheel-foot{display:flex;gap:18px;flex-wrap:wrap;align-items:center;padding:5px 22px 17px;color:var(--muted);font-size:11px}
+.legend{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:8px;height:8px;display:inline-block;border-radius:50%;background:var(--cyan)}
+.legend.gold i{background:var(--gold)}.legend.gray i{background:#73858d}
+.readout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr);gap:18px}
+.readout-card{padding:20px}
+.readout-card h3{margin:0 0 8px;font-size:14px}
+.chord-name{font-size:clamp(23px,3vw,34px);font-weight:760;letter-spacing:-.045em;margin:4px 0 5px}
+.chord-caption{color:var(--muted);font-size:12px;min-height:36px}
+.interval-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.interval-chip{border:1px solid #3b505a;border-radius:8px;background:#101923;padding:7px 9px;font-size:11px;color:#c4d1d6}
+.interval-chip b{color:var(--gold);margin-right:5px}
+.formula-box{padding:12px 13px;background:#0c151d;border:1px solid #2d414c;border-radius:11px;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:#b9d8d7;overflow-wrap:anywhere}
+.formula-box strong{color:#f4d18d;font-weight:650}
+.explain-text{font-size:12px;color:#aebdc4;line-height:1.65;margin:10px 0 0}
+.workbench{padding:20px}
+.workbench-grid{display:grid;grid-template-columns:minmax(190px,.7fr) minmax(0,1.3fr);gap:20px}
+.workbench .field{margin:0 0 13px}
+.interval-rows{display:grid;gap:7px}
+.interval-row{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;padding:9px 10px;background:#101923;border:1px solid #2c3d48;border-radius:9px;font-size:11px}
+.interval-row .degree{color:var(--gold);font-weight:750}.interval-row .interval-name{color:#d7e1e4}.interval-row .ratio{font-family:ui-monospace,monospace;color:#92bdb9}
+.degree-panel{padding:20px}
+.degree-buttons{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
+.degree-btn{border:1px solid #344651;border-radius:10px;background:#101922;padding:10px 3px 8px;min-height:58px;color:#e2ecee}
+.degree-btn:hover{border-color:var(--cyan);background:#1b3038}
+.degree-btn strong{display:block;font-size:17px;line-height:1.2}
+.degree-btn small{display:block;color:var(--muted);font-size:9px;margin-top:4px}
+.degree-note{color:var(--muted);font-size:11px;line-height:1.55;margin:12px 0 0}
+.play-panel{padding:20px}
+.play-top{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:15px}
+.play-top h2{margin:0;font-size:16px}
+.audio-settings{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.audio-settings label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.audio-settings select{min-height:32px;padding:5px 27px 5px 9px;width:auto;font-size:11px}
+.audio-settings input{width:90px;accent-color:var(--cyan)}
+.transport{display:flex;gap:8px;flex-wrap:wrap}
+.audio-status{font-size:11px;color:var(--soft);margin-top:11px;min-height:17px}
+.piano-panel{padding:20px}
+.piano-wrap{position:relative;height:132px;margin-top:13px;border:1px solid #45545b;border-radius:8px;overflow:hidden;background:#101820}
+.piano-white{display:flex;height:100%;width:100%}
+.piano-key{height:100%;flex:1;min-width:0;border:0;border-right:1px solid #aeb7b7;border-radius:0 0 4px 4px;background:linear-gradient(180deg,#f5f4ec,#cbd1ce);color:#35424a;display:flex;align-items:flex-end;justify-content:center;padding:0 1px 8px;font-size:9px;font-weight:750;position:relative}
+.piano-key:last-child{border-right:0}
+.piano-key.selected{background:linear-gradient(180deg,#fff1c9,#d6ab60);box-shadow:inset 0 -5px 0 #ba8b43}
+.piano-black{position:absolute;z-index:2;top:0;height:62%;width:3.3%;transform:translateX(-50%);border:1px solid #05090d;border-radius:0 0 5px 5px;background:linear-gradient(90deg,#202c35,#080e13 65%,#1d2932);color:#d7e0e3;font-size:8px;padding:0 1px 5px;display:flex;align-items:flex-end;justify-content:center;box-shadow:0 3px 6px #0008}
+.piano-black.selected{background:linear-gradient(180deg,#e8bd71,#8b6034);color:#151a1c}
+.piano-help{font-size:11px;color:var(--muted);margin-top:10px}
+.guide{margin-top:26px}
+.guide-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:12px}
+.guide-head h2{font-size:18px;margin:0}
+.guide-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.guide-card{padding:16px 17px;border:1px solid var(--line);border-radius:14px;background:rgba(19,28,37,.78)}
+.guide-card .num{font:11px ui-monospace,monospace;color:var(--cyan);letter-spacing:.08em}
+.guide-card h3{font-size:13px;margin:8px 0 6px}
+.guide-card p{font-size:11px;color:var(--muted);line-height:1.65;margin:0}
+.guide-card code{color:#e6c98f;font-family:ui-monospace,monospace;font-size:11px}
+.footer{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-top:25px;padding-top:15px;border-top:1px solid #263540;color:#71838e;font-size:10px;letter-spacing:.04em}
+.hidden{display:none!important}
+@media(max-width:1050px){.app-grid{grid-template-columns:260px minmax(0,1fr)}.readout{grid-template-columns:1fr}.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:780px){.hero{grid-template-columns:1fr;gap:16px}.hero-aside{max-width:560px}.app-grid{grid-template-columns:1fr}.sidebar{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.sidebar .panel:first-child{grid-column:1/-1}.wheel-wrap{height:410px}.workbench-grid{grid-template-columns:1fr}.degree-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:520px){.wrap{padding:18px 12px 32px}.topline{margin-bottom:26px}.top-note{display:none}.sidebar{grid-template-columns:1fr}.sidebar .panel:first-child{grid-column:auto}.wheel-wrap{height:350px;margin:5px 0 0}.wheel-label{min-width:38px;height:30px;font-size:10px;padding:0 6px}.visual-top{padding:16px 15px 0}.wheel-foot{padding-left:16px}.readout-card,.workbench,.degree-panel,.play-panel,.piano-panel{padding:16px}.guide-grid{grid-template-columns:1fr 1fr}.guide-card{padding:13px}.degree-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}.audio-settings{gap:8px}.audio-settings input{width:68px}.piano-wrap{height:112px}}
+@media(max-width:360px){.guide-grid{grid-template-columns:1fr}.wheel-wrap{height:320px}.view-toggle button{padding:6px 8px;font-size:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topline">
+    <div class="brand"><span class="brand-mark">◎</span><span>Field notes in sound</span></div>
+    <div class="top-note">A small, self-contained music laboratory · works offline</div>
+  </div>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">The twelve · a visual introduction</div>
+      <h1>Music has<br>geometry.</h1>
+      <p>Sharps, flats, keys, intervals and chords are names for relationships between pitches. Change the notes, look at the shape, then hear the result. No notation-reading required.</p>
+    </div>
+    <div class="hero-aside"><strong>One useful starting point</strong><br>In the common twelve-note system, an octave is divided into twelve equal semitone steps. The wheel makes those relationships visible; the synthesizer lets you test them with your ears.</div>
+  </section>
+
+  <div class="app-grid">
+    <aside class="sidebar">
+      <section class="panel panel-pad">
+        <div class="panel-head"><div><span class="kicker">01 · Set the context</span><h2>Choose a musical home</h2></div></div>
+        <div class="field"><label for="rootSelect">Tonic · the note that feels like “home”</label><select id="rootSelect" aria-label="Tonic"></select></div>
+        <div class="field"><label for="scaleSelect">Scale · a recipe of note distances</label>
+          <select id="scaleSelect">
+            <option value="major">Major (Ionian)</option>
+            <option value="naturalMinor">Natural minor (Aeolian)</option>
+            <option value="harmonicMinor">Harmonic minor</option>
+            <option value="melodicMinor">Melodic minor · ascending</option>
+            <option value="dorian">Dorian mode</option>
+            <option value="mixolydian">Mixolydian mode</option>
+            <option value="majorPent">Major pentatonic</option>
+            <option value="minorPent">Minor pentatonic</option>
+            <option value="blues">Minor blues</option>
+          </select>
+        </div>
+        <div class="field"><div class="field-label">How should shared pitches be spelled?</div>
+          <div class="segment" role="group" aria-label="Note spelling"><button type="button" data-spelling="sharp" class="active">Sharps ♯</button><button type="button" data-spelling="flat">Flats ♭</button></div>
+        </div>
+        <div class="key-summary" id="keySummary" aria-live="polite"></div>
+        <div class="action-row"><button class="btn primary" id="loadScale">Select scale notes</button><button class="btn" id="loadTonicChord">Load tonic triad</button></div>
+      </section>
+
+      <section class="panel panel-pad">
+        <div class="panel-head"><div><span class="kicker">02 · Make a collection</span><h2>Pick notes</h2></div><span class="subtle" id="selectionCount">3 selected</span></div>
+        <div class="note-grid" id="noteGrid" aria-label="Choose pitch classes"></div>
+        <p class="note-help">Tap notes to add or remove them. The gold line marks notes in the chosen scale; a gold outline marks your current selection.</p>
+        <div class="action-row"><button class="btn ghost" id="clearNotes">Clear all</button><button class="btn ghost" id="invertNotes">Select the other notes</button></div>
+      </section>
+    </aside>
+
+    <main class="main-column">
+      <section class="panel visual-panel">
+        <div class="visual-top"><div><span class="kicker">03 · See the relationships</span><h2 id="wheelHeading">The chromatic wheel</h2></div>
+          <div class="view-toggle" role="group" aria-label="Wheel arrangement"><button type="button" data-view="chromatic" class="active">Semitones</button><button type="button" data-view="fifths">Circle of fifths</button></div>
+        </div>
+        <div class="wheel-wrap" id="wheelWrap">
+          <canvas id="wheel" aria-label="WebGL visualization of twelve pitch classes and selected notes"></canvas>
+          <div class="wheel-labels" id="wheelLabels"></div>
+          <div class="wheel-center"><strong id="wheelCenterCount">12</strong><span id="wheelCenterText">pitch classes</span></div>
+        </div>
+        <div class="wheel-foot"><span class="legend"><i></i> In the chosen scale</span><span class="legend gold"><i></i> Selected / sounding</span><span class="legend gray"><i></i> Other pitch classes</span><span class="subtle" id="wheelHint">One step clockwise = one semitone</span></div>
+      </section>
+
+      <section class="readout">
+        <div class="panel readout-card">
+          <span class="kicker">04 · What did you make?</span>
+          <h3>Your notes, interpreted</h3>
+          <div class="chord-name" id="chordName">C major</div>
+          <div class="chord-caption" id="chordCaption">A major triad: root, major third, perfect fifth.</div>
+          <div class="interval-list" id="intervalList"></div>
+          <p class="explain-text" id="interpretation">Three notes form a triad. The distance from C to E is four semitones; from C to G is seven.</p>
+        </div>
+        <div class="panel readout-card">
+          <span class="kicker">The small algebra</span>
+          <h3>Distance becomes ratio</h3>
+          <div class="formula-box" id="formulaBox">f(n) = f₀ × 2<sup>n/12</sup><br><strong>+4 semitones</strong> → 2<sup>4/12</sup> ≈ 1.260×</div>
+          <p class="explain-text" id="formulaExplanation">In equal temperament, each semitone multiplies frequency by the same factor. Four steps above a note is about 1.260 times its frequency.</p>
+        </div>
+      </section>
+
+      <section class="panel workbench">
+        <div class="panel-head"><div><span class="kicker">05 · Build a chord</span><h2>Stack notes into a shape</h2></div><span class="subtle">Choose a root, then a recipe</span></div>
+        <div class="workbench-grid">
+          <div>
+            <div class="field"><label for="chordRoot">Chord root</label><select id="chordRoot"></select></div>
+            <div class="field"><label for="chordType">Chord quality · the recipe</label><select id="chordType">
+              <option value="major">Major triad · 0–4–7</option>
+              <option value="minor">Minor triad · 0–3–7</option>
+              <option value="diminished">Diminished · 0–3–6</option>
+              <option value="augmented">Augmented · 0–4–8</option>
+              <option value="sus2">Suspended 2nd · 0–2–7</option>
+              <option value="sus4">Suspended 4th · 0–5–7</option>
+              <option value="power">Power chord · 0–7</option>
+              <option value="dominant7">Dominant 7th · 0–4–7–10</option>
+              <option value="major7">Major 7th · 0–4–7–11</option>
+              <option value="minor7">Minor 7th · 0–3–7–10</option>
+              <option value="halfDim7">Half-diminished 7th · 0–3–6–10</option>
+            </select></div>
+            <button class="btn primary" id="applyChord">Put chord on the wheel</button>
+            <p class="explain-text">A chord is simply several notes heard together. A triad uses three notes, usually built by taking every other letter of a scale: 1, 3, 5.</p>
+          </div>
+          <div><div class="field-label" style="margin-bottom:9px">Intervals measured from the chord root</div><div class="interval-rows" id="intervalRows"></div></div>
+        </div>
+      </section>
+
+      <section class="panel degree-panel">
+        <div class="panel-head"><div><span class="kicker">06 · Chords inside a scale</span><h2>Build from scale degrees</h2></div></div>
+        <div class="degree-buttons" id="degreeButtons"></div>
+        <p class="degree-note" id="degreeNote">Roman numerals name chords by their position in a scale. Uppercase usually signals a major triad; lowercase a minor one; ° means diminished.</p>
+      </section>
+
+      <section class="panel piano-panel">
+        <span class="kicker">Try it with a keyboard</span><h2 style="font-size:16px;margin:0">Two octaves, same twelve pitch classes</h2>
+        <div class="piano-wrap" id="piano" aria-label="Two octave playable piano keyboard"><div class="piano-white" id="pianoWhite"></div><div id="pianoBlack"></div></div>
+        <div class="piano-help">Click a key to hear that register and add its pitch class to the selection. The same note name repeats every octave, at twice the frequency.</div>
+      </section>
+
+      <section class="panel play-panel">
+        <div class="play-top"><div><span class="kicker">07 · Hear your construction</span><h2>Polyphonic listening desk</h2></div>
+          <div class="audio-settings">
+            <label for="waveform">Wave</label><select id="waveform"><option value="sine">Sine</option><option value="triangle" selected>Triangle</option><option value="sawtooth">Saw</option><option value="square">Square</option></select>
+            <label for="octave">Octave</label><select id="octave"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
+            <label for="volume">Level <input id="volume" type="range" min="0" max="0.35" step="0.01" value="0.16"></label>
+          </div>
+        </div>
+        <div class="transport"><button class="btn primary" id="playChord">▶ Play together</button><button class="btn" id="playArp">↗ Play one by one</button><button class="btn" id="playScale">♪ Hear the scale</button><button class="btn stop" id="stopAudio">■ Stop</button></div>
+        <div class="audio-status" id="audioStatus" aria-live="polite">Audio is ready when you press play. Your browser may ask for permission to start sound.</div>
+      </section>
+    </main>
+  </div>
+
+  <section class="guide">
+    <div class="guide-head"><div><span class="kicker">A pocket glossary</span><h2>The words, without the fog</h2></div><span class="subtle">Four ideas to keep nearby</span></div>
+    <div class="guide-grid">
+      <article class="guide-card"><span class="num">01 / PITCH</span><h3>Note, semitone, octave</h3><p>A note names a pitch. A <code>semitone</code> is one neighbouring step on this twelve-note map. Twelve steps make an <code>octave</code>: the note returns, but at twice or half the frequency.</p></article>
+      <article class="guide-card"><span class="num">02 / SPELLING</span><h3>Sharp, flat, natural</h3><p>A sharp (<code>♯</code>) raises a note by one semitone; a flat (<code>♭</code>) lowers it by one. A natural (<code>♮</code>) cancels an earlier sharp or flat. C♯ and D♭ usually sound the same on this keyboard: two spellings, one pitch.</p></article>
+      <article class="guide-card"><span class="num">03 / SCALE</span><h3>Major and minor</h3><p>A scale is a selected set of notes with a starting point. Major follows <code>2–2–1–2–2–2–1</code>; natural minor follows <code>2–1–2–2–1–2–2</code>. The different spacing changes the musical character, not a fixed emotion.</p></article>
+      <article class="guide-card"><span class="num">04 / HARMONY</span><h3>Interval, chord, key</h3><p>An interval is the distance between two notes. A chord sounds several notes together. A key is a musical centre and its usual scale; its key signature tells you which notes are routinely sharpened or flattened.</p></article>
+    </div>
+  </section>
+
+  <div class="footer"><span>THE TWELVE · A browser-based teaching instrument</span><span>Equal temperament is the model used here · real instruments and musical traditions can tune differently</span></div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const SHARP_NAMES = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+  const FLAT_NAMES  = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+  const CHROMATIC_ORDER = [0,1,2,3,4,5,6,7,8,9,10,11];
+  const FIFTHS_ORDER = [0,7,2,9,4,11,6,1,8,3,10,5];
+  const SCALES = {
+    major: {name:'Major (Ionian)', steps:[2,2,1,2,2,2,1], offsets:[0,2,4,5,7,9,11], kind:'major', desc:'The familiar major-scale spacing: two, two, one, two, two, two, one semitones.'},
+    naturalMinor: {name:'Natural minor (Aeolian)', steps:[2,1,2,2,1,2,2], offsets:[0,2,3,5,7,8,10], kind:'minor', desc:'Natural minor lowers the 3rd, 6th and 7th scale degrees compared with the parallel major scale.'},
+    harmonicMinor: {name:'Harmonic minor', steps:[2,1,2,2,1,3,1], offsets:[0,2,3,5,7,8,11], kind:'minor', desc:'Harmonic minor keeps the minor 6th but raises the 7th, creating a three-semitone gap before the leading tone.'},
+    melodicMinor: {name:'Melodic minor · ascending', steps:[2,1,2,2,2,2,1], offsets:[0,2,3,5,7,9,11], kind:'minor', desc:'Ascending melodic minor raises the 6th and 7th degrees of natural minor.'},
+    dorian: {name:'Dorian mode', steps:[2,1,2,2,2,1,2], offsets:[0,2,3,5,7,9,10], kind:'mode', desc:'Dorian is a minor-sounding mode with a raised 6th compared with natural minor.'},
+    mixolydian: {name:'Mixolydian mode', steps:[2,2,1,2,2,1,2], offsets:[0,2,4,5,7,9,10], kind:'mode', desc:'Mixolydian resembles major, but its 7th degree is one semitone lower.'},
+    majorPent: {name:'Major pentatonic', steps:[2,2,3,2,3], offsets:[0,2,4,7,9], kind:'pent', desc:'A five-note subset of the major scale, omitting two of its notes.'},
+    minorPent: {name:'Minor pentatonic', steps:[3,2,2,3,2], offsets:[0,3,5,7,10], kind:'pent', desc:'A five-note scale built around the minor third and perfect fifth.'},
+    blues: {name:'Minor blues', steps:[3,2,1,1,3,2], offsets:[0,3,5,6,7,10], kind:'blues', desc:'Minor pentatonic plus the chromatic passing tone at the tritone, often called the blue note.'}
+  };
+  const INTERVALS = {
+    0:['Unison / root','P1'],1:['Minor 2nd','m2'],2:['Major 2nd','M2'],3:['Minor 3rd','m3'],4:['Major 3rd','M3'],
+    5:['Perfect 4th','P4'],6:['Tritone · augmented 4th / diminished 5th','A4 / d5'],7:['Perfect 5th','P5'],
+    8:['Minor 6th','m6'],9:['Major 6th','M6'],10:['Minor 7th','m7'],11:['Major 7th','M7'],12:['Octave','P8']
+  };
+  const CHORDS = {
+    major:{label:'Major triad',suffix:'',intervals:[0,4,7],description:'A major triad: root, major third, perfect fifth.',character:'The major third sits four semitones above the root.'},
+    minor:{label:'Minor triad',suffix:'m',intervals:[0,3,7],description:'A minor triad: root, minor third, perfect fifth.',character:'The third is one semitone lower than in a major triad.'},
+    diminished:{label:'Diminished triad',suffix:'°',intervals:[0,3,6],description:'A diminished triad: root, minor third, diminished fifth.',character:'Two stacked minor thirds make a compact, symmetrical shape.'},
+    augmented:{label:'Augmented triad',suffix:'+',intervals:[0,4,8],description:'An augmented triad: root, major third, augmented fifth.',character:'Two stacked major thirds make a symmetrical, floating-sounding shape.'},
+    sus2:{label:'Suspended 2nd',suffix:'sus2',intervals:[0,2,7],description:'A suspended-second chord: root, major second, perfect fifth.',character:'The third is replaced by the second, so the chord is neither major nor minor.'},
+    sus4:{label:'Suspended 4th',suffix:'sus4',intervals:[0,5,7],description:'A suspended-fourth chord: root, perfect fourth, perfect fifth.',character:'The third is replaced by the fourth, so the chord is neither major nor minor.'},
+    power:{label:'Power chord',suffix:'5',intervals:[0,7],description:'A power chord: root and perfect fifth.',character:'There is no third, so it does not specify major or minor.'},
+    dominant7:{label:'Dominant seventh',suffix:'7',intervals:[0,4,7,10],description:'A dominant-seventh chord: major triad plus a minor seventh.',character:'The flattened seventh adds a strong tendency to resolve, often down a fifth to the next chord.'},
+    major7:{label:'Major seventh',suffix:'maj7',intervals:[0,4,7,11],description:'A major-seventh chord: major triad plus a major seventh.',character:'The seventh sits one semitone below the octave.'},
+    minor7:{label:'Minor seventh',suffix:'m7',intervals:[0,3,7,10],description:'A minor-seventh chord: minor triad plus a minor seventh.',character:'A minor triad with the minor seventh added above it.'},
+    halfDim7:{label:'Half-diminished seventh',suffix:'ø7',intervals:[0,3,6,10],description:'A half-diminished seventh: diminished triad plus a minor seventh.',character:'The seventh is minor, unlike the fully diminished seventh chord.'}
+  };
+  const MAJOR_KEY_SIGS = {
+    0:{name:'C',type:'none',count:0}, 1:{name:'D♭',type:'flat',count:5}, 2:{name:'D',type:'sharp',count:2},
+    3:{name:'E♭',type:'flat',count:3}, 4:{name:'E',type:'sharp',count:4}, 5:{name:'F',type:'flat',count:1},
+    6:{name:'F♯',type:'sharp',count:6}, 7:{name:'G',type:'sharp',count:1}, 8:{name:'A♭',type:'flat',count:4},
+    9:{name:'A',type:'sharp',count:3}, 10:{name:'B♭',type:'flat',count:2}, 11:{name:'B',type:'sharp',count:5}
+  };
+  const SHARP_ORDER = ['F♯','C♯','G♯','D♯','A♯','E♯','B♯'];
+  const FLAT_ORDER = ['B♭','E♭','A♭','D♭','G♭','C♭','F♭'];
+
+  const $ = id => document.getElementById(id);
+  const state = {root:0, scale:'major', spelling:'sharp', view:'chromatic', selected:new Set([0,4,7]), chordType:'major', audio:null, master:null, voices:[]};
+  const noteName = n => (state.spelling === 'flat' ? FLAT_NAMES : SHARP_NAMES)[((n%12)+12)%12];
+  const scaleDef = () => SCALES[state.scale];
+  const scalePitches = () => scaleDef().offsets.map(x => (state.root+x)%12);
+  const circleOrder = () => state.view === 'fifths' ? FIFTHS_ORDER : CHROMATIC_ORDER;
+  const mod = (n,m=12) => ((n%m)+m)%m;
+
+  function initSelects(){
+    const options = Array.from({length:12},(_,i)=>`<option value="${i}">${noteName(i)}</option>`).join('');
+    $('rootSelect').innerHTML = options;
+    $('chordRoot').innerHTML = options;
+    $('rootSelect').value = state.root;
+    $('chordRoot').value = state.root;
+    $('chordType').value = state.chordType;
+  }
+  function renderNoteGrid(){
+    $('noteGrid').innerHTML = Array.from({length:12},(_,i)=>`<button type="button" class="note-btn" data-note="${i}" aria-pressed="${state.selected.has(i)}">${noteName(i)}</button>`).join('');
+    $('noteGrid').querySelectorAll('[data-note]').forEach(btn=>btn.addEventListener('click',()=>toggleNote(Number(btn.dataset.note))));
+  }
+  function renderWheelLabels(){
+    $('wheelLabels').innerHTML = Array.from({length:12},(_,i)=>`<button type="button" class="wheel-label" data-note="${i}" title="${noteName(i)} · click to add or remove" aria-label="Toggle ${noteName(i)}" aria-pressed="${state.selected.has(i)}">${noteName(i)}</button>`).join('');
+    $('wheelLabels').querySelectorAll('[data-note]').forEach(btn=>btn.addEventListener('click',()=>toggleNote(Number(btn.dataset.note))));
+    positionWheelLabels();
+  }
+  function positionWheelLabels(){
+    const el=$('wheelWrap'), w=el.clientWidth, h=el.clientHeight;
+    if(!w||!h)return;
+    const cx=w/2,cy=h/2,r=Math.min(w,h)*.325 + Math.min(w,h)*.075;
+    const order=circleOrder();
+    order.forEach((pc,slot)=>{
+      const a=-Math.PI/2+(slot/12)*Math.PI*2;
+      const b=$(`wheelLabels`).querySelector(`[data-note="${pc}"]`);
+      if(b){b.style.left=`${(cx+Math.cos(a)*r)/w*100}%`;b.style.top=`${(cy+Math.sin(a)*r)/h*100}%`;}
+    });
+  }
+
+  function signatureInfo(){
+    const def=scaleDef();
+    if(!['major','naturalMinor'].includes(state.scale))return null;
+    const majorRoot=state.scale==='naturalMinor' ? mod(state.root+3) : state.root;
+    let info={...MAJOR_KEY_SIGS[majorRoot]};
+    if(majorRoot===6 && state.spelling==='flat') info={name:'G♭',type:'flat',count:6};
+    const relativeMinor=mod(majorRoot+9);
+    const relMinorName=noteName(relativeMinor);
+    const keyRootName=state.scale==='naturalMinor' ? noteName(state.root) : info.name;
+    return {info,majorRoot,relativeMinor,relMinorName,keyRootName};
+  }
+  function updateKeySummary(){
+    const def=scaleDef(), sig=signatureInfo();
+    let title=`${noteName(state.root)} ${def.kind==='minor'?'minor':def.kind==='major'?'major':def.name}`;
+    let detail=def.desc;
+    if(sig){
+      const {info,majorRoot,relativeMinor,relMinorName,keyRootName}=sig;
+      let signature='No sharps or flats';
+      if(info.type==='sharp') signature=`${info.count} sharp${info.count===1?'':'s'} · ${SHARP_ORDER.slice(0,info.count).join(' ')}`;
+      if(info.type==='flat') signature=`${info.count} flat${info.count===1?'':'s'} · ${FLAT_ORDER.slice(0,info.count).join(' ')}`;
+      if(state.scale==='major') detail=`${signature}. Relative minor: ${relMinorName} minor. These two keys share the same key signature and note collection.`;
+      else detail=`${signature}. Relative major: ${info.name} major. These two keys share a key signature; the minor scale starts three semitones above the relative major's tonic.`;
+    } else {
+      detail += ' This scale does not have a standard major/minor key signature; its formula is the clearest description.';
+    }
+    $('keySummary').innerHTML=`<div class="key-title">${title}</div><p>${detail}</p>`;
+  }
+  function updateScaleFormula(){
+    const def=scaleDef();
+    const stepText=def.steps.join('–');
+    $('degreeNote').textContent = `Scale recipe: ${stepText} semitone steps. Roman numerals number chords by scale degree: uppercase often means major, lowercase minor, and ° diminished. The sound is determined by the actual intervals, not the letter case.`;
+  }
+  function sortedSelected(){
+    return [...state.selected].sort((a,b)=>mod(a-state.root)-mod(b-state.root));
+  }
+  function chordMatch(){
+    const rel=sortedSelected().map(n=>mod(n-state.root)).sort((a,b)=>a-b);
+    for(const [id,ch] of Object.entries(CHORDS)){
+      const expected=[...ch.intervals].sort((a,b)=>a-b);
+      if(rel.length===expected.length && rel.every((n,i)=>n===expected[i])) return id;
+    }
+    return null;
+  }
+  function updateReadout(){
+    const selected=sortedSelected(), match=chordMatch(), def=scaleDef();
+    $('selectionCount').textContent=`${selected.length} selected`;
+    if(!selected.length){
+      $('chordName').textContent='An empty canvas';
+      $('chordCaption').textContent='Choose one or more notes to begin.';
+      $('intervalList').innerHTML='';
+      $('interpretation').textContent='A pitch collection becomes useful when you compare each note with a chosen root. Add notes with the wheel, grid or keyboard.';
+      $('formulaBox').innerHTML='f(n) = f₀ × 2<sup>n/12</sup><br><strong>No interval selected</strong>';
+      $('formulaExplanation').textContent='Choose a note, then add another. Their distance in semitones determines the frequency ratio.';
+      return;
+    }
+    const name=noteName(state.root);
+    if(match){
+      const ch=CHORDS[match];
+      $('chordName').textContent=`${name}${ch.suffix} · ${ch.label.toLowerCase()}`;
+      $('chordCaption').textContent=ch.description;
+      $('interpretation').textContent=`${ch.character} Notes in this chord: ${selected.map(noteName).join(' · ')}. The root is the reference point; the numbers below are semitone distances from it.`;
+    } else if(selected.length===def.offsets.length && selected.every(n=>scalePitches().includes(n))){
+      $('chordName').textContent=`${name} ${def.name}`;
+      $('chordCaption').textContent=`A ${selected.length}-note scale collection, not a single chord.`;
+      $('interpretation').textContent=`${def.desc} A scale is a route through pitches; a chord is a handful of notes heard at the same time. Current notes: ${selected.map(noteName).join(' · ')}.`;
+    } else {
+      $('chordName').textContent=`${selected.length} note${selected.length===1?'':'s'} around ${name}`;
+      $('chordCaption').textContent='A custom pitch collection. Compare its distances with the named intervals.';
+      $('interpretation').textContent=`Your collection is not one of the common chord recipes in the builder. That is fine: music can use clusters, open voicings and other combinations. Distances are measured clockwise from ${name}.`;
+    }
+    $('intervalList').innerHTML=selected.map(pc=>{
+      const d=mod(pc-state.root); const int=INTERVALS[d];
+      return `<span class="interval-chip"><b>+${d}</b>${int[0]}</span>`;
+    }).join('');
+    const ratios=selected.map(pc=>{
+      const d=mod(pc-state.root), ratio=Math.pow(2,d/12);
+      return {d,ratio};
+    });
+    const first=ratios.find(x=>x.d!==0) || ratios[0];
+    $('formulaBox').innerHTML=`f(n) = f₀ × 2<sup>n/12</sup><br>${ratios.map(x=>`<strong>+${x.d}</strong> → 2<sup>${x.d}/12</sup> ≈ ${x.ratio.toFixed(3)}×`).join('<br>')}`;
+    $('formulaExplanation').textContent=`A semitone is a constant multiplication, not a constant number of hertz. ${first.d===0?'The root is the reference frequency.':`At +${first.d} semitones, the frequency is ${first.ratio.toFixed(3)} times the root.`} Twelve semitones give 2× the frequency: the octave.`;
+  }
+  function updateIntervalRows(){
+    const id=$('chordType').value, ch=CHORDS[id];
+    $('intervalRows').innerHTML=ch.intervals.map(d=>{
+      const label=INTERVALS[d][0], ratio=Math.pow(2,d/12).toFixed(3);
+      return `<div class="interval-row"><span class="degree">+${d}</span><span class="interval-name">${label}</span><span class="ratio">${ratio}×</span></div>`;
+    }).join('');
+  }
+  function updateDegreeButtons(){
+    const def=scaleDef();
+    const host=$('degreeButtons');
+    if(def.offsets.length!==7){
+      host.innerHTML='<div class="subtle" style="grid-column:1/-1;padding:10px 0">Choose a seven-note scale to see its seven diatonic triads.</div>';
+      return;
+    }
+    const qualities=[];
+    for(let i=0;i<7;i++){
+      const notes=[0,2,4].map(k=>mod(def.offsets[(i+k)%7]+(i+k>=7?12:0),24));
+      const ints=[notes[0],notes[1],notes[2]].map(x=>x-notes[0]);
+      const triad=[0,ints[1],ints[2]].join('-');
+      const q=triad==='0-4-7'?'major':triad==='0-3-7'?'minor':triad==='0-3-6'?'diminished':triad==='0-4-8'?'augmented':'other';
+      qualities.push(q);
+    }
+    const romans = qualities.map((q,i)=>{
+      let n=['I','II','III','IV','V','VI','VII'][i];
+      return q==='major'?n:q==='minor'?n.toLowerCase():q==='diminished'?n.toLowerCase()+'°':q==='augmented'?n+'+':n;
+    });
+    host.innerHTML=qualities.map((q,i)=>{
+      const root=mod(state.root+def.offsets[i]);
+      const label=q==='other'?'3-note chord':q;
+      return `<button type="button" class="degree-btn" data-degree="${i}" title="Build ${noteName(root)} ${label}"><strong>${romans[i]}</strong><small>${noteName(root)} · ${q==='other'?'other':q}</small></button>`;
+    }).join('');
+    host.querySelectorAll('[data-degree]').forEach(btn=>btn.addEventListener('click',()=>buildDegreeChord(Number(btn.dataset.degree))));
+  }
+  function updateWheelStyle(){
+    const scales=new Set(scalePitches());
+    document.querySelectorAll('.note-btn,.wheel-label').forEach(btn=>{
+      const n=Number(btn.dataset.note);
+      btn.classList.toggle('selected',state.selected.has(n));
+      btn.classList.toggle('in-scale',scales.has(n));
+      btn.classList.toggle('root-note',n===state.root);
+      btn.setAttribute('aria-pressed',String(state.selected.has(n)));
+    });
+    $('selectionCount').textContent=`${state.selected.size} selected`;
+    $('wheelCenterCount').textContent=String(state.selected.size).padStart(2,'0');
+    $('wheelCenterText').textContent=state.selected.size===1?'note selected':'notes selected';
+  }
+  function updatePiano(){
+    document.querySelectorAll('[data-pc]').forEach(btn=>btn.classList.toggle('selected',state.selected.has(Number(btn.dataset.pc))));
+  }
+  function updateAll(){
+    $('rootSelect').value=state.root;
+    $('chordRoot').value=state.root;
+    updateKeySummary(); updateScaleFormula(); updateWheelStyle(); updateReadout(); updateIntervalRows(); updateDegreeButtons(); updatePiano();
+    drawWheel();
+  }
+  function toggleNote(n){
+    if(state.selected.has(n))state.selected.delete(n); else state.selected.add(n);
+    state.chordType=chordMatch();
+    updateAll();
+  }
+  function loadScale(){state.chordType=null;state.selected=new Set(scalePitches());updateAll();}
+  function loadChord(type=$('chordType').value,root=Number($('chordRoot').value)){
+    state.root=root; state.chordType=type; state.selected=new Set(CHORDS[type].intervals.map(i=>mod(root+i)));
+    $('rootSelect').value=root; $('chordRoot').value=root; $('chordType').value=type; updateAll();
+  }
+  function buildDegreeChord(degree){
+    const offsets=scaleDef().offsets;
+    const rootOffset=offsets[degree];
+    const root=mod(state.root+rootOffset);
+    const intervals=[0,2,4].map(k=>mod(offsets[(degree+k)%7]+(degree+k>=7?12:0)-rootOffset,24));
+    state.root=root; $('rootSelect').value=root; $('chordRoot').value=root;
+    state.selected=new Set(intervals.map(x=>mod(root+x)));
+    const match=chordMatch(); if(match){$('chordType').value=match;state.chordType=match;} else {state.chordType=null;}
+    updateAll();
+  }
+
+  // Minimal WebGL renderer: the wheel, interval rings and chord polygon are drawn as geometry.
+  const canvas=$('wheel');
+  const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false});
+  let webglProgram=null, posLoc=null, colorLoc=null, resLoc=null, buffer=null;
+  function compileShader(type,source){
+    const sh=gl.createShader(type);gl.shaderSource(sh,source);gl.compileShader(sh);
+    if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){const msg=gl.getShaderInfoLog(sh);gl.deleteShader(sh);throw new Error(msg||'Shader compile failed');}
+    return sh;
+  }
+  function initGL(){
+    if(!gl)return;
+    const vs=`attribute vec2 a_pos; attribute vec4 a_color; uniform vec2 u_resolution; varying vec4 v_color; void main(){vec2 p=(a_pos/u_resolution)*2.0-1.0;gl_Position=vec4(p.x,-p.y,0.0,1.0);v_color=a_color;}`;
+    const fs=`precision mediump float; varying vec4 v_color; void main(){gl_FragColor=v_color;}`;
+    const p=gl.createProgram();gl.attachShader(p,compileShader(gl.VERTEX_SHADER,vs));gl.attachShader(p,compileShader(gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);
+    if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p)||'Program link failed');
+    webglProgram=p;posLoc=gl.getAttribLocation(p,'a_pos');colorLoc=gl.getAttribLocation(p,'a_color');resLoc=gl.getUniformLocation(p,'u_resolution');buffer=gl.createBuffer();
+    gl.useProgram(p);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+    gl.enableVertexAttribArray(posLoc);gl.enableVertexAttribArray(colorLoc);
+    gl.vertexAttribPointer(posLoc,2,gl.FLOAT,false,24,0);gl.vertexAttribPointer(colorLoc,4,gl.FLOAT,false,24,8);
+    gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  }
+  function color(hex,alpha=1){
+    const v=hex.replace('#','');return [parseInt(v.slice(0,2),16)/255,parseInt(v.slice(2,4),16)/255,parseInt(v.slice(4,6),16)/255,alpha];
+  }
+  function pushVertex(arr,x,y,c){arr.push(x,y,c[0],c[1],c[2],c[3]);}
+  function addLine(arr,x1,y1,x2,y2,c){pushVertex(arr,x1,y1,c);pushVertex(arr,x2,y2,c);}
+  function addCircle(arr,x,y,r,c,segments=30){
+    for(let i=0;i<segments;i++){
+      const a=i/segments*Math.PI*2,b=(i+1)/segments*Math.PI*2;
+      pushVertex(arr,x,y,c);pushVertex(arr,x+Math.cos(a)*r,y+Math.sin(a)*r,c);pushVertex(arr,x+Math.cos(b)*r,y+Math.sin(b)*r,c);
+    }
+  }
+  function addRingLines(arr,cx,cy,r,c,segments=120){
+    for(let i=0;i<segments;i++){
+      const a=i/segments*Math.PI*2,b=(i+1)/segments*Math.PI*2;
+      addLine(arr,cx+Math.cos(a)*r,cy+Math.sin(a)*r,cx+Math.cos(b)*r,cy+Math.sin(b)*r,c);
+    }
+  }
+  function addPolygon(arr,pts,cx,cy,c){
+    if(pts.length<3)return;
+    for(let i=0;i<pts.length;i++){
+      const a=pts[i],b=pts[(i+1)%pts.length];
+      pushVertex(arr,cx,cy,c);pushVertex(arr,a.x,a.y,c);pushVertex(arr,b.x,b.y,c);
+    }
+  }
+  function drawWheel(){
+    if(!gl||!webglProgram)return;
+    const rect=canvas.getBoundingClientRect(),w=Math.max(1,rect.width),h=Math.max(1,rect.height),dpr=Math.min(window.devicePixelRatio||1,2);
+    const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
+    if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;gl.viewport(0,0,pw,ph);}
+    gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(webglProgram);gl.uniform2f(resLoc,w,h);
+    const cx=w/2,cy=h/2,r=Math.min(w,h)*.325;
+    const lines=[],tris=[];
+    const dim=color('#526671',.24),soft=color('#718892',.33),spoke=color('#718892',.18);
+    [r*.36,r*.68,r].forEach((rr,i)=>addRingLines(lines,cx,cy,rr,i===2?soft:dim,120));
+    const order=circleOrder(),points={};
+    order.forEach((pc,slot)=>{
+      const a=-Math.PI/2+(slot/12)*Math.PI*2;
+      const p={x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,a};points[pc]=p;
+      addLine(lines,cx,cy,p.x,p.y,spoke);
+    });
+    const scaleSet=new Set(scalePitches());
+    const scalePts=order.filter(pc=>scaleSet.has(pc)).map(pc=>points[pc]);
+    addPolygon(tris,scalePts,cx,cy,color('#5ebeb4',.055));
+    for(let i=0;i<scalePts.length;i++){const a=scalePts[i],b=scalePts[(i+1)%scalePts.length];addLine(lines,a.x,a.y,b.x,b.y,color('#67c8be',.34));}
+    const selectedPts=order.filter(pc=>state.selected.has(pc)).map(pc=>points[pc]);
+    addPolygon(tris,selectedPts,cx,cy,color('#f3c778',.105));
+    if(selectedPts.length>=2){
+      for(let i=0;i<selectedPts.length;i++){const a=selectedPts[i],b=selectedPts[(i+1)%selectedPts.length];addLine(lines,a.x,a.y,b.x,b.y,color('#f3c778',.86));}
+    }
+    addCircle(tris,cx,cy,3,color('#a5b9be',.65),24);
+    order.forEach(pc=>{
+      const p=points[pc],isSelected=state.selected.has(pc),isScale=scaleSet.has(pc),isRoot=pc===state.root;
+      if(isSelected)addCircle(tris,p.x,p.y,18,color('#f3c778',.13),28);
+      addCircle(tris,p.x,p.y,isSelected?10:isScale?7:4.8,isSelected?color('#f3c778',1):isScale?color('#7bd9d0',.9):color('#71838e',.55),28);
+      if(isRoot)addRingLines(lines,p.x,p.y,14,color('#fff0c9',.86),64);
+    });
+    function draw(arr,mode){
+      if(!arr.length)return;
+      gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(arr),gl.DYNAMIC_DRAW);
+      gl.vertexAttribPointer(posLoc,2,gl.FLOAT,false,24,0);gl.vertexAttribPointer(colorLoc,4,gl.FLOAT,false,24,8);
+      gl.drawArrays(mode,0,arr.length/6);
+    }
+    draw(tris,gl.TRIANGLES);draw(lines,gl.LINES);
+  }
+  if(gl){try{initGL();}catch(err){console.error(err);}}
+  else {
+    $('wheel').classList.add('hidden');
+    $('wheelHeading').textContent='The pitch wheel (WebGL unavailable)';
+    $('wheelHint').textContent='Use the note buttons and explanations below; this browser did not provide WebGL.';
+  }
+
+  // Two-octave keyboard. Each physical key maps back to one of twelve pitch classes.
+  function makePiano(){
+    const whiteSemis=[0,2,4,5,7,9,11];
+    const whiteHost=$('pianoWhite'),blackHost=$('pianoBlack');
+    whiteHost.innerHTML='';blackHost.innerHTML='';
+    for(let octave=0;octave<2;octave++){
+      whiteSemis.forEach((semi,j)=>{
+        const pc=semi, midi=48+octave*12+semi;
+        const b=document.createElement('button');b.type='button';b.className='piano-key';b.dataset.pc=pc;b.dataset.midi=midi;
+        b.textContent=(semi===0||semi===5)?`${noteName(pc)}${3+octave}`:'';
+        b.setAttribute('aria-label',`${noteName(pc)} octave ${3+octave}`);
+        b.addEventListener('click',()=>{toggleNote(pc);playSingle(midi);});whiteHost.appendChild(b);
+      });
+    }
+    for(let octave=0;octave<2;octave++){
+      [1,3,6,8,10].forEach((semi)=>{
+        const whiteBoundary=octave*7+({1:1,3:2,6:4,8:5,10:6}[semi]);
+        const midi=48+octave*12+semi,pc=semi;
+        const b=document.createElement('button');b.type='button';b.className='piano-black';b.style.left=`${whiteBoundary/14*100}%`;b.dataset.pc=pc;b.dataset.midi=midi;
+        b.textContent=noteName(pc);b.setAttribute('aria-label',`${noteName(pc)} octave ${3+octave}`);
+        b.addEventListener('click',()=>{toggleNote(pc);playSingle(midi);});blackHost.appendChild(b);
+      });
+    }
+  }
+
+  // Web Audio: one oscillator per note, scheduled together or as an arpeggio.
+  async function ensureAudio(){
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx){$('audioStatus').textContent='Web Audio is not available in this browser.';return null;}
+    if(!state.audio){
+      state.audio=new AudioCtx();
+      const comp=state.audio.createDynamicsCompressor();comp.threshold.value=-18;comp.knee.value=18;comp.ratio.value=4;comp.attack.value=.004;comp.release.value=.18;
+      state.master=state.audio.createGain();state.master.gain.value=Number($('volume').value);
+      state.master.connect(comp);comp.connect(state.audio.destination);
+    }
+    if(state.audio.state==='suspended')await state.audio.resume();
+    return state.audio;
+  }
+  function stopAudio(){
+    if(!state.audio)return;
+    const now=state.audio.currentTime;
+    state.voices.forEach(v=>{
+      try{v.gain.gain.cancelScheduledValues(now);v.gain.gain.setTargetAtTime(.0001,now,.025);v.osc.stop(now+.13);}catch(_e){}
+    });
+    $('audioStatus').textContent='Stopping the active notes.';
+  }
+  function startVoice(midi,start,duration,pan=0){
+    const ctx=state.audio,osc=ctx.createOscillator(),gain=ctx.createGain(),panner=ctx.createStereoPanner?ctx.createStereoPanner():null;
+    osc.type=$('waveform').value;osc.frequency.setValueAtTime(440*Math.pow(2,(midi-69)/12),start);
+    gain.gain.setValueAtTime(.0001,start);gain.gain.linearRampToValueAtTime(.72,start+.025);gain.gain.setValueAtTime(.72,start+Math.max(.04,duration-.09));gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+    osc.connect(gain);
+    if(panner){panner.pan.setValueAtTime(pan,start);gain.connect(panner);panner.connect(state.master);}else gain.connect(state.master);
+    const voice={osc,gain};state.voices.push(voice);
+    osc.onended=()=>{state.voices=state.voices.filter(v=>v!==voice);try{osc.disconnect();gain.disconnect();if(panner)panner.disconnect();}catch(_e){}};
+    osc.start(start);osc.stop(start+duration+.025);
+  }
+  async function playSelection(mode='chord'){
+    const ctx=await ensureAudio();if(!ctx)return;
+    stopAudio();
+    const notes=sortedSelected();if(!notes.length){$('audioStatus').textContent='Choose at least one note first.';return;}
+    const base=12*(Number($('octave').value)+1)+state.root;
+    const now=ctx.currentTime+.045,step=mode==='arp'?.19:0,duration=mode==='arp'?.34:1.55;
+    notes.forEach((pc,i)=>startVoice(base+mod(pc-state.root),now+i*step,duration,notes.length===1?0:(i/(notes.length-1)-.5)*.75));
+    $('audioStatus').textContent=mode==='arp'?`Playing ${notes.length} notes in sequence.`:`Playing ${notes.length} notes together.`;
+  }
+  async function playScale(){
+    const ctx=await ensureAudio();if(!ctx)return;stopAudio();
+    const notes=scaleDef().offsets,base=12*(Number($('octave').value)+1)+state.root,now=ctx.currentTime+.045;
+    notes.forEach((d,i)=>startVoice(base+d,now+i*.22,.39,0));
+    $('audioStatus').textContent=`Playing the ${noteName(state.root)} ${scaleDef().name} scale.`;
+  }
+  async function playSingle(midi){
+    const ctx=await ensureAudio();if(!ctx)return;const now=ctx.currentTime+.015;startVoice(midi,now,.65,0);
+    $('audioStatus').textContent=`Playing ${noteName(midi%12)} in octave ${Math.floor(midi/12)-1}.`;
+  }
+
+  // Control wiring.
+  $('rootSelect').addEventListener('change',e=>{
+    state.root=Number(e.target.value);$('chordRoot').value=state.root;
+    if(state.chordType && CHORDS[state.chordType])state.selected=new Set(CHORDS[state.chordType].intervals.map(i=>mod(state.root+i)));
+    updateAll();
+  });
+  $('scaleSelect').addEventListener('change',e=>{state.scale=e.target.value;updateAll();});
+  $('chordRoot').addEventListener('change',e=>{state.root=Number(e.target.value);$('rootSelect').value=state.root;updateAll();});
+  $('chordType').addEventListener('change',e=>{state.chordType=e.target.value;updateIntervalRows();});
+  $('applyChord').addEventListener('click',()=>loadChord($('chordType').value,Number($('chordRoot').value)));
+  $('loadTonicChord').addEventListener('click',()=>loadChord('major',state.root));
+  $('loadScale').addEventListener('click',loadScale);
+  $('clearNotes').addEventListener('click',()=>{state.chordType=null;state.selected.clear();updateAll();});
+  $('invertNotes').addEventListener('click',()=>{const next=new Set();for(let i=0;i<12;i++)if(!state.selected.has(i))next.add(i);state.chordType=null;state.selected=next;updateAll();});
+  document.querySelectorAll('[data-spelling]').forEach(btn=>btn.addEventListener('click',()=>{
+    state.spelling=btn.dataset.spelling;document.querySelectorAll('[data-spelling]').forEach(b=>b.classList.toggle('active',b===btn));
+    const oldRoot=state.root;initSelects();$('rootSelect').value=oldRoot;$('chordRoot').value=oldRoot;$('chordType').value=state.chordType;
+    renderNoteGrid();renderWheelLabels();makePiano();updateAll();
+  }));
+  document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>{
+    state.view=btn.dataset.view;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b===btn));
+    $('wheelHeading').textContent=state.view==='fifths'?'The circle of fifths':'The chromatic wheel';
+    $('wheelHint').textContent=state.view==='fifths'?'Each clockwise step jumps seven semitones':'One step clockwise = one semitone';
+    positionWheelLabels();drawWheel();
+  }));
+  $('playChord').addEventListener('click',()=>playSelection('chord'));
+  $('playArp').addEventListener('click',()=>playSelection('arp'));
+  $('playScale').addEventListener('click',playScale);
+  $('stopAudio').addEventListener('click',stopAudio);
+  $('volume').addEventListener('input',e=>{if(state.master)state.master.gain.setTargetAtTime(Number(e.target.value),state.audio.currentTime,.025);});
+
+  // Keep the drawing and label positions crisp on resize and device-pixel-ratio changes.
+  const resizeObserver=new ResizeObserver(()=>{positionWheelLabels();drawWheel();});
+  resizeObserver.observe($('wheelWrap'));
+  window.addEventListener('orientationchange',()=>setTimeout(()=>{positionWheelLabels();drawWheel();},100));
+
+  initSelects();renderNoteGrid();renderWheelLabels();makePiano();updateAll();
+  if(!gl){$('wheelHint').textContent='WebGL is unavailable here; the note controls and sound work independently.';}
+})();
+</script>
+</body>
+</html>
