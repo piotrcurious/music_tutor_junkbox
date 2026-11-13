@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101719">
+<title>Pitch / Matter — a musical naming and hearing lab</title>
+<style>
+:root{
+  --bg:#101719;--panel:#182326;--panel2:#1e2b2e;--ink:#edf2e9;--muted:#a2b2ad;--line:#344548;
+  --mint:#a8e3c5;--mint2:#69b994;--amber:#f2bb73;--coral:#ed917f;--blue:#8db9dc;--violet:#b7a3e8;
+  --shadow:0 18px 55px rgba(0,0,0,.24);--radius:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse at 18% 0%,#233437 0%,transparent 38%),var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,select{font:inherit}
+button{color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.app{max-width:1440px;margin:auto;padding:28px clamp(14px,3vw,42px) 52px}
+header{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-bottom:28px}
+.brand{display:flex;gap:13px;align-items:center}.brand-mark{width:42px;height:42px;border:1px solid #58736b;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#28423b,#182b2d);color:var(--mint);font-size:22px}
+.brand strong{letter-spacing:.14em;font-size:12px}.brand span{display:block;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-top:1px}
+.top-meta{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-align:right}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:end;margin-bottom:28px}
+.eyebrow{color:var(--mint);font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+h1{font-size:clamp(34px,5vw,62px);line-height:.99;letter-spacing:-.055em;margin:11px 0 13px;font-weight:650;max-width:720px}
+.hero p{margin:0;color:#b8c5c0;max-width:690px;font-size:16px;line-height:1.65}
+.hero-note{border-left:2px solid var(--amber);padding:12px 0 12px 18px;color:#c8d2cd;font-size:13px;max-width:390px;justify-self:end}.hero-note b{color:var(--amber);font-weight:650}
+.modebar{display:flex;gap:8px;padding:6px;background:#131e20;border:1px solid var(--line);border-radius:15px;width:max-content;margin-bottom:20px}
+.mode-button{border:0;background:transparent;color:var(--muted);padding:11px 16px;border-radius:10px;font-weight:650;font-size:13px;transition:.2s}
+.mode-button.active{background:var(--mint);color:#11201a;box-shadow:0 3px 12px #0003}
+.mode-button .arrow{opacity:.65;margin:0 5px}
+.workspace{display:grid;grid-template-columns:minmax(420px,1fr) minmax(420px,1.08fr);gap:20px;align-items:start}
+.panel{background:linear-gradient(155deg,rgba(31,45,48,.97),rgba(22,33,36,.98));border:1px solid #35474a;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-pad{padding:23px}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:17px}
+.panel-kicker{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.16em;font-weight:750}.panel h2{font-size:20px;letter-spacing:-.025em;margin:4px 0 0;font-weight:620}.panel-intro{color:var(--muted);font-size:12px;margin:7px 0 0;max-width:500px}
+.pill{border:1px solid #48615e;color:var(--mint);padding:6px 9px;border-radius:999px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;white-space:nowrap}
+.wheel-layout{display:grid;grid-template-columns:minmax(250px,1fr) minmax(150px,.62fr);gap:10px;align-items:center}
+.wheel-holder{width:100%;max-width:365px;margin:auto;position:relative;aspect-ratio:1}
+#wheel{width:100%;height:100%;display:block;overflow:visible}
+.wheel-ring{fill:none;stroke:#415557;stroke-width:1}.wheel-inner{fill:none;stroke:#34494a;stroke-width:1;stroke-dasharray:3 6}.wheel-spoke{stroke:#35494a;stroke-width:1}.wheel-shape{fill:rgba(168,227,197,.15);stroke:var(--mint);stroke-width:2.2;stroke-linejoin:round;transition:all .2s}.wheel-center{fill:#182628;stroke:#637c75;stroke-width:1}.wheel-node{cursor:pointer;outline:none}.wheel-node circle{fill:#233638;stroke:#5a706f;stroke-width:1.5;transition:.18s}.wheel-node text{fill:#c8d5ce;font-size:12px;font-weight:650;text-anchor:middle;dominant-baseline:central;pointer-events:none}.wheel-node.selected circle{fill:var(--mint);stroke:#e0f4e7;stroke-width:2.5}.wheel-node.selected text{fill:#13251e}.wheel-node.root circle{fill:var(--amber);stroke:#fff0d7}.wheel-node.root text{fill:#282016}.wheel-node:hover circle{stroke:#fff;stroke-width:2.6}
+.wheel-center-text{fill:#e9f2ec;text-anchor:middle;font-size:14px;font-weight:700}.wheel-center-sub{fill:#9fb1a9;text-anchor:middle;font-size:9px;letter-spacing:1.4px}
+.side-controls{display:flex;flex-direction:column;gap:13px}.control-label{display:block;color:#9eafa8;font-size:10px;text-transform:uppercase;letter-spacing:.13em;margin-bottom:6px;font-weight:750}
+.toggle-row{display:flex;gap:5px;background:#132022;padding:4px;border-radius:10px;border:1px solid #34474a}.mini-toggle{flex:1;border:0;background:transparent;color:#9eb0a8;border-radius:7px;padding:7px 5px;font-size:11px}.mini-toggle.active{background:#38544c;color:#effaf1}
+select{width:100%;background:#142225;color:var(--ink);border:1px solid #405457;border-radius:9px;padding:8px 10px}
+.readout{background:#142123;border:1px solid #34484a;border-radius:13px;padding:12px}.readout small{display:block;color:#96aaa1;text-transform:uppercase;font-size:9px;letter-spacing:.14em}.readout strong{display:block;color:var(--amber);font-size:20px;letter-spacing:-.03em;margin-top:3px}.readout .formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#c7d4cd;margin-top:5px}
+.section-divider{height:1px;background:#344648;margin:20px 0}
+.subhead{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:10px}.subhead b{font-size:13px;font-weight:650}.subhead span{color:var(--muted);font-size:10px}
+.chord-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.chord-choice{min-height:58px;border:1px solid #3a4e50;background:#172426;border-radius:11px;text-align:left;padding:8px 9px;transition:.18s}.chord-choice:hover{border-color:#8abca1;transform:translateY(-1px)}.chord-choice.active{background:#284239;border-color:var(--mint);box-shadow:inset 0 0 0 1px #a8e3c533}.chord-choice b{display:block;font-size:12px}.chord-choice small{display:block;color:#9fb0a9;font-size:9px;margin-top:3px;white-space:nowrap}
+.keybed{display:grid;grid-template-columns:repeat(12,1fr);gap:4px}.key{height:54px;border:1px solid #455b5d;border-radius:7px;background:#dce6dc;color:#1b2927;position:relative;padding:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:6px;transition:.12s}.key.black{background:#25383a;color:#d3e0d8;border-color:#546969;transform:scale(.94);z-index:1}.key.selected{background:var(--mint);border-color:#e4ffed;color:#14271e;box-shadow:0 0 0 2px #a8e3c533}.key.root-key{background:var(--amber);color:#2b2014}.key span{font-size:9px;font-weight:750}.key small{font-size:8px;opacity:.75}.key:hover{filter:brightness(1.12)}
+.builder-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.action{border:1px solid #55706c;background:#233936;border-radius:10px;padding:10px 13px;font-size:12px;font-weight:700;color:#e5f4e9}.action.primary{background:var(--mint);border-color:var(--mint);color:#13271d}.action.quiet{background:transparent;color:#aebdb7;border-color:#43575a}.action.warn{border-color:#77534b;color:#f0ad9d;background:#352824}.action:active{transform:translateY(1px)}
+.explain-box{background:#142123;border:1px solid #35484b;border-radius:13px;padding:14px;margin-top:14px}.explain-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.explain-top b{font-size:12px}.explain-box p{color:#b9c8c0;font-size:12px;margin:8px 0 0;line-height:1.6}.mathline{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:9px}.math-chip{font:11px ui-monospace,monospace;background:#27393a;color:#dce9df;border:1px solid #415758;padding:5px 7px;border-radius:7px}
+.right-stack{display:flex;flex-direction:column;gap:20px}.spectrum-panel .panel-pad{padding-bottom:16px}.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:5px}.legend{display:flex;align-items:center;gap:6px;color:#a9b9b2;font-size:10px}.swatch{width:15px;height:3px;border-radius:4px;background:var(--amber)}.swatch.mechanical{background:var(--mint)}.swatch.neural{height:7px;width:7px;border-radius:50%;background:var(--violet)}
+.chart-tools{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.chart-mode{border:1px solid #42575a;background:transparent;color:#aebdb7;border-radius:8px;padding:6px 8px;font-size:10px}.chart-mode.active{background:#31473f;color:#e6f7eb;border-color:#6c9b82}
+#spectrum{width:100%;height:245px;display:block;border-radius:12px;border:1px solid #34494a;background:#101a1c;touch-action:pan-y;cursor:crosshair}
+.axis{display:flex;justify-content:space-between;padding:7px 5px 0;color:#82968e;font:9px ui-monospace,monospace}.chart-hint{color:#82968e;font-size:10px;margin:8px 2px 0}
+.partials{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:13px}.partial{border:1px solid #405457;background:#182729;border-radius:9px;padding:8px 5px;text-align:center}.partial:hover{border-color:var(--amber)}.partial b{display:block;font-size:11px;color:#f3c487}.partial small{display:block;color:#91a69c;font-size:9px;margin-top:2px}
+.cochlea-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:14px;align-items:center}.cochlea-map{background:#142123;border:1px solid #35494c;border-radius:13px;padding:13px}.map-label{display:flex;justify-content:space-between;color:#9db0a7;font-size:9px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:9px}.place-strip{height:42px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.place{border:1px solid #536c68;background:linear-gradient(100deg,#334a44,#273d40);border-radius:6px;position:relative;overflow:hidden;padding:0;font-size:9px;color:#e1eee6;font-weight:700}.place:nth-child(2){background:linear-gradient(100deg,#374b46,#34484b)}.place:nth-child(3){background:linear-gradient(100deg,#39494a,#3c444e)}.place:nth-child(4){background:linear-gradient(100deg,#3c454b,#4a3e50)}.place.active{border-color:var(--amber);box-shadow:inset 0 -3px var(--amber)}.place em{display:block;font-style:normal;opacity:.72;font-size:8px;font-weight:500}
+.place-caption{display:flex;justify-content:space-between;color:#80958c;font-size:9px;margin-top:6px}.anatomy-list{display:flex;flex-direction:column;gap:7px}.anatomy-button{display:flex;gap:10px;align-items:center;text-align:left;border:1px solid #3b5052;background:#19282a;border-radius:10px;padding:9px;min-height:51px}.anatomy-button:hover{border-color:#90bba4;background:#203532}.anatomy-icon{width:27px;height:27px;border-radius:8px;background:#304542;display:grid;place-items:center;color:var(--mint);font-size:13px;flex:none}.anatomy-button b{display:block;font-size:11px}.anatomy-button small{display:block;font-size:9px;color:#9eafa7;margin-top:1px}
+.path-status{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;border-radius:12px;background:#1d302b;border:1px solid #426458;margin-top:14px}.path-status .dot{width:7px;height:7px;background:var(--mint);border-radius:50%;margin-top:6px;box-shadow:0 0 12px #a8e3c5}.path-status b{font-size:11px;color:#ddf2e4}.path-status p{margin:3px 0 0;color:#a9bcb2;font-size:10px;line-height:1.5}
+.memory-card{display:none;background:#2c2722;border:1px solid #776149;border-radius:13px;padding:13px;margin-top:13px}.memory-card.show{display:block}.memory-card .memory-label{color:var(--amber);font-size:9px;text-transform:uppercase;letter-spacing:.14em;font-weight:800}.memory-card strong{display:block;font-size:16px;color:#fff0d9;margin-top:4px}.memory-card p{font-size:11px;color:#cfbda7;margin:5px 0 0;line-height:1.55}.alternatives{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.alternative{border:1px solid #775d46;border-radius:7px;padding:4px 7px;color:#eac9a2;font:10px ui-monospace,monospace}
+.concept-footer{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:20px}.concept{border-top:1px solid #405356;padding-top:12px}.concept b{display:block;font-size:11px;color:#dce9e1}.concept p{font-size:10px;color:#96aaa1;line-height:1.55;margin:5px 0 0}
+.footer-note{display:flex;justify-content:space-between;gap:18px;color:#80948c;font-size:10px;margin:22px 4px 0}.footer-note strong{color:#b2c3ba;font-weight:600}
+.hidden{display:none!important}
+@media(max-width:1020px){.workspace{grid-template-columns:1fr}.hero{grid-template-columns:1fr .7fr}.right-stack{display:grid;grid-template-columns:1fr 1fr;align-items:start}.spectrum-panel{grid-column:1/-1}}
+@media(max-width:700px){.app{padding:18px 12px 36px}header{margin-bottom:22px}.top-meta{display:none}.hero{display:block;margin-bottom:21px}.hero-note{margin-top:20px;max-width:none}.workspace{display:block}.workspace>.panel{margin-bottom:16px}.right-stack{display:flex}.wheel-layout{grid-template-columns:1fr}.wheel-holder{max-width:330px}.side-controls{display:grid;grid-template-columns:1fr 1fr}.side-controls .readout{grid-column:1/-1}.chord-grid{grid-template-columns:repeat(3,1fr)}.partials{grid-template-columns:repeat(3,1fr)}.cochlea-grid{grid-template-columns:1fr}.concept-footer{grid-template-columns:1fr}.footer-note{display:block}.footer-note span{display:block;margin-top:5px}}
+@media(max-width:390px){.side-controls{grid-template-columns:1fr 1fr}.chord-choice{padding:7px 6px}.keybed{gap:2px}.key span{font-size:8px}.mode-button{padding:9px 10px}.panel-pad{padding:17px}.partials{gap:4px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="brand-mark">∿</div><div><strong>PITCH / MATTER</strong><span>A musical naming & hearing lab</span></div></div>
+    <div class="top-meta">12-tone equal temperament · interactive model<br>Web Audio + WebGL</div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">An instrument for understanding sound</div>
+      <h1>Names are maps.<br>Sound is the territory.</h1>
+      <p>Build notes and chords as simple relationships between numbers, then follow their energy through harmonics, the cochlea and the auditory nerve. Or travel backwards: click a hearing structure and hear a plausible reconstruction.</p>
+    </div>
+    <div class="hero-note"><b>One useful distinction</b><br>Musical names describe organised relationships. The ear does not receive labels like “C minor”; it receives pressure changes and builds a percept from overlapping mechanical and neural evidence.</div>
+  </section>
+
+  <nav class="modebar" aria-label="Direction of exploration">
+    <button class="mode-button active" id="modeSynthetic"><span>01</span> Synthetic <span class="arrow">→</span> ear</button>
+    <button class="mode-button" id="modeMemory"><span>02</span> Ear <span class="arrow">→</span> “memory”</button>
+  </nav>
+
+  <main class="workspace">
+    <section class="panel">
+      <div class="panel-pad">
+        <div class="panel-head">
+          <div><div class="panel-kicker">01 / Musical geometry</div><h2>Build a sound from intervals</h2><p class="panel-intro">Choose a root, then select the steps around the circle. A chord is a set of distances, not a mysterious shape to memorise.</p></div>
+          <span class="pill">12 steps / octave</span>
+        </div>
+
+        <div class="wheel-layout">
+          <div class="wheel-holder">
+            <svg id="wheel" viewBox="0 0 360 360" role="img" aria-label="Interactive circle of twelve pitch classes">
+              <circle class="wheel-ring" cx="180" cy="180" r="137"/><circle class="wheel-inner" cx="180" cy="180" r="91"/>
+              <g id="wheelSpokes"></g><polygon id="wheelShape" class="wheel-shape" points=""/>
+              <circle class="wheel-center" cx="180" cy="180" r="58"/>
+              <text id="wheelCenterName" class="wheel-center-text" x="180" y="175">C major</text>
+              <text class="wheel-center-sub" x="180" y="194">ROOT + INTERVALS</text>
+              <g id="wheelNodes"></g>
+            </svg>
+          </div>
+          <div class="side-controls">
+            <div><label class="control-label" for="spelling">Note spelling</label><div class="toggle-row"><button class="mini-toggle active" id="sharpNames">Sharps ♯</button><button class="mini-toggle" id="flatNames">Flats ♭</button></div></div>
+            <div><label class="control-label" for="octave">Root octave</label><select id="octave"><option value="2">2 · low</option><option value="3">3</option><option value="4" selected>4 · middle C octave</option><option value="5">5</option><option value="6">6 · high</option></select></div>
+            <div class="readout"><small>Current construction</small><strong id="chordName">C major</strong><div class="formula" id="chordFormula">C · E · G &nbsp; / &nbsp; 0–4–7</div></div>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="subhead"><b>Chord qualities</b><span>Click a name to hear its interval pattern</span></div>
+        <div class="chord-grid" id="chordGrid"></div>
+
+        <div class="section-divider"></div>
+        <div class="subhead"><b>Make your own combination</b><span>Toggle any pitch class</span></div>
+        <div class="keybed" id="keybed" aria-label="Twelve pitch class toggles"></div>
+        <div class="builder-actions">
+          <button class="action primary" id="playChord">▶ Play chord</button>
+          <button class="action" id="playArpeggio">↗ Arpeggiate</button>
+          <button class="action quiet" id="clearNotes">Clear / root only</button>
+          <button class="action warn" id="stopAudio">■ Stop</button>
+        </div>
+        <div class="explain-box">
+          <div class="explain-top"><b id="explainTitle">Why “C major”?</b><span class="pill">Geometry → algebra</span></div>
+          <p id="explainText">C is the root. E is four semitones above it; G is seven. The major quality is the interval pattern 0–4–7. Move the whole shape around the circle and the quality stays the same.</p>
+          <div class="mathline" id="mathline"><span class="math-chip">root = 0</span><span class="math-chip">third = +4</span><span class="math-chip">fifth = +7</span><span class="math-chip">Z₁₂</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="right-stack">
+      <section class="panel spectrum-panel">
+        <div class="panel-pad">
+          <div class="panel-head">
+            <div><div class="panel-kicker">02 / The sound as energy</div><h2>Harmonics → cochlear excitation</h2><p class="panel-intro">Each played note contains a fundamental and a family of partials. Their overlapping responses form a pattern along the cochlea.</p></div>
+            <div class="chart-tools"><button class="chart-mode active" data-chart="all">Both</button><button class="chart-mode" data-chart="mechanical">Mechanical</button><button class="chart-mode" data-chart="neural">Neural</button></div>
+          </div>
+          <canvas id="spectrum" aria-label="Interactive WebGL chart of spectral harmonics and cochlear excitation"></canvas>
+          <div class="axis"><span>30 Hz · low</span><span>125</span><span>500</span><span>2 kHz</span><span>8 kHz · high</span></div>
+          <div class="chart-legend"><span class="legend"><i class="swatch"></i> spectral partials</span><span class="legend"><i class="swatch mechanical"></i> mechanical excitation</span><span class="legend"><i class="swatch neural"></i> neural activity pattern</span></div>
+          <p class="chart-hint">Click anywhere in the graph to probe that frequency. Horizontal position is logarithmic: equal distances represent equal musical ratios, not equal Hz.</p>
+          <div class="partials" id="partials"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-pad">
+          <div class="panel-head">
+            <div><div class="panel-kicker">03 / The hearing pathway</div><h2>Where does the sound become a percept?</h2><p class="panel-intro">The basilar membrane performs a frequency-selective mechanical analysis; hair cells and auditory-nerve fibres encode the result.</p></div>
+            <span class="pill">Click a structure</span>
+          </div>
+          <div class="cochlea-grid">
+            <div class="cochlea-map">
+              <div class="map-label"><span>Cochlear place map</span><span>Illustrative, not to scale</span></div>
+              <div class="place-strip" id="placeStrip">
+                <button class="place" data-region="0">APEX<em>low</em></button>
+                <button class="place" data-region="1">LOW–MID<em>rising</em></button>
+                <button class="place" data-region="2">MID–HIGH<em>rising</em></button>
+                <button class="place" data-region="3">BASE<em>high</em></button>
+              </div>
+              <div class="place-caption"><span>Longer / more compliant</span><span>Stiffer / narrower</span></div>
+            </div>
+            <div class="anatomy-list">
+              <button class="anatomy-button" data-structure="membrane"><span class="anatomy-icon">≈</span><span><b>Basilar membrane</b><small>Travelling wave · mechanical tuning</small></span></button>
+              <button class="anatomy-button" data-structure="hair"><span class="anatomy-icon">⌁</span><span><b>Inner hair cells</b><small>Deflection → receptor potential</small></span></button>
+              <button class="anatomy-button" data-structure="nerve"><span class="anatomy-icon">⋮</span><span><b>Auditory nerve</b><small>Spike timing, rate and population</small></span></button>
+            </div>
+          </div>
+          <div class="path-status" id="pathStatus"><span class="dot"></span><div><b id="pathTitle">Synthetic path is active</b><p id="pathText">Click a note, chord, harmonic or cochlear structure. The object will generate sound and update the excitation display.</p></div></div>
+          <div class="memory-card" id="memoryCard"><div class="memory-label">A plausible perceptual / mnemic reconstruction</div><strong id="memoryTitle">A4 · 440 Hz</strong><p id="memoryText">The clicked region suggests a centre frequency, but nearby pitches and harmonic interpretations remain possible.</p><div class="alternatives" id="memoryAlternatives"></div></div>
+          <div class="concept-footer">
+            <div class="concept"><b>Mechanical</b><p>The wave travels along the basilar membrane. Different places respond best to different frequency regions; excitation spreads beyond a single point.</p></div>
+            <div class="concept"><b>Neural</b><p>Hair cells convert motion into electrical signals. Nerve fibres represent sound through population activity and timing, not one labelled neuron per note.</p></div>
+            <div class="concept"><b>Perceptual</b><p>The brain infers pitch, timbre and grouping from incomplete, overlapping evidence. Context helps resolve what the spectrum alone cannot.</p></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="footer-note"><strong>Model note</strong><span>♯ raises a note by one semitone; ♭ lowers it. In 12-tone equal temperament, C♯ and D♭ share a frequency, though their spelling depends on musical context. This is a learning model, not a physiological simulator: “memory” mode synthesises a candidate sound, not a listener’s private memory or the full neural code.</span></div>
+</div>
+<script>
+(() => {
+  'use strict';
+
+  const SHARP = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+  const FLAT  = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+  const CHORDS = [
+    {id:'major',name:'Major',short:'maj',intervals:[0,4,7],formula:'1 · 3 · 5',hint:'A major triad: root, major third, perfect fifth.'},
+    {id:'minor',name:'Minor',short:'m',intervals:[0,3,7],formula:'1 · ♭3 · 5',hint:'A minor triad lowers the third by one semitone. The root and fifth stay put.'},
+    {id:'dim',name:'Diminished',short:'dim',intervals:[0,3,6],formula:'1 · ♭3 · ♭5',hint:'A minor third plus a diminished fifth. The fifth is one semitone lower than in a minor triad.'},
+    {id:'aug',name:'Augmented',short:'aug',intervals:[0,4,8],formula:'1 · 3 · ♯5',hint:'A major third plus a raised fifth. The two stacked major thirds make a symmetrical shape.'},
+    {id:'sus2',name:'Suspended 2',short:'sus2',intervals:[0,2,7],formula:'1 · 2 · 5',hint:'The third is replaced by the second. “Suspended” means the usual major/minor third is absent.'},
+    {id:'sus4',name:'Suspended 4',short:'sus4',intervals:[0,5,7],formula:'1 · 4 · 5',hint:'The third is replaced by the fourth, so the chord does not declare itself major or minor.'},
+    {id:'dom7',name:'Dominant 7',short:'7',intervals:[0,4,7,10],formula:'1 · 3 · 5 · ♭7',hint:'A major triad with a minor seventh. The combination creates a strong expectation of movement.'},
+    {id:'maj7',name:'Major 7',short:'maj7',intervals:[0,4,7,11],formula:'1 · 3 · 5 · 7',hint:'A major triad plus a major seventh: the seventh is eleven semitones above the root.'},
+    {id:'min7',name:'Minor 7',short:'m7',intervals:[0,3,7,10],formula:'1 · ♭3 · 5 · ♭7',hint:'A minor triad plus a minor seventh. It combines the lowered third and lowered seventh.'},
+    {id:'dim7',name:'Diminished 7',short:'dim7',intervals:[0,3,6,9],formula:'1 · ♭3 · ♭5 · 𝄫7',hint:'A stack of minor thirds. Its symmetry means the same pitch collection can be heard from several roots.'},
+    {id:'halfdim',name:'Half-diminished',short:'m7♭5',intervals:[0,3,6,10],formula:'1 · ♭3 · ♭5 · ♭7',hint:'A diminished triad with a minor seventh; also written m7♭5.'},
+    {id:'add9',name:'Add 9',short:'add9',intervals:[0,4,7,14],formula:'1 · 3 · 5 · 9',hint:'A major triad plus the ninth (the second, placed an octave higher).'}
+  ];
+  const $ = id => document.getElementById(id);
+  let rootPc = 0, octave = 4, intervals = [0,4,7], spelling = 'sharp';
+  let currentChord = 'major', mode = 'synthetic', chartMode = 'all', probeFreqs = null, selectedRegion = -1;
+  let audioCtx = null, master = null, activeNodes = new Set(), gl = null, glProgram = null, glBuffer = null;
+  const MAX_PEAKS = 24;
+  let peakCapacity = MAX_PEAKS;
+  const FMIN = 30, FMAX = 8000;
+  const notes = () => spelling === 'sharp' ? SHARP : FLAT;
+  const noteName = pc => notes()[(pc%12+12)%12];
+  const midiToHz = midi => 440 * Math.pow(2,(midi-69)/12);
+  const hzToMidi = hz => 69 + 12*Math.log2(hz/440);
+  const rootMidi = () => (octave+1)*12 + rootPc;
+  const currentMidis = () => intervals.map(n => rootMidi()+n).sort((a,b)=>a-b);
+  const hzLabel = hz => hz >= 1000 ? (hz/1000).toFixed(hz>=10000?0:2)+' kHz' : Math.round(hz)+' Hz';
+  const pcOfMidi = midi => ((midi%12)+12)%12;
+  const getChord = () => CHORDS.find(c=>c.id===currentChord) || null;
+  const identifyCurrent = () => {
+    const p = [...new Set(intervals.map(n=>n%12))].sort((a,b)=>a-b);
+    const match = CHORDS.find(c => {
+      const q=[...new Set(c.intervals.map(n=>n%12))].sort((a,b)=>a-b);
+      return q.length===p.length && q.every((v,i)=>v===p[i]);
+    });
+    return match || null;
+  };
+
+  function buildWheel(){
+    const spokes=$('wheelSpokes'), nodes=$('wheelNodes'); spokes.innerHTML=''; nodes.innerHTML='';
+    for(let i=0;i<12;i++){
+      const a=(-90+i*30)*Math.PI/180, x1=180+91*Math.cos(a), y1=180+91*Math.sin(a), x2=180+137*Math.cos(a), y2=180+137*Math.sin(a);
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);line.setAttribute('class','wheel-spoke');spokes.appendChild(line);
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','wheel-node');g.setAttribute('data-pc',i);g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label','Select '+noteName(i));
+      const cx=180+116*Math.cos(a),cy=180+116*Math.sin(a);
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r',15);g.appendChild(c);
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',cx);t.setAttribute('y',cy+0.5);t.textContent=noteName(i);g.appendChild(t);
+      g.addEventListener('click',()=>selectRoot(i,true));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectRoot(i,true)}});nodes.appendChild(g);
+    }
+    renderWheel();
+  }
+  function renderWheel(){
+    const nodes=[...$('wheelNodes').children];
+    nodes.forEach((g,i)=>{g.classList.toggle('root',i===rootPc);g.classList.toggle('selected',intervals.some(n=>n%12===((i-rootPc+12)%12)));g.querySelector('text').textContent=noteName(i);g.setAttribute('aria-label','Select '+noteName(i)+' as root and hear it');});
+    const pts=[...new Set(intervals.map(n=>n%12))].sort((a,b)=>a-b).map(n=>{const pc=(rootPc+n)%12,a=(-90+pc*30)*Math.PI/180;return `${180+67*Math.cos(a)},${180+67*Math.sin(a)}`}).join(' ');
+    $('wheelShape').setAttribute('points',pts);
+    $('wheelCenterName').textContent=noteName(rootPc)+' '+(getChord()?.short||'custom');
+  }
+  function selectRoot(pc,play){rootPc=pc;probeFreqs=null;renderAll();if(play)playFrequencies([midiToHz(rootMidi())]);}
+
+  function renderChordGrid(){
+    const grid=$('chordGrid');grid.innerHTML='';
+    CHORDS.forEach(c=>{
+      const b=document.createElement('button');b.className='chord-choice'+(c.id===currentChord?' active':'');b.type='button';
+      b.innerHTML=`<b>${c.name}</b><small>${c.intervals.join(' · ')} semitones</small>`;
+      b.title=`${c.name}: ${c.hint}`;b.addEventListener('click',()=>{currentChord=c.id;intervals=[...c.intervals];probeFreqs=null;renderAll();playFrequencies(currentMidis().map(midiToHz));});grid.appendChild(b);
+    });
+  }
+  function renderKeybed(){
+    const bed=$('keybed');bed.innerHTML='';
+    for(let pc=0;pc<12;pc++){
+      const rel=(pc-rootPc+12)%12, active=intervals.some(n=>n%12===rel);
+      const b=document.createElement('button');b.type='button';b.className='key'+([1,3,6,8,10].includes(pc)?' black':'')+(active?' selected':'')+(pc===rootPc?' root-key':'');
+      b.innerHTML=`<span>${noteName(pc)}</span><small>${rel===0?'root':'+'+rel}</small>`;
+      b.title=`${noteName(pc)} · ${rel} semitones from root. Click to toggle and hear.`;
+      b.addEventListener('click',()=>togglePitch(pc));bed.appendChild(b);
+    }
+  }
+  function togglePitch(pc){
+    const rel=(pc-rootPc+12)%12;
+    if(rel===0){playFrequencies([midiToHz(rootMidi())]);return;}
+    const idx=intervals.findIndex(n=>n%12===rel);
+    if(idx>=0) intervals.splice(idx,1); else intervals.push(rel);
+    intervals=[...new Set(intervals)].sort((a,b)=>a-b);
+    currentChord=identifyCurrent()?.id || 'custom';probeFreqs=null;renderAll();playFrequencies(currentMidis().map(midiToHz));
+  }
+  function renderExplanation(){
+    const chord=identifyCurrent(), tones=currentMidis().map(midi=>noteName(pcOfMidi(midi))+(Math.floor(midi/12)-1));
+    const offsets=[...new Set(intervals.map(n=>n%12))].sort((a,b)=>a-b);
+    const label=chord ? chord.name : 'Custom voicing';
+    $('chordName').textContent=noteName(rootPc)+' '+(chord?chord.short:'custom');
+    $('chordFormula').textContent=tones.join(' · ')+'  /  '+intervals.join('–');
+    $('explainTitle').textContent=chord?`Why “${noteName(rootPc)} ${chord.name.toLowerCase()}”?`:'A custom set of intervals';
+    if(chord){$('explainText').textContent=`${noteName(rootPc)} is the root. ${chord.hint} In equal temperament, the interval numbers count semitone steps; the same shape can be moved to any root without changing its quality.`;}
+    else {$('explainText').textContent=`You selected ${tones.join(', ')}. Measured from ${noteName(rootPc)}, the pitch-class offsets are ${offsets.join(', ')} semitones. This combination does not match one of the common chord templates in the library; it may have several valid names depending on musical context and bass note.`;}
+    const chips=[];
+    chips.push(`<span class="math-chip">root = 0</span>`);
+    intervals.forEach(n=>chips.push(`<span class="math-chip">${n} semitone${n===1?'':'s'}</span>`));
+    chips.push(`<span class="math-chip">ℤ₁₂</span>`);
+    chips.push(`<span class="math-chip">f(n) = f₀ · 2ⁿ⁄¹²</span>`);
+    $('mathline').innerHTML=chips.join('');
+  }
+  function renderPartials(){
+    const holder=$('partials');holder.innerHTML='';
+    const base=midiToHz(rootMidi());
+    for(let h=1;h<=6;h++){
+      const f=base*h;if(f>FMAX)continue;
+      const b=document.createElement('button');b.className='partial';b.type='button';
+      b.innerHTML=`<b>H${h}</b><small>${hzLabel(f)}</small>`;b.title=`Harmonic ${h}, at ${hzLabel(f)}. Click to hear this partial.`;
+      b.addEventListener('click',()=>{probeFreqs=[f];playFrequencies([f],{partials:false});renderSpectrum();});holder.appendChild(b);
+    }
+  }
+  function renderAll(){
+    renderWheel();renderChordGrid();renderKeybed();renderExplanation();renderPartials();renderSpectrum();
+  }
+
+  function initAudio(){
+    if(audioCtx)return;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC){setStatus('Audio unavailable','This browser does not expose the Web Audio API. The visual lesson still works.');return;}
+    audioCtx=new AC();master=audioCtx.createGain();master.gain.value=.72;
+    const comp=audioCtx.createDynamicsCompressor();comp.threshold.value=-20;comp.knee.value=18;comp.ratio.value=4;comp.attack.value=.006;comp.release.value=.18;
+    master.connect(comp);comp.connect(audioCtx.destination);
+  }
+  function playFrequencies(freqs,opts={}){
+    initAudio();if(!audioCtx||!master)return;
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const now=audioCtx.currentTime, duration=opts.duration??1.25, volume=opts.volume??.22;
+    freqs.slice(0,10).forEach((freq,index)=>{
+      if(!Number.isFinite(freq)||freq<15||freq>18000)return;
+      const amp=volume/Math.sqrt(Math.max(1,freqs.length));
+      const harmonics=opts.partials===false?1:5;
+      for(let h=1;h<=harmonics;h++){
+        const osc=audioCtx.createOscillator(),gain=audioCtx.createGain(),pan=audioCtx.createStereoPanner?audioCtx.createStereoPanner():null;
+        osc.type='sine';osc.frequency.value=freq*h;
+        if(freq*h>17500)continue;
+        const harmonicAmp=h===1?1:Math.pow(h,-1.45);
+        const peak=amp*harmonicAmp;
+        gain.gain.setValueAtTime(.0001,now);
+        gain.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),now+.018);
+        gain.gain.setValueAtTime(Math.max(.0002,peak),now+Math.max(.04,duration-.18));
+        gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+        osc.connect(gain);
+        if(pan){pan.pan.value=(index-(freqs.length-1)/2)*.16;gain.connect(pan);pan.connect(master);}else gain.connect(master);
+        const node={osc,gain,pan};activeNodes.add(node);osc.onended=()=>{activeNodes.delete(node);try{osc.disconnect();gain.disconnect();pan?.disconnect();}catch(_){}};
+        osc.start(now);osc.stop(now+duration+.03);
+      }
+    });
+  }
+  function stopAudio(){
+    if(!audioCtx)return;const now=audioCtx.currentTime;
+    activeNodes.forEach(n=>{try{n.gain.gain.cancelScheduledValues(now);n.gain.gain.setTargetAtTime(.0001,now,.025);n.osc.stop(now+.13);}catch(_){}});
+  }
+  function playCurrent(){probeFreqs=null;renderSpectrum();playFrequencies(currentMidis().map(midiToHz));}
+  function arpeggiate(){
+    initAudio();if(!audioCtx)return;if(audioCtx.state==='suspended')audioCtx.resume();
+    const fs=currentMidis().map(midiToHz);const base=audioCtx.currentTime;
+    fs.forEach((f,i)=>{const delay=i*.19;setTimeout(()=>playFrequencies([f],{duration:.8,volume:.2}),delay*1000);});
+  }
+
+  // WebGL spectrum: spectral lines, overlapping mechanical tuning curves, and illustrative neural events.
+  const VERT=`attribute vec2 a_pos; varying vec2 v_uv; void main(){v_uv=a_pos*.5+.5;gl_Position=vec4(a_pos,0.0,1.0);}`;
+  const FRAG=`precision highp float;
+    varying vec2 v_uv; uniform vec2 u_resolution; uniform float u_time; uniform int u_count; uniform vec4 u_peaks[__PEAKS__]; uniform int u_mode;
+    float line(float d,float w){return 1.0-smoothstep(w,w*2.0,abs(d));}
+    void main(){
+      vec2 uv=v_uv; float x=uv.x; float y=uv.y;
+      vec3 col=vec3(0.055,0.085,0.09);
+      float gx=0.0; for(int i=0;i<=8;i++){float xx=float(i)/8.0;gx=max(gx,line(x-xx,0.0012)*0.24);}
+      float gy=0.0;for(int j=0;j<=4;j++){float yy=.12+float(j)*.18;gy=max(gy,line(y-yy,0.0015)*.18);}
+      col+=vec3(gx*.55,gy*.72,gy*.72);
+      float exc=0.0;float spectrum=0.0;float neural=0.0;
+      for(int i=0;i<__PEAKS__;i++){
+        if(i>=u_count)break;
+        vec4 p=u_peaks[i];float dx=x-p.x;
+        float g=exp(-.5*pow(dx/max(.006,p.z),2.0))*p.y;
+        exc+=g;
+        float bar=line(dx,.0016)*step(.12,y)*step(y,.12+p.y*.58);
+        spectrum=max(spectrum,bar*p.y);
+        float phase=fract(float(i)*.618+.17);
+        for(int k=0;k<5;k++){
+          float yy=.68+float(k)*.045+phase*.013;
+          float dotx=line(dx+float(k-2)*.0035,.0022);
+          float doty=line(y-yy,.007);
+          neural=max(neural,dotx*doty*p.y);
+        }
+      }
+      float mechY=.13+min(exc,1.25)*.37;
+      float mech=line(y-mechY,.0045);
+      float mechFill=step(.13,y)*step(y,mechY)*min(.16,exc*.055);
+      float glow=exp(-pow((y-mechY)/.035,2.0))*min(exc,1.0);
+      vec3 spectralColor=vec3(.93,.65,.35);
+      vec3 mechColor=vec3(.48,.84,.68);
+      vec3 neuralColor=vec3(.69,.59,.91);
+      if(u_mode==0||u_mode==2){col+=spectralColor*(spectrum*.9);}
+      if(u_mode==0||u_mode==1){col+=mechColor*(mech*.88+glow*.38+mechFill);}
+      if(u_mode==0||u_mode==2){col+=neuralColor*(neural*.9);}
+      float edge=smoothstep(0.0,.025,x)*(1.0-smoothstep(.975,1.0,x));
+      col*=.84+.16*edge;
+      gl_FragColor=vec4(col,1.0);
+    }`;
+  function compileShader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.warn(gl.getShaderInfoLog(s));gl.deleteShader(s);return null;}return s;}
+  function initWebGL(){
+    const canvas=$('spectrum');
+    try{gl=canvas.getContext('webgl',{alpha:false,antialias:true})||canvas.getContext('experimental-webgl');}catch(_){gl=null;}
+    if(!gl){canvas.dataset.fallback='true';drawFallback();return;}
+    peakCapacity=Math.min(MAX_PEAKS,Math.max(4,gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS)-6));
+    const fragmentSource=FRAG.replace(/__PEAKS__/g,String(peakCapacity));
+    const vs=compileShader(gl.VERTEX_SHADER,VERT),fs=compileShader(gl.FRAGMENT_SHADER,fragmentSource);if(!vs||!fs){gl=null;activateCanvasFallback();return;}
+    glProgram=gl.createProgram();gl.attachShader(glProgram,vs);gl.attachShader(glProgram,fs);gl.linkProgram(glProgram);
+    if(!gl.getProgramParameter(glProgram,gl.LINK_STATUS)){console.warn(gl.getProgramInfoLog(glProgram));gl=null;activateCanvasFallback();return;}
+    gl.useProgram(glProgram);glBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,glBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+    const loc=gl.getAttribLocation(glProgram,'a_pos');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    resizeGL();renderSpectrum();
+  }
+  function resizeGL(){
+    const c=$('spectrum');const w=Math.max(300,Math.floor(c.clientWidth*(window.devicePixelRatio||1))),h=Math.max(160,Math.floor(c.clientHeight*(window.devicePixelRatio||1)));
+    if(c.width!==w||c.height!==h){c.width=w;c.height=h;}if(gl)gl.viewport(0,0,c.width,c.height);
+  }
+  function spectrumPeaks(){
+    let frequencies=[];
+    if(probeFreqs){frequencies=probeFreqs.map(f=>({f,a:1}));}
+    else currentMidis().forEach(m=>frequencies.push({f:midiToHz(m),a:1/Math.sqrt(Math.max(1,intervals.length))}));
+    const peaks=[];
+    frequencies.forEach(({f,a})=>{for(let h=1;h<=7;h++){const hz=f*h;if(hz<FMIN||hz>FMAX)continue;const x=Math.log(hz/FMIN)/Math.log(FMAX/FMIN);const amp=a*Math.pow(h,-1.18);const width=.012+(1-x)*.004;peaks.push([x,amp,width,0]);}});
+    return peaks.slice(0,MAX_PEAKS);
+  }
+  function renderSpectrum(){
+    if(!gl||!glProgram){drawFallback();return;}
+    resizeGL();gl.useProgram(glProgram);gl.bindBuffer(gl.ARRAY_BUFFER,glBuffer);
+    const loc=gl.getAttribLocation(glProgram,'a_pos');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    const peaks=spectrumPeaks().slice(0,peakCapacity),packed=new Float32Array(peakCapacity*4);peaks.forEach((p,i)=>packed.set(p,i*4));
+    gl.uniform2f(gl.getUniformLocation(glProgram,'u_resolution'),$('spectrum').width,$('spectrum').height);
+    gl.uniform1f(gl.getUniformLocation(glProgram,'u_time'),performance.now()/1000);
+    gl.uniform1i(gl.getUniformLocation(glProgram,'u_count'),peaks.length);
+    gl.uniform4fv(gl.getUniformLocation(glProgram,'u_peaks[0]'),packed);
+    gl.uniform1i(gl.getUniformLocation(glProgram,'u_mode'),chartMode==='mechanical'?1:chartMode==='neural'?2:0);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+  function activateCanvasFallback(){
+    const old=$('spectrum');if(old){const replacement=old.cloneNode(false);old.replaceWith(replacement);}
+    drawFallback();
+  }
+  function drawFallback(){
+    const c=$('spectrum');if(!c)return;const ctx=c.getContext('2d');if(!ctx)return;
+    const w=c.width=Math.max(300,c.clientWidth*(devicePixelRatio||1)),h=c.height=Math.max(160,c.clientHeight*(devicePixelRatio||1));
+    ctx.fillStyle='#101a1c';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#2b4143';ctx.lineWidth=1;
+    for(let i=0;i<=8;i++){ctx.beginPath();ctx.moveTo(i*w/8,0);ctx.lineTo(i*w/8,h);ctx.stroke();}
+    const peaks=spectrumPeaks();ctx.strokeStyle='#f2bb73';ctx.lineWidth=2;
+    peaks.forEach(p=>{const x=p[0]*w;ctx.beginPath();ctx.moveTo(x,h*.88);ctx.lineTo(x,h*(.88-p[1]*.58));ctx.stroke();});
+    if(chartMode!=='neural'){
+      ctx.strokeStyle='#a8e3c5';ctx.lineWidth=2;ctx.beginPath();
+      for(let i=0;i<=w;i++){const x=i/w;let ex=0;peaks.forEach(p=>ex+=Math.exp(-.5*Math.pow((x-p[0])/p[2],2))*p[1]);const y=h*(.87-Math.min(ex,1.25)*.37);if(i===0)ctx.moveTo(i,y);else ctx.lineTo(i,y);}ctx.stroke();
+    }
+    if(chartMode!=='mechanical'){ctx.fillStyle='#b7a3e8';peaks.forEach(p=>{for(let k=0;k<5;k++){ctx.beginPath();ctx.arc(p[0]*w,h*(.3-k*.045),3,0,Math.PI*2);ctx.fill();}});}
+  }
+  function frequencyAtCanvasX(clientX){const r=$('spectrum').getBoundingClientRect();const x=Math.min(1,Math.max(0,(clientX-r.left)/r.width));return FMIN*Math.pow(FMAX/FMIN,x);}
+
+  function setMode(next){
+    mode=next;$('modeSynthetic').classList.toggle('active',mode==='synthetic');$('modeMemory').classList.toggle('active',mode==='memory');
+    $('pathTitle').textContent=mode==='synthetic'?'Synthetic path is active':'Perceptual / “memory” path is active';
+    $('pathText').textContent=mode==='synthetic'?'Click a note, chord, harmonic or cochlear structure. The object generates sound and updates the excitation display.':'Click a cochlear place, hair cell or nerve element. The lab synthesises a plausible sound-memory and displays alternative interpretations.';
+    $('memoryCard').classList.remove('show');
+  }
+  function setStatus(title,text){$('pathTitle').textContent=title;$('pathText').textContent=text;}
+  const REGIONS=[
+    {name:'Apex',hz:110,range:'roughly 80–180 Hz',amb:0.20},
+    {name:'Lower middle',hz:330,range:'roughly 220–500 Hz',amb:0.18},
+    {name:'Upper middle',hz:990,range:'roughly 700–1,400 Hz',amb:0.22},
+    {name:'Base',hz:3520,range:'roughly 2.5–5 kHz',amb:0.28}
+  ];
+  function pitchLabel(midi){return noteName(pcOfMidi(midi))+(Math.floor(midi/12)-1);}
+  function showMemory(title,text,alternatives){
+    $('memoryTitle').textContent=title;$('memoryText').textContent=text;
+    $('memoryAlternatives').innerHTML='';alternatives.forEach(a=>{const s=document.createElement('span');s.className='alternative';s.textContent=a;$('memoryAlternatives').appendChild(s);});
+    $('memoryCard').classList.add('show');
+  }
+  function triggerRegion(index,structure='place'){
+    const r=REGIONS[index];if(!r)return;selectedRegion=index;
+    [...document.querySelectorAll('.place')].forEach((b,i)=>b.classList.toggle('active',i===index));
+    if(mode==='synthetic'){
+      probeFreqs=[r.hz];renderSpectrum();playFrequencies([r.hz],{partials:true,volume:.2});
+      $('memoryCard').classList.remove('show');setStatus(`${r.name} region excited`,`${structure==='place'?'A probe tone':'A structure click'} near ${hzLabel(r.hz)} creates a travelling-wave maximum in this broad cochlear region. The real excitation pattern is wider and more complex.`);
+    }else{
+      const central=Math.round(hzToMidi(r.hz));
+      const candidates=[central-1,central,central+1];
+      // A central candidate is emphasised; adjacent semitones are deliberately quieter alternatives.
+      const freqs=[midiToHz(central),midiToHz(central-1),midiToHz(central+1)];
+      probeFreqs=freqs;renderSpectrum();
+      playFrequencies([freqs[0],freqs[1],freqs[2]],{volume:.16,duration:1.45});
+      showMemory(`${pitchLabel(central)} · candidate centre`,`${r.name} place suggests a frequency neighbourhood (${r.range}), not a unique note. This reconstruction chooses ${pitchLabel(central)} as its centre; nearby semitones are included quietly to make the uncertainty audible.`,[`${pitchLabel(candidates[0])} · lower neighbour`,`${pitchLabel(candidates[2])} · upper neighbour`,`possible octave ambiguity`]);
+      setStatus('Ambiguous reconstruction generated',`A place-based cue can suggest a frequency region, but excitation spreads and harmonic structure can support more than one pitch interpretation. Here the candidate is ${pitchLabel(central)}.`);
+    }
+  }
+  function triggerStructure(which){
+    if(mode==='synthetic'){
+      $('memoryCard').classList.remove('show');
+      if(which==='membrane'){
+        probeFreqs=currentMidis().map(midiToHz);renderSpectrum();playCurrent();
+        setStatus('Basilar membrane: travelling-wave pattern',`The current chord (${noteName(rootPc)} ${identifyCurrent()?.name||'custom'}) launches several overlapping frequency-selective responses. The shape on the chart is a simplified sum of tuning curves.`);
+      }else if(which==='hair'){
+        const f=midiToHz(rootMidi());probeFreqs=[f,f*2];renderSpectrum();playFrequencies([f,f*2],{volume:.2});
+        setStatus('Inner hair cells: mechanical motion → electrical signal',`The demonstration plays a fundamental and its octave harmonic. Hair-cell transduction is continuous and graded before auditory-nerve spikes; it is not a one-to-one note switch.`);
+      }else{
+        const fs=currentMidis().map(midiToHz);probeFreqs=fs;renderSpectrum();playFrequencies(fs,{volume:.2});
+        setStatus('Auditory nerve: a distributed code',`The current set is replayed as a small polyphonic population. Real fibres differ in thresholds, spontaneous rates, timing and frequency tuning.`);
+      }
+    }else{
+      let fs=[],main=[],alts=[];
+      if(which==='membrane'){
+        const f=midiToHz(rootMidi()),m=Math.round(hzToMidi(f));main=[m];fs=[midiToHz(m),midiToHz(m-12)];alts=[`${pitchLabel(m)} · pitch candidate`,`same pitch class · lower octave`,`possible harmonic / missing fundamental`];
+        showMemory(`${pitchLabel(m)} · place-based guess`,'A mechanical peak may be heard as a fundamental, but a similar pattern can occur when the fundamental is weak or missing and upper harmonics remain. The lower-octave candidate is therefore plausible.',alts);
+      }else if(which==='hair'){
+        const m=Math.round(hzToMidi(midiToHz(rootMidi())));main=[m];fs=[midiToHz(m),midiToHz(m+1),midiToHz(m-1)];
+        showMemory(`${pitchLabel(m)} · transduction cue`,'A hair-cell response reflects local motion and level, not a printed pitch name. This sound uses the nearest equal-tempered pitch plus quieter neighbours to represent tuning spread.',[`${pitchLabel(m-1)} · lower`,` ${pitchLabel(m+1)} · upper`,'level and timbre are unresolved']);
+      }else{
+        const ms=currentMidis();fs=ms.map(midiToHz);const root=ms[0];
+        showMemory(`${noteName(rootPc)} ${identifyCurrent()?.short||'pitch set'} · pattern guess`,'A population pattern can support a pitch collection without uniquely fixing its musical function. The same notes may be grouped around different roots, depending on bass, timing and context.',[`${noteName(rootPc)} root interpretation`,`relative / alternate root possible`,'register may be octave-ambiguous']);
+      }
+      probeFreqs=fs;renderSpectrum();playFrequencies(fs,{volume:.17,duration:1.5});
+      setStatus('A candidate sound has been recalled',`This is an intentionally incomplete reconstruction from a simplified cue (${which}). The alternatives are part of the lesson: neural activity does not contain a literal chord label.`);
+    }
+  }
+
+  $('modeSynthetic').addEventListener('click',()=>setMode('synthetic'));
+  $('modeMemory').addEventListener('click',()=>setMode('memory'));
+  $('sharpNames').addEventListener('click',()=>{spelling='sharp';$('sharpNames').classList.add('active');$('flatNames').classList.remove('active');renderAll();});
+  $('flatNames').addEventListener('click',()=>{spelling='flat';$('flatNames').classList.add('active');$('sharpNames').classList.remove('active');renderAll();});
+  $('octave').addEventListener('change',e=>{octave=Number(e.target.value);probeFreqs=null;renderAll();});
+  $('playChord').addEventListener('click',playCurrent);
+  $('playArpeggio').addEventListener('click',arpeggiate);
+  $('clearNotes').addEventListener('click',()=>{intervals=[0];currentChord='custom';probeFreqs=null;renderAll();});
+  $('stopAudio').addEventListener('click',stopAudio);
+  document.querySelectorAll('.chart-mode').forEach(b=>b.addEventListener('click',()=>{chartMode=b.dataset.chart;document.querySelectorAll('.chart-mode').forEach(x=>x.classList.toggle('active',x===b));renderSpectrum();}));
+  document.querySelectorAll('.place').forEach(b=>b.addEventListener('click',()=>triggerRegion(Number(b.dataset.region),'place')));
+  document.querySelectorAll('.anatomy-button').forEach(b=>b.addEventListener('click',()=>triggerStructure(b.dataset.structure)));
+  $('spectrum').addEventListener('click',e=>{
+    const f=frequencyAtCanvasX(e.clientX),m=Math.round(hzToMidi(f));
+    if(mode==='synthetic'){probeFreqs=[f];renderSpectrum();playFrequencies([f]);setStatus(`Frequency probe · ${hzLabel(f)}`,`The cursor maps to approximately ${pitchLabel(m)} (${hzLabel(midiToHz(m))}) in 12-tone equal temperament. The exact probe frequency may sit between equal-tempered notes.`);}
+    else{
+      const center=m;const fs=[midiToHz(center),midiToHz(center-1),midiToHz(center+1)];probeFreqs=fs;renderSpectrum();playFrequencies(fs,{volume:.16});
+      showMemory(`${pitchLabel(center)} · nearest pitch candidate`,`The clicked frequency is ${hzLabel(f)}. The nearest equal-tempered note is ${pitchLabel(center)}; adjacent semitones remain plausible under broad tuning, masking or noisy evidence.`,[`${pitchLabel(center-1)} · −1 semitone`,`${pitchLabel(center+1)} · +1 semitone`,`frequency estimate: ${hzLabel(f)}`]);
+      setStatus('Frequency cue converted to a candidate','The displayed label is a quantised interpretation, not a note literally present in the cochlea.');
+    }
+  });
+  window.addEventListener('resize',()=>{if(gl)resizeGL();renderSpectrum();});
+
+  // Start with C major as a familiar reference. No audio starts until the user acts.
+  buildWheel();initWebGL();renderAll();
+})();
+</script>
+</body>
+</html>
