@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bohlen-Pierce Dichromatic Button Accordion & Acoustic Lab</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js for WebGL 3D Bellows, Reed Chamber, Harmonic Lattice & Oscilloscope -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Google Fonts: Inter, Playfair Display & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        ebony: {
+                            950: '#07080b',
+                            900: '#0d1016',
+                            850: '#131720',
+                            800: '#1a202c',
+                            700: '#273042'
+                        },
+                        brass: {
+                            300: '#fde68a',
+                            400: '#fbbf24',
+                            500: '#d97706',
+                            600: '#b45309'
+                        },
+                        pearl: {
+                            100: '#fdfbf7',
+                            200: '#f3ede2',
+                            300: '#e2d7c5'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: radial-gradient(circle at 50% 0%, #151a24 0%, #07080b 75%);
+            color: #e2e8f0;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07080b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #273042;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fbbf24;
+        }
+
+        /* Brushed Ebony & Brass Accordion Chassis */
+        .chassis-panel {
+            background: linear-gradient(180deg, rgba(22, 27, 37, 0.94) 0%, rgba(12, 15, 22, 0.96) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.16);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        /* Domed Accordion Buttons: Mother-of-Pearl (Row 1) & Obsidian/Gold (Row 2) */
+        .acc-btn-pearl {
+            background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f3ede2 52%, #cfc3ae 100%);
+            color: #18181b;
+            box-shadow:
+                0 4px 0 #78716c,
+                0 6px 10px rgba(0, 0, 0, 0.65),
+                inset 0 2px 3px rgba(255, 255, 255, 0.9);
+            border: 2px solid #d6cbb8;
+            transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.1s ease;
+        }
+        .acc-btn-pearl:hover {
+            filter: brightness(1.04);
+        }
+        .acc-btn-pearl.active, .acc-btn-pearl:active {
+            transform: translateY(3px);
+            background: radial-gradient(circle at 40% 35%, #fef08a 0%, #fbbf24 65%, #d97706 100%);
+            border-color: #fde68a;
+            box-shadow:
+                0 1px 0 #92400e,
+                0 0 16px rgba(251, 191, 36, 0.75),
+                inset 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .acc-btn-obsidian {
+            background: radial-gradient(circle at 35% 30%, #3f4859 0%, #1e2430 58%, #0f131a 100%);
+            color: #f8fafc;
+            box-shadow:
+                0 4px 0 #090b0f,
+                0 6px 10px rgba(0, 0, 0, 0.75),
+                inset 0 2px 2px rgba(255, 255, 255, 0.22);
+            border: 2px solid #475569;
+            transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.1s ease;
+        }
+        .acc-btn-obsidian:hover {
+            border-color: #94a3b8;
+        }
+        .acc-btn-obsidian.active, .acc-btn-obsidian:active {
+            transform: translateY(3px);
+            background: radial-gradient(circle at 40% 35%, #7dd3fc 0%, #0284c7 65%, #0369a1 100%);
+            border-color: #bae6fd;
+            color: #ffffff;
+            box-shadow:
+                0 1px 0 #0c4a6e,
+                0 0 16px rgba(56, 189, 248, 0.8),
+                inset 0 1px 2px rgba(255, 255, 255, 0.7);
+        }
+
+        /* Chord Shape Guide Halo */
+        .shape-hint {
+            ring: 3px;
+            outline: 2px dashed #34d399;
+            outline-offset: 3px;
+        }
+
+        /* Stradella Left-Hand Bass Buttons */
+        .stradella-btn {
+            background: radial-gradient(circle at 35% 30%, #333b4a 0%, #171c26 70%, #0b0e14 100%);
+            box-shadow: 0 3px 0 #06080c, 0 5px 8px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.18);
+            border: 1.5px solid #3f4a5e;
+            transition: transform 0.05s ease, box-shadow 0.05s ease;
+        }
+        .stradella-btn.active, .stradella-btn:active {
+            transform: translateY(2px);
+            background: radial-gradient(circle at 40% 35%, #fcd34d 0%, #d97706 80%);
+            border-color: #fef3c7;
+            color: #090d16;
+            box-shadow: 0 1px 0 #78350f, 0 0 14px rgba(251, 191, 36, 0.7);
+        }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #fbbf24;
+            cursor: pointer;
+            margin-top: -5px;
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.7);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #273042;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-amber-400 selection:text-slate-950">
+
+    <!-- Top Brand & Acoustic Control Header -->
+    <header class="border-b border-amber-500/20 bg-ebony-900/95 px-4 py-2.5 sticky top-0 z-40 backdrop-blur-md">
+        <div class="max-w-[1680px] mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand Emblem -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 p-0.5 shadow-lg shadow-amber-500/20">
+                    <div class="w-full h-full bg-ebony-950 rounded-[10px] flex flex-col items-center justify-center leading-none">
+                        <span class="font-mono font-bold text-amber-400 text-xs">3:1</span>
+                        <span class="font-mono text-[9px] text-slate-400 mt-0.5">13-BP</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-serif font-bold tracking-wide text-pearl-100 flex items-center gap-2">
+                        Bohlen-Pierce Dichromatic Accordion
+                        <span class="hidden md:inline-block font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">Isomorphic 2-Row Free-Reed Lab</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Prime 13-step Tritave (3:1) • 2-Row Dichromatic Manual • Free-Reed Couplers & Bellows Physics</p>
+                </div>
+            </div>
+
+            <!-- Global Tuning, Reference Pitch & Master Controls -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <!-- Tuning System Toggle -->
+                <div class="flex items-center bg-ebony-950 p-1 rounded-lg border border-ebony-700" title="Compare 13-Equal Division of Tritave vs Pure Just Intonation Lambda Scale">
+                    <button id="btn-tuning-et" class="px-2.5 py-1 rounded-md text-xs font-mono transition bg-amber-400 text-slate-950 font-bold shadow">
+                        13-EDT
+                    </button>
+                    <button id="btn-tuning-ji" class="px-2.5 py-1 rounded-md text-xs font-mono transition text-slate-400 hover:text-white">
+                        JI Lambda
+                    </button>
+                </div>
+
+                <!-- Base Fundamental f0 -->
+                <div class="flex items-center gap-1.5 bg-ebony-950 px-2.5 py-1 rounded-lg border border-ebony-700">
+                    <span class="text-[11px] text-slate-400 font-mono">f₀:</span>
+                    <select id="select-f0" class="bg-transparent text-xs font-mono text-amber-300 focus:outline-none cursor-pointer">
+                        <option value="146.83">146.83 Hz (D3)</option>
+                        <option value="196.00">196.00 Hz (G3)</option>
+                        <option value="220.00" selected>220.00 Hz (A3)</option>
+                        <option value="261.63">261.63 Hz (C4)</option>
+                    </select>
+                </div>
+
+                <!-- Unisonoric vs Bisonoric Mode -->
+                <button id="btn-bellows-action" class="px-2.5 py-1 rounded-lg bg-ebony-950 border border-ebony-700 hover:border-amber-400/50 text-xs font-mono text-sky-300 transition" title="Unisonoric plays identical pitch on push/pull; Bisonoric shifts pitch on bellows pull">
+                    Unisonoric
+                </button>
+
+                <!-- Hold / Latch Toggle -->
+                <button id="btn-latch" class="px-2.5 py-1 rounded-lg border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 text-xs font-mono font-semibold transition">
+                    Latch: ON
+                </button>
+
+                <!-- Master Volume -->
+                <div class="hidden sm:flex items-center gap-2 bg-ebony-950 px-2.5 py-1 rounded-lg border border-ebony-700">
+                    <span class="text-[10px] font-mono text-slate-400">VOL</span>
+                    <input type="range" id="master-volume" min="0" max="1" step="0.01" value="0.6" class="w-16">
+                </div>
+
+                <!-- Panic / Silence -->
+                <button id="btn-panic" class="px-3 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-mono font-semibold transition">
+                    Silence
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Studio Layout -->
+    <main class="flex-1 max-w-[1680px] w-full mx-auto p-3 sm:p-4 flex flex-col gap-4">
+
+        <!-- TOP HALF: Free-Reed Couplers (Left) + WebGL 3D Bellows/Lattice Stage (Center) + Bellows & Musette Controls (Right) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+            <!-- Left Column (3 Cols): Classic Accordion Register Switches (Couplers) -->
+            <section class="lg:col-span-3 chassis-panel rounded-xl p-3.5 flex flex-col justify-between gap-3">
+                <div>
+                    <div class="flex items-center justify-between mb-2.5">
+                        <h2 class="text-xs font-mono uppercase tracking-wider text-amber-400 font-bold flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                            Reed Register Couplers
+                        </h2>
+                        <span id="audio-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-ebony-950 text-slate-400 border border-ebony-700">Standby</span>
+                    </div>
+
+                    <!-- Accordion Register Buttons with Classic Dot-in-Circle SVG Icons -->
+                    <div class="grid grid-cols-1 gap-1.5" id="register-grid">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Musette Detune & Reed Bite Controls -->
+                <div class="bg-ebony-950/90 rounded-lg p-3 border border-ebony-700/80 space-y-2.5">
+                    <div>
+                        <div class="flex justify-between text-[11px] font-mono mb-1">
+                            <span class="text-slate-300">Musette Celeste Detune</span>
+                            <span id="val-musette" class="text-amber-300 font-bold">+11.0 ¢</span>
+                        </div>
+                        <input type="range" id="slider-musette" min="0" max="25" step="0.5" value="11.0" class="w-full">
+                        <p class="text-[10px] text-slate-500 mt-0.5">Detunes twin 8' reeds for European tremolo shimmer.</p>
+                    </div>
+
+                    <div class="pt-1.5 border-t border-ebony-800">
+                        <div class="flex justify-between text-[11px] font-mono mb-1">
+                            <span class="text-slate-300">Free-Reed Odd Buzz (1,3,5,7...)</span>
+                            <span id="val-buzz" class="text-sky-300 font-bold">72%</span>
+                        </div>
+                        <input type="range" id="slider-buzz" min="0.15" max="1.0" step="0.05" value="0.72" class="w-full">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Column (6 Cols): WebGL 3D Accordion Bellows, Reed Chamber & Harmonic Space -->
+            <section class="lg:col-span-6 chassis-panel rounded-xl overflow-hidden flex flex-col relative">
+                <!-- WebGL Mode Switcher Bar -->
+                <div class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 bg-ebony-900 border-b border-ebony-700 z-10">
+                    <div class="flex items-center gap-1 bg-ebony-950 p-1 rounded-lg border border-ebony-700">
+                        <button id="mode-accordion" class="px-2.5 py-1 rounded text-[11px] font-mono font-bold bg-amber-400 text-slate-950 transition">
+                            3D Bellows & Reed Chamber
+                        </button>
+                        <button id="mode-lattice" class="px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white transition">
+                            3D 3:5:7 Tonnetz Lattice
+                        </button>
+                        <button id="mode-scope" class="px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white transition">
+                            Reed Scope & Lissajous
+                        </button>
+                    </div>
+
+                    <button id="btn-cam-reset" class="px-2 py-1 rounded bg-ebony-800 hover:bg-ebony-700 text-[10px] font-mono text-slate-300 border border-ebony-700">
+                        Reset View
+                    </button>
+                </div>
+
+                <!-- Interactive WebGL Viewport -->
+                <div id="webgl-wrapper" class="relative w-full h-[310px] sm:h-[340px] bg-[#06080d] cursor-grab active:cursor-grabbing">
+                    <canvas id="webgl-canvas" class="w-full h-full block"></canvas>
+
+                    <!-- Live Telemetry Overlay -->
+                    <div class="absolute top-3 left-3 pointer-events-none flex flex-col gap-1">
+                        <div class="bg-ebony-950/85 backdrop-blur border border-ebony-700 px-2.5 py-1 rounded text-[11px] font-mono">
+                            <span class="text-slate-400">Active Treble:</span>
+                            <span id="telemetry-treble" class="text-amber-300 font-bold">C, G, A (3:5:7)</span>
+                        </div>
+                        <div class="bg-ebony-950/85 backdrop-blur border border-ebony-700 px-2.5 py-1 rounded text-[11px] font-mono">
+                            <span class="text-slate-400">Bass/Chord:</span>
+                            <span id="telemetry-bass" class="text-sky-300 font-bold">None</span>
+                        </div>
+                    </div>
+
+                    <!-- Mode-specific Legend -->
+                    <div id="webgl-hint" class="absolute bottom-2.5 left-3 right-3 flex justify-between items-center pointer-events-none text-[10px] font-mono text-slate-400 bg-ebony-950/80 px-2.5 py-1 rounded border border-ebony-800">
+                        <span>Drag horizontally to pump Bellows • Drag vertically to orbit • Click reeds/nodes</span>
+                        <span id="telemetry-roughness" class="text-emerald-400 font-semibold">Consonance: Pure Odd-Limit</span>
+                    </div>
+
+                    <!-- Node Hover Tooltip -->
+                    <div id="hover-tooltip" class="hidden absolute pointer-events-none bg-ebony-950/95 border border-amber-400/70 text-white px-2.5 py-1.5 rounded-lg text-xs font-mono shadow-xl z-20"></div>
+                </div>
+            </section>
+
+            <!-- Right Column (3 Cols): Bellows Expression & Isomorphic Chord Geometry Guide -->
+            <section class="lg:col-span-3 chassis-panel rounded-xl p-3.5 flex flex-col justify-between gap-3">
+                <!-- Interactive Bellows Pressure Gauge -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-xs font-mono uppercase tracking-wider text-sky-400 font-bold">
+                            Bellows Air Expression
+                        </h2>
+                        <span id="bellows-dir-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                            PUSH →
+                        </span>
+                    </div>
+
+                    <div class="bg-ebony-950 rounded-lg p-3 border border-ebony-700 space-y-2.5">
+                        <div>
+                            <div class="flex justify-between text-[11px] font-mono mb-1">
+                                <span class="text-slate-400">Air Pressure / Dynamics</span>
+                                <span id="val-pressure" class="text-amber-300 font-bold">78%</span>
+                            </div>
+                            <input type="range" id="slider-pressure" min="0.1" max="1.0" step="0.01" value="0.78" class="w-full">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-1.5 pt-1">
+                            <button id="btn-push-pull" class="px-2 py-1.5 rounded bg-ebony-800 hover:bg-ebony-700 border border-ebony-700 text-[11px] font-mono text-pearl-100 transition">
+                                Flip Push/Pull
+                            </button>
+                            <button id="btn-auto-bellows" class="px-2 py-1.5 rounded bg-amber-500/15 border border-amber-500/40 text-[11px] font-mono text-amber-300 font-semibold transition">
+                                Auto-Breathe: ON
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Isomorphic Chord Shape Highlighter (Invariant on 2-Row Dichromatic Grid!) -->
+                <div class="flex-1 flex flex-col">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-xs font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                            Isomorphic Chord Shapes
+                        </h2>
+                        <button id="btn-strum" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40">
+                            Arpeggiate ♫
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-1.5" id="shape-presets-grid">
+                        <!-- Populated via JS -->
+                    </div>
+
+                    <!-- Ratio Analyzer Readout -->
+                    <div id="ratio-readout" class="mt-2.5 bg-ebony-950/90 rounded-lg p-2.5 border border-ebony-700 text-[11px] font-mono text-slate-300 space-y-1 max-h-28 overflow-y-auto">
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- BOTTOM HALF: Authentic Dichromatic Accordion Manuals (Left-Hand Stradella Bass + Right-Hand 2-Row Treble) -->
+        <section class="chassis-panel rounded-xl p-4 shadow-2xl">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
+
+                <!-- LEFT-HAND MANUAL (4 Cols): Bohlen-Pierce Stradella Bass & Coupled Chord Buttons -->
+                <div class="xl:col-span-4 bg-ebony-950/80 rounded-xl p-3.5 border border-ebony-700/80 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-2.5 border-b border-ebony-800 pb-2">
+                        <div>
+                            <h2 class="text-xs font-mono uppercase tracking-wider text-amber-400 font-bold">
+                                Left Hand: BP Stradella Bass & Chords
+                            </h2>
+                            <p class="text-[10px] text-slate-400">Keys <kbd class="px-1 bg-ebony-800 rounded text-slate-200">1–6</kbd> trigger Bass & Pre-Coupled BP Triads</p>
+                        </div>
+                        <button id="btn-clear-bass" class="text-[10px] font-mono px-2 py-1 rounded bg-ebony-800 hover:bg-ebony-700 text-slate-300">
+                            Clear LH
+                        </button>
+                    </div>
+
+                    <!-- Stradella Grid: Columns = BP Fifths Cycle (0, +10, +7, +4, +1, +11), Rows = Bass / Major / Minor / Neutral -->
+                    <div class="overflow-x-auto pb-1">
+                        <div id="stradella-grid" class="min-w-[340px] flex flex-col gap-2">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <div class="mt-2 pt-2 border-t border-ebony-800 flex justify-between items-center text-[10px] font-mono text-slate-400">
+                        <span>Cycle of BP Fifths (+10 steps ≈ 7:3)</span>
+                        <span class="text-amber-300">1-Button Oom-Pah Ready</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT-HAND MANUAL (8 Cols): 2-Row Dichromatic Isomorphic Button Board -->
+                <div class="xl:col-span-8 bg-ebony-950/80 rounded-xl p-3.5 border border-ebony-700/80 flex flex-col justify-between">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3 border-b border-ebony-800 pb-2">
+                        <div>
+                            <h2 class="text-xs font-mono uppercase tracking-wider text-pearl-100 font-bold flex items-center gap-2">
+                                Right Hand: 2-Row Dichromatic Button Manual (Steps 0 – 26)
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30">Prime 13-Step Isomorphic Grid</span>
+                            </h2>
+                            <p class="text-[10px] text-slate-400 mt-0.5">
+                                <span class="text-amber-200 font-semibold">Outer Row (Pearl):</span> Even steps 0, 2, 4, 6, 8, 10, 12... (<kbd class="px-1 bg-ebony-800 rounded">A S D F G H J K L ; '</kbd>) &nbsp;|&nbsp;
+                                <span class="text-sky-300 font-semibold">Inner Row (Obsidian):</span> Odd steps 1, 3, 5, 7, 9, 11... (<kbd class="px-1 bg-ebony-800 rounded">Q W E R T Y U I O P [</kbd>)
+                            </p>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button id="btn-clear-treble" class="text-[10px] font-mono px-2.5 py-1 rounded bg-ebony-800 hover:bg-ebony-700 text-slate-300 border border-ebony-700">
+                                Clear RH
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Staggered 2-Row Dichromatic Button Keyboard Container -->
+                    <div class="overflow-x-auto py-2 px-1">
+                        <div id="dichromatic-board" class="min-w-[860px] flex flex-col gap-3.5 py-1">
+                            <!-- Row 2 (Inner Row: Odd steps 1, 3, 5, ..., 25) -->
+                            <div id="dichromatic-row-odd" class="flex items-center gap-2.5 pl-8"></div>
+                            <!-- Row 1 (Outer Row: Even steps 0, 2, 4, ..., 26) -->
+                            <div id="dichromatic-row-even" class="flex items-center gap-2.5"></div>
+                        </div>
+                    </div>
+
+                    <!-- Geometric Explanation Footer -->
+                    <div class="mt-2 pt-2 border-t border-ebony-800 flex flex-wrap justify-between items-center gap-2 text-[11px] text-slate-400">
+                        <div>
+                            <strong class="text-amber-300">Why Dichromatic?</strong> Because <code class="text-slate-200">13</code> is prime, alternating odd/even steps into 2 diagonal rows makes every interval (+6 steps = 5:3, +10 steps = 7:3, +13 steps = 3:1) keep the <em>exact same finger geometry</em> anywhere on the manual!
+                        </div>
+                        <div class="font-mono text-[10px] text-emerald-400">
+                            Green dashed ring = Selected Chord Shape
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+    /**
+     * ============================================================================
+     * BOHLEN-PIERCE DICHROMATIC BUTTON ACCORDION & ACOUSTIC LABORATORY
+     * ============================================================================
+     * Comprehensive Architecture:
+     * 1. BP_SCALE & STRADELLA_DATA:
+     *    - 13-step Bohlen-Pierce Lambda scale (13-EDT vs Just Intonation ratios).
+     *    - Dichromatic 2-row staggered button board mapping (Even steps 0,2,4..26 on
+     *      Outer Pearl Row; Odd steps 1,3,5..25 on Inner Obsidian Row).
+     *    - Stradella Bass & Chord Matrix organized along the BP Cycle of Fifths (+10 steps ≈ 7:3).
+     *
+     * 2. AccordionFreeReedEngine (Web Audio API):
+     *    - Multi-rank free-reed bank modeling 16' Bassoon (1/3 sub-tritave),
+     *      8' Clarinet (1x fundamental), 8' Musette (detuned +cents twin reed),
+     *      and 4' Piccolo (3x upper tritave).
+     *    - Custom PeriodicWave modeling free-reed asymmetrical pulse spectrum with
+     *      strong odd harmonics (1, 3, 5, 7, 9, 11, 13) + subtle even formant warmth.
+     *    - Dynamic Bellows Filter & Pressure coupling: bellows air pressure drives
+     *      low-pass reed formant opening, gain envelope, and optional Bisonoric push/pull shift.
+     *
+     * 3. AccordionWebGLStage (Three.js):
+     *    - Mode 1: 3D Accordion Bellows & Cutaway Brass Reed Chamber — folding accordion
+     *      bellows pleats driven by real-time air pressure/auto-breathing, plus vibrating
+     *      brass reed tongues for every sounding note!
+     *    - Mode 2: 3D Odd-Limit Tonnetz Lattice (axes: 5/3, 7/3, and 3/1 tritave) with
+     *      interactive raycasted nodes and glowing harmonic chord polygons.
+     *    - Mode 3: Real-time Reed Waveform, Odd-Harmonic FFT Bars & Lissajous Phase Scope.
+     */
+
+    // ============================================================================
+    // 1. BOHLEN-PIERCE THEORY, REGISTER STOPS & CHORD SHAPES
+    // ============================================================================
+    const BP_NOTE_NAMES = ['C', 'Db', 'D', 'E', 'F', 'Gb', 'G', 'H', 'Jb', 'J', 'A', 'Bb', 'B'];
+
+    const BP_JI_RATIOS = [
+        { num: 1,  den: 1,  label: '1:1',   name: 'Unison' },
+        { num: 27, den: 25, label: '27:25', name: 'Small Chroma' },
+        { num: 25, den: 21, label: '25:21', name: 'Large Chroma' },
+        { num: 9,  den: 7,  label: '9:7',   name: 'Septimal Major Third' },
+        { num: 7,  den: 5,  label: '7:5',   name: 'BP Minor Third' },
+        { num: 75, den: 49, label: '75:49', name: 'Double Septimal' },
+        { num: 5,  den: 3,  label: '5:3',   name: 'BP Major Third' },
+        { num: 9,  den: 5,  label: '9:5',   name: 'BP Fourth' },
+        { num: 49, den: 25, label: '49:25', name: 'BP Diminished Fifth' },
+        { num: 15, den: 7,  label: '15:7',  name: 'BP Augmented Fifth' },
+        { num: 7,  den: 3,  label: '7:3',   name: 'BP Fifth' },
+        { num: 63, den: 25, label: '63:25', name: 'BP Major Sixth' },
+        { num: 25, den: 9,  label: '25:9',  name: 'BP Seventh' }
+    ];
+
+    const TRITAVE_CENTS = 1200 * Math.log2(3); // 1901.955 cents
+    const STEP_CENTS = TRITAVE_CENTS / 13;    // 146.304 cents
+
+    // Classic Accordion Register Stops (Couplers) adapted to 3:1 Tritave Reeds
+    const REGISTER_STOPS = [
+        {
+            id: 'clarinet',
+            name: "Clarinet 8'",
+            subtitle: 'Single central reed • Pure odd harmonics',
+            ranks: [{ tritaveShift: 0, detuneCents: 0, gain: 0.85 }],
+            dots: [false, true, false]
+        },
+        {
+            id: 'musette',
+            name: "Musette 8'+8'",
+            subtitle: 'Twin detuned reeds • French tremolo',
+            ranks: [
+                { tritaveShift: 0, detuneCents: 0, gain: 0.62 },
+                { tritaveShift: 0, detuneCents: 1, gain: 0.62 } // multiplied by state.musetteCents
+            ],
+            dots: [false, true, true]
+        },
+        {
+            id: 'bandoneon',
+            name: "Bandoneon 16'+8'",
+            subtitle: 'Sub-tritave 1/3 + Fundamental 1/1',
+            ranks: [
+                { tritaveShift: -1, detuneCents: 0, gain: 0.65 },
+                { tritaveShift: 0, detuneCents: 0, gain: 0.70 }
+            ],
+            dots: [true, true, false]
+        },
+        {
+            id: 'bassoon',
+            name: "Bassoon 16'",
+            subtitle: 'Deep 1/3 sub-tritave solo reed',
+            ranks: [{ tritaveShift: -1, detuneCents: 0, gain: 0.90 }],
+            dots: [true, false, false]
+        },
+        {
+            id: 'piccolo',
+            name: "Piccolo 4'",
+            subtitle: 'High 3:1 upper-tritave reed',
+            ranks: [{ tritaveShift: 1, detuneCents: 0, gain: 0.72 }],
+            dots: [false, false, true]
+        },
+        {
+            id: 'master',
+            name: "Master Tutti (16'+8'+8'+4')",
+            subtitle: 'Full 4-reed concertina chorus',
+            ranks: [
+                { tritaveShift: -1, detuneCents: 0, gain: 0.50 },
+                { tritaveShift: 0, detuneCents: 0, gain: 0.55 },
+                { tritaveShift: 0, detuneCents: 1, gain: 0.50 },
+                { tritaveShift: 1, detuneCents: 0, gain: 0.42 }
+            ],
+            dots: [true, true, true]
+        }
+    ];
+
+    // Isomorphic Chord Shapes on the 2-Row Dichromatic Grid
+    const CHORD_SHAPES = [
+        {
+            id: 'bp-major',
+            name: 'BP Major (3:5:7)',
+            offsets: [0, 6, 10],
+            geometryHint: 'Same-row triangle (0 → +6 → +10)',
+            ratio: '3 : 5 : 7'
+        },
+        {
+            id: 'bp-minor',
+            name: 'BP Minor (15:21:35)',
+            offsets: [0, 4, 10],
+            geometryHint: 'Same-row wide span (0 → +4 → +10)',
+            ratio: '15 : 21 : 35'
+        },
+        {
+            id: 'bp-579',
+            name: 'Odd Triad (5:7:9)',
+            offsets: [0, 4, 7],
+            geometryHint: 'Cross-row wedge (0 → +4 → +7)',
+            ratio: '5 : 7 : 9'
+        },
+        {
+            id: 'bp-neutral',
+            name: 'Subminor (7:9:15)',
+            offsets: [0, 3, 10],
+            geometryHint: 'Cross-row diagonal (0 → +3 → +10)',
+            ratio: '7 : 9 : 15'
+        },
+        {
+            id: 'bp-tetrad',
+            name: 'BP Tetrad (3:5:7:9)',
+            offsets: [0, 6, 10, 13],
+            geometryHint: 'Full Tritave Frame (0 → +6 → +10 → +13)',
+            ratio: '3 : 5 : 7 : 9'
+        },
+        {
+            id: 'bp-tritave',
+            name: 'Tritave Power (1:3)',
+            offsets: [0, 13],
+            geometryHint: 'Cross-row Tritave jump (0 → +13)',
+            ratio: '1 : 3'
+        }
+    ];
+
+    // Stradella Left-Hand Columns ordered by BP Cycle of Fifths (+10 steps ≈ 7:3)
+    const STRADELLA_COLUMNS = [
+        { rootStep: 10, keyHint: '1' }, // A
+        { rootStep: 0,  keyHint: '2' }, // C
+        { rootStep: 10 - 10, keyHint: '2' }, // Wait: let's make 6 distinct fifths columns cleanly:
+    ];
+    // Clean cycle of BP fifths (+10 steps mod 13):
+    // Bb (11) -> A (10) -> J (9)? Wait: +10 mod 13 is -3 mod 13!
+    // Let's verify: 0 + 10 = 10 (A); 10 + 10 = 20 ≡ 7 (H); 7 + 10 = 17 ≡ 4 (F); 4 + 10 = 14 ≡ 1 (Db); 3 + 10 = 13 ≡ 0 (C); 6 + 10 = 16 ≡ 3 (E)
+    const BP_FIFTHS_ROOTS = [
+        { root: 3,  key: '1' }, // E  (+10 -> C)
+        { root: 0,  key: '2' }, // C  (+10 -> A)
+        { root: 10, key: '3' }, // A  (+10 -> H)
+        { root: 7,  key: '4' }, // H  (+10 -> F)
+        { root: 4,  key: '5' }, // F  (+10 -> Db)
+        { root: 1,  key: '6' }  // Db (+10 -> Bb)
+    ];
+
+    // QWERTY Keyboard Mappings for the 2 Dichromatic Rows
+    // Outer Row (Even steps 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
+    const EVEN_ROW_KEYS = {
+        'a': 0, 's': 2, 'd': 4, 'f': 6, 'g': 8, 'h': 10, 'j': 12, 'k': 14, 'l': 16, ';': 18, "'": 20
+    };
+    // Inner Row (Odd steps 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21)
+    const ODD_ROW_KEYS = {
+        'q': 1, 'w': 3, 'e': 5, 'r': 7, 't': 9, 'y': 11, 'u': 13, 'i': 15, 'o': 17, 'p': 19, '[': 21
+    };
+
+    const state = {
+        f0: 220.0,
+        tuning: 'ET',           // 'ET' or 'JI'
+        registerId: 'musette',  // Default to classic shimmering Musette 8'+8'
+        musetteCents: 11.0,
+        reedBuzz: 0.72,
+        pressure: 0.78,
+        bellowsDir: 1,          // 1 = PUSH, -1 = PULL
+        bisonoric: false,       // False = Unisonoric, True = Bisonoric (+1 step on pull)
+        autoBreathe: true,
+        latch: true,
+        volume: 0.60,
+        trebleSteps: new Set([0, 6, 10]), // Active right-hand treble buttons
+        bassNotes: new Set(),             // Active left-hand bass/chord button IDs
+        selectedShapeId: 'bp-major',
+        shapeAnchorStep: 0,
+        visMode: 'accordion'    // 'accordion' | 'lattice' | 'scope'
+    };
+
+    /**
+     * Computes frequency, note name, cents, and JI info for any BP step (supports negative sub-tritaves too)
+     */
+    function getStepInfo(rawStep) {
+        // Apply Bisonoric pitch shift (+1 step on bellows pull if Bisonoric mode is enabled)
+        const effectiveStep = (state.bisonoric && state.bellowsDir === -1) ? rawStep + 1 : rawStep;
+        const tritave = Math.floor(effectiveStep / 13);
+        const degree = ((effectiveStep % 13) + 13) % 13;
+
+        const baseName = BP_NOTE_NAMES[degree];
+        const primeMark = tritave === 0 ? '' : (tritave > 0 ? "'".repeat(tritave) : ",".repeat(-tritave));
+        const noteName = `${baseName}${primeMark}`;
+
+        const ji = BP_JI_RATIOS[degree];
+        const tritaveMult = Math.pow(3, tritave);
+
+        const etFreq = state.f0 * Math.pow(3, effectiveStep / 13);
+        const jiFreq = state.f0 * tritaveMult * (ji.num / ji.den);
+        const freq = state.tuning === 'ET' ? etFreq : jiFreq;
+
+        const etCents = effectiveStep * STEP_CENTS;
+        const jiCents = tritave * TRITAVE_CENTS + 1200 * Math.log2(ji.num / ji.den);
+        const cents = state.tuning === 'ET' ? etCents : jiCents;
+
+        const ratioLabel = tritave === 0
+            ? ji.label
+            : (tritave > 0 ? `${ji.num * tritaveMult}:${ji.den}` : `${ji.num}:${ji.den * Math.pow(3, -tritave)}`);
+
+        return {
+            rawStep,
+            effectiveStep,
+            tritave,
+            degree,
+            noteName,
+            freq,
+            cents,
+            ratioLabel,
+            jiName: ji.name
+        };
+    }
+
+    function approximateOddRatio(ratio) {
+        let bestNum = 1, bestDen = 1, minErr = Infinity;
+        for (let d = 1; d <= 35; d += 2) {
+            for (let n = d; n <= 105; n += 2) {
+                const candidate = n / d;
+                const centsErr = Math.abs(1200 * Math.log2(ratio / candidate));
+                const score = centsErr + (n + d) * 0.12;
+                if (score < minErr) {
+                    minErr = score;
+                    bestNum = n;
+                    bestDen = d;
+                }
+            }
+        }
+        const centsDiff = 1200 * Math.log2(ratio / (bestNum / bestDen));
+        return { num: bestNum, den: bestDen, centsDiff };
+    }
+
+    // ============================================================================
+    // 2. FREE-REED ACCORDION WEB AUDIO SYNTHESIZER ENGINE
+    // ============================================================================
+    class AccordionFreeReedEngine {
+        constructor() {
+            this.ctx = null;
+            this.masterGain = null;
+            this.bellowsFilter = null;
+            this.analyser = null;
+            this.activeVoices = new Map(); // voiceKey -> { oscs: [], gain }
+            this.waveCache = {};
+            this.timeData = null;
+            this.freqData = null;
+        }
+
+        init() {
+            if (this.ctx) {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                return;
+            }
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+
+            // Dynamic Lowpass Filter shaped by Bellows Air Pressure (models reed chamber formant)
+            this.bellowsFilter = this.ctx.createBiquadFilter();
+            this.bellowsFilter.type = 'lowpass';
+            this.bellowsFilter.frequency.value = 2600;
+            this.bellowsFilter.Q.value = 1.6;
+
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.value = state.volume * 0.38;
+
+            const compressor = this.ctx.createDynamicsCompressor();
+            compressor.threshold.value = -12;
+            compressor.knee.value = 10;
+            compressor.ratio.value = 4.5;
+            compressor.attack.value = 0.004;
+            compressor.release.value = 0.14;
+
+            this.analyser = this.ctx.createAnalyser();
+            this.analyser.fftSize = 2048;
+            this.analyser.smoothingTimeConstant = 0.82;
+            this.timeData = new Float32Array(this.analyser.fftSize);
+            this.freqData = new Uint8Array(this.analyser.frequencyBinCount);
+
+            this.bellowsFilter.connect(this.masterGain);
+            this.masterGain.connect(compressor);
+            compressor.connect(this.analyser);
+            this.analyser.connect(this.ctx.destination);
+
+            const badge = document.getElementById('audio-badge');
+            if (badge) {
+                badge.textContent = 'Reeds Live';
+                badge.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+            }
+        }
+
+        /**
+         * Creates custom PeriodicWave modeling free-reed asymmetrical square-like vibration:
+         * Strong odd partials (1, 3, 5, 7, 9, 11, 13) + subtle even partials for brass reed bite.
+         */
+        getFreeReedWave(buzz) {
+            const key = buzz.toFixed(2);
+            if (this.waveCache[key]) return this.waveCache[key];
+
+            const numHarmonics = 28;
+            const real = new Float32Array(numHarmonics);
+            const imag = new Float32Array(numHarmonics);
+
+            for (let n = 1; n < numHarmonics; n++) {
+                const isOdd = (n % 2 === 1);
+                if (isOdd) {
+                    // Dominant odd harmonics for stopped/free-reed chamber
+                    imag[n] = Math.pow(1 / n, 1.25 - buzz * 0.55);
+                } else {
+                    // Subtle even harmonics (25% of odd strength) for metallic reed edge
+                    imag[n] = 0.24 * Math.pow(1 / n, 1.45 - buzz * 0.45);
+                }
+            }
+
+            const wave = this.ctx.createPeriodicWave(real, imag, { disableNormalization: false });
+            this.waveCache[key] = wave;
+            return wave;
+        }
+
+        /**
+         * Builds the complete list of target sounding voices from Right-Hand Treble + Left-Hand Stradella
+         */
+        computeTargetVoices() {
+            const targets = new Map(); // key -> { step, isBass, freq, gainScale }
+            const stop = REGISTER_STOPS.find(s => s.id === state.registerId) || REGISTER_STOPS[0];
+
+            // 1. Right-Hand Treble Reeds (multiplied by active Accordion Register Coupler ranks)
+            for (const step of state.trebleSteps) {
+                const info = getStepInfo(step);
+                stop.ranks.forEach((rank, rIdx) => {
+                    const tritaveFactor = Math.pow(3, rank.tritaveShift);
+                    const detuneCents = rank.detuneCents * state.musetteCents;
+                    const freq = info.freq * tritaveFactor * Math.pow(2, detuneCents / 1200);
+                    const key = `RH_${step}_R${rIdx}`;
+                    targets.set(key, {
+                        key,
+                        step,
+                        isBass: false,
+                        freq,
+                        gainScale: rank.gain * 0.34
+                    });
+                });
+            }
+
+            // 2. Left-Hand Stradella Bass & Coupled Chord Reeds
+            for (const bassId of state.bassNotes) {
+                // Format: "BASS_root" or "CHORD_root_type"
+                const parts = bassId.split('_');
+                const kind = parts[0];
+                const root = parseInt(parts[1], 10);
+
+                if (kind === 'BASS') {
+                    // Deep sub-tritave (-13) + fundamental (0) Stradella bass reeds
+                    [-13, 0].forEach((offset, idx) => {
+                        const info = getStepInfo(root + offset);
+                        const key = `LH_${bassId}_${idx}`;
+                        targets.set(key, {
+                            key,
+                            step: root + offset,
+                            isBass: true,
+                            freq: info.freq,
+                            gainScale: idx === 0 ? 0.46 : 0.34
+                        });
+                    });
+                } else if (kind === 'CHORD') {
+                    const chordType = parts[2];
+                    let offsets = [0, 6, 10]; // BP Major 3:5:7
+                    if (chordType === 'MIN') offsets = [0, 4, 10]; // BP Minor 15:21:35
+                    if (chordType === 'NEU') offsets = [0, 3, 10]; // BP Subminor 7:9:15
+
+                    offsets.forEach((off, idx) => {
+                        const info = getStepInfo(root + off);
+                        const key = `LH_${bassId}_${idx}`;
+                        targets.set(key, {
+                            key,
+                            step: root + off,
+                            isBass: true,
+                            freq: info.freq,
+                            gainScale: 0.25
+                        });
+                    });
+                }
+            }
+
+            return targets;
+        }
+
+        syncVoices() {
+            const targets = this.computeTargetVoices();
+            if (targets.size > 0 && !this.ctx) {
+                this.init();
+            }
+            if (!this.ctx) return;
+
+            const now = this.ctx.currentTime;
+            const wave = this.getFreeReedWave(state.reedBuzz);
+
+            // Fade out removed voices
+            for (const [key, voice] of Array.from(this.activeVoices.entries())) {
+                if (!targets.has(key)) {
+                    voice.gain.gain.cancelScheduledValues(now);
+                    voice.gain.gain.setValueAtTime(Math.max(voice.gain.gain.value, 0.0001), now);
+                    voice.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+                    voice.osc.stop(now + 0.11);
+                    this.activeVoices.delete(key);
+                }
+            }
+
+            // Start or update active voices
+            for (const [key, spec] of targets.entries()) {
+                if (this.activeVoices.has(key)) {
+                    const voice = this.activeVoices.get(key);
+                    voice.osc.frequency.setTargetAtTime(spec.freq, now, 0.015);
+                    voice.osc.setPeriodicWave(wave);
+                    voice.gain.gain.setTargetAtTime(spec.gainScale, now, 0.02);
+                } else {
+                    const osc = this.ctx.createOscillator();
+                    osc.setPeriodicWave(wave);
+                    osc.frequency.setValueAtTime(spec.freq, now);
+
+                    const gain = this.ctx.createGain();
+                    // Free-reed crisp chiff attack (22ms)
+                    gain.gain.setValueAtTime(0.0001, now);
+                    gain.gain.exponentialRampToValueAtTime(spec.gainScale, now + 0.024);
+
+                    osc.connect(gain);
+                    gain.connect(this.bellowsFilter);
+                    osc.start(now);
+
+                    this.activeVoices.set(key, { osc, gain, spec });
+                }
+            }
+
+            this.updateBellowsExpression();
+        }
+
+        /**
+         * Updates real-time bellows air pressure dynamics (cutoff brightness & master gain)
+         */
+        updateBellowsExpression(effectivePressure = state.pressure) {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            // Filter opens from 650 Hz (soft bellows) up to 5800 Hz (full bellows push)
+            const cutoff = 650 + Math.pow(effectivePressure, 1.5) * 5200;
+            this.bellowsFilter.frequency.setTargetAtTime(cutoff, now, 0.03);
+
+            const dynamicGain = state.volume * (0.14 + effectivePressure * 0.34);
+            this.masterGain.gain.setTargetAtTime(dynamicGain, now, 0.03);
+        }
+
+        stopAll() {
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            for (const [key, voice] of this.activeVoices.entries()) {
+                voice.gain.gain.cancelScheduledValues(now);
+                voice.gain.gain.setValueAtTime(Math.max(voice.gain.gain.value, 0.0001), now);
+                voice.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+                voice.osc.stop(now + 0.09);
+            }
+            this.activeVoices.clear();
+        }
+    }
+
+    const audio = new AccordionFreeReedEngine();
+
+    // ============================================================================
+    // 3. WEBGL 3D ACCORDION BELLOWS, REED CHAMBER & TONNETZ VISUALIZER
+    // ============================================================================
+    class AccordionWebGLStage {
+        constructor(wrapper, canvas) {
+            this.wrapper = wrapper;
+            this.canvas = canvas;
+
+            this.scene = new THREE.Scene();
+            this.scene.fog = new THREE.FogExp2(0x06080d, 0.028);
+
+            const w = wrapper.clientWidth || 720;
+            const h = wrapper.clientHeight || 340;
+            this.camera = new THREE.PerspectiveCamera(44, w / h, 0.1, 200);
+
+            this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            this.renderer.setSize(w, h);
+            this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Three visualization groups
+            this.accordionGroup = new THREE.Group();
+            this.latticeGroup = new THREE.Group();
+            this.scopeGroup = new THREE.Group();
+
+            this.latticeGroup.visible = false;
+            this.scopeGroup.visible = false;
+
+            this.scene.add(this.accordionGroup);
+            this.scene.add(this.latticeGroup);
+            this.scene.add(this.scopeGroup);
+
+            // Camera orbit spherical coordinates
+            this.spherical = { theta: 1.57, phi: 1.24, radius: 11.5 };
+            this.isDragging = false;
+            this.dragMoved = false;
+            this.prevMouse = { x: 0, y: 0 };
+
+            this.raycaster = new THREE.Raycaster();
+            this.mouse = new THREE.Vector2(-99, -99);
+
+            this.reedMeshes = [];      // 27 vibrating brass reed tongues in 3D reed block
+            this.bellowsFolds = [];    // 14 folding accordion bellows pleats
+            this.latticeNodes = [];    // 3D Tonnetz nodes
+            this.activeEdgeGroup = new THREE.Group();
+            this.latticeGroup.add(this.activeEdgeGroup);
+
+            this.initLighting();
+            this.build3DAccordionAndReeds();
+            this.buildTonnetzLattice();
+            this.buildScopeVisuals();
+            this.resetCameraForMode();
+            this.bindEvents();
+
+            this.clock = new THREE.Clock();
+            this.animate();
+        }
+
+        initLighting() {
+            const ambient = new THREE.AmbientLight(0xffffff, 0.65);
+            this.scene.add(ambient);
+
+            const warmKey = new THREE.PointLight(0xfbbf24, 2.0, 35);
+            warmKey.position.set(5, 8, 7);
+            this.scene.add(warmKey);
+
+            const coolFill = new THREE.PointLight(0x38bdf8, 1.4, 35);
+            coolFill.position.set(-6, 4, -6);
+            this.scene.add(coolFill);
+        }
+
+        /**
+         * Builds Mode 1: 3D Accordion Bellows Pleats + Cutaway Brass Reed Chamber (27 Reed Tongues)
+         */
+        build3DAccordionAndReeds() {
+            // Left & Right Ebony End Caps
+            const capGeo = new THREE.BoxGeometry(0.55, 3.4, 2.5);
+            const capMat = new THREE.MeshStandardMaterial({
+                color: 0x11151e,
+                roughness: 0.25,
+                metalness: 0.5
+            });
+
+            this.leftCap = new THREE.Mesh(capGeo, capMat);
+            this.rightCap = new THREE.Mesh(capGeo, capMat);
+            this.accordionGroup.add(this.leftCap, this.rightCap);
+
+            // 14 Folding Accordion Bellows Pleats (alternating deep burgundy/charcoal & gold trim)
+            const numFolds = 14;
+            for (let i = 0; i < numFolds; i++) {
+                const isOuter = (i % 2 === 0);
+                const foldGeo = new THREE.BoxGeometry(0.24, isOuter ? 3.25 : 2.95, isOuter ? 2.35 : 2.12);
+                const foldMat = new THREE.MeshStandardMaterial({
+                    color: isOuter ? 0x3b121c : 0x181c26,
+                    roughness: 0.55,
+                    metalness: 0.2
+                });
+                const foldMesh = new THREE.Mesh(foldGeo, foldMat);
+                this.accordionGroup.add(foldMesh);
+                this.bellowsFolds.push(foldMesh);
+            }
+
+            // Cutaway Brass Reed Block mounted along the top/front of the accordion
+            const blockGeo = new THREE.BoxGeometry(7.6, 0.22, 1.45);
+            const blockMat = new THREE.MeshStandardMaterial({
+                color: 0x1e2433,
+                roughness: 0.4,
+                metalness: 0.6
+            });
+            const reedBlock = new THREE.Mesh(blockGeo, blockMat);
+            reedBlock.position.set(0, 1.88, 0.2);
+            this.accordionGroup.add(reedBlock);
+
+            // 27 Individual Vibrating Brass Reed Tongues (steps 0..26)
+            for (let step = 0; step <= 26; step++) {
+                // Scale reed length inversely with pitch (low steps = longer reeds)
+                const length = 1.05 - (step / 26) * 0.52;
+                const reedGeo = new THREE.BoxGeometry(0.18, 0.035, length);
+                // Shift geometry origin so reed anchors at back and vibrates at tip
+                reedGeo.translate(0, 0, length * 0.5);
+
+                const reedMat = new THREE.MeshStandardMaterial({
+                    color: 0xd97706,
+                    emissive: 0x000000,
+                    roughness: 0.25,
+                    metalness: 0.85
+                });
+
+                const reed = new THREE.Mesh(reedGeo, reedMat);
+                const xPos = ((step / 26) - 0.5) * 7.1;
+                reed.position.set(xPos, 2.02, -0.35);
+                reed.userData = { step };
+
+                this.accordionGroup.add(reed);
+                this.reedMeshes.push(reed);
+            }
+        }
+
+        /**
+         * Builds Mode 2: 3D Bohlen-Pierce Odd-Limit Tonnetz Lattice (5/3 on X, 7/3 on Z, 3/1 on Y)
+         */
+        buildTonnetzLattice() {
+            const sphereGeo = new THREE.SphereGeometry(0.30, 20, 20);
+            const spacingX = 2.05;
+            const spacingZ = 2.05;
+            const spacingY = 3.0;
+            const gridPts = [];
+
+            for (let y = 0; y <= 1; y++) {
+                for (let ix = -2; ix <= 2; ix++) {
+                    for (let iz = -2; iz <= 2; iz++) {
+                        const rawStep = ix * 6 + iz * 10;
+                        const degree = ((rawStep % 13) + 13) % 13;
+                        const step = degree + y * 13;
+
+                        const pos = new THREE.Vector3(ix * spacingX, (y - 0.5) * spacingY, iz * spacingZ);
+                        const mat = new THREE.MeshStandardMaterial({
+                            color: 0x1e293b,
+                            emissive: 0x0f172a,
+                            roughness: 0.3,
+                            metalness: 0.5
+                        });
+
+                        const mesh = new THREE.Mesh(sphereGeo, mat);
+                        mesh.position.copy(pos);
+                        mesh.userData = { step, degree, tritave: y };
+
+                        const label = this.createSpriteLabel(BP_NOTE_NAMES[degree] + (y === 1 ? "'" : ""), step);
+                        label.position.set(0, 0.48, 0);
+                        mesh.add(label);
+
+                        this.latticeGroup.add(mesh);
+                        this.latticeNodes.push(mesh);
+                        gridPts.push({ ix, iz, y, pos });
+                    }
+                }
+            }
+
+            const matX = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.24 });
+            const matZ = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.24 });
+            const matY = new THREE.LineBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.16 });
+
+            const geoX = [], geoZ = [], geoY = [];
+            for (const a of gridPts) {
+                for (const b of gridPts) {
+                    if (a.y === b.y && a.iz === b.iz && b.ix === a.ix + 1) geoX.push(a.pos, b.pos);
+                    if (a.y === b.y && a.ix === b.ix && b.iz === a.iz + 1) geoZ.push(a.pos, b.pos);
+                    if (a.ix === b.ix && a.iz === b.iz && b.y === a.y + 1) geoY.push(a.pos, b.pos);
+                }
+            }
+            this.latticeGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(geoX), matX));
+            this.latticeGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(geoZ), matZ));
+            this.latticeGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(geoY), matY));
+        }
+
+        createSpriteLabel(text, step) {
+            const c = document.createElement('canvas');
+            c.width = 128;
+            c.height = 64;
+            const ctx = c.getContext('2d');
+            ctx.font = 'bold 26px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillText(text, 64, 26);
+            ctx.font = '18px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(`#${step}`, 64, 50);
+
+            const tex = new THREE.CanvasTexture(c);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+            sprite.scale.set(1.2, 0.6, 1);
+            return sprite;
+        }
+
+        /**
+         * Builds Mode 3: Reed Waveform, Odd-Harmonic FFT Spectrum & Phase Lissajous Scope
+         */
+        buildScopeVisuals() {
+            const waveGeo = new THREE.BufferGeometry();
+            waveGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(512 * 3), 3));
+            this.waveLine = new THREE.Line(waveGeo, new THREE.LineBasicMaterial({ color: 0xfbbf24 }));
+            this.waveLine.position.set(-4.0, 1.8, 0);
+            this.scopeGroup.add(this.waveLine);
+
+            const fftGeo = new THREE.BufferGeometry();
+            fftGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(96 * 2 * 3), 3));
+            this.fftLines = new THREE.LineSegments(fftGeo, new THREE.LineBasicMaterial({ color: 0x38bdf8 }));
+            this.fftLines.position.set(-4.0, -2.4, 0);
+            this.scopeGroup.add(this.fftLines);
+
+            const lissGeo = new THREE.BufferGeometry();
+            lissGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(900 * 3), 3));
+            this.lissajousLine = new THREE.Line(lissGeo, new THREE.LineBasicMaterial({ color: 0x34d399 }));
+            this.lissajousLine.position.set(3.4, 0, 0);
+            this.scopeGroup.add(this.lissajousLine);
+        }
+
+        resetCameraForMode() {
+            if (state.visMode === 'accordion') {
+                this.spherical = { theta: 1.57, phi: 1.15, radius: 10.6 };
+            } else if (state.visMode === 'lattice') {
+                this.spherical = { theta: 0.65, phi: 1.02, radius: 13.0 };
+            } else {
+                this.camera.position.set(0, 0, 10.5);
+                this.camera.lookAt(0, 0, 0);
+                return;
+            }
+            this.updateCamera();
+        }
+
+        updateCamera() {
+            if (state.visMode === 'scope') {
+                this.camera.position.set(0, 0, 10.5);
+                this.camera.lookAt(0, 0, 0);
+                return;
+            }
+            const { theta, phi, radius } = this.spherical;
+            this.camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+            this.camera.position.y = radius * Math.cos(phi);
+            this.camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+            this.camera.lookAt(0, state.visMode === 'accordion' ? 0.45 : 0.2, 0);
+        }
+
+        setMode(mode) {
+            state.visMode = mode;
+            this.accordionGroup.visible = (mode === 'accordion');
+            this.latticeGroup.visible = (mode === 'lattice');
+            this.scopeGroup.visible = (mode === 'scope');
+            this.resetCameraForMode();
+        }
+
+        /**
+         * Returns set of all currently sounding BP degrees/steps (Treble + Stradella Bass)
+         */
+        getAllSoundingSteps() {
+            const steps = new Set(state.trebleSteps);
+            for (const bassId of state.bassNotes) {
+                const parts = bassId.split('_');
+                const root = parseInt(parts[1], 10);
+                if (parts[0] === 'BASS') {
+                    steps.add(root);
+                } else if (parts[0] === 'CHORD') {
+                    const type = parts[2];
+                    const offs = type === 'MIN' ? [0, 4, 10] : (type === 'NEU' ? [0, 3, 10] : [0, 6, 10]);
+                    offs.forEach(o => steps.add(root + o));
+                }
+            }
+            return steps;
+        }
+
+        updateHighlights() {
+            const sounding = this.getAllSoundingSteps();
+
+            // Update 3D Tonnetz Lattice nodes & edges
+            const activeNodes = [];
+            for (const mesh of this.latticeNodes) {
+                const isActive = sounding.has(mesh.userData.step);
+                if (isActive) {
+                    mesh.material.color.setHex(0xfbbf24);
+                    mesh.material.emissive.setHex(0xb45309);
+                    mesh.scale.setScalar(1.38);
+                    activeNodes.push(mesh);
+                } else {
+                    mesh.material.color.setHex(0x1e293b);
+                    mesh.material.emissive.setHex(0x0f172a);
+                    mesh.scale.setScalar(1.0);
+                }
+            }
+
+            while (this.activeEdgeGroup.children.length > 0) {
+                const c = this.activeEdgeGroup.children[0];
+                c.geometry.dispose();
+                this.activeEdgeGroup.remove(c);
+            }
+
+            const pts = [];
+            for (let i = 0; i < activeNodes.length; i++) {
+                for (let j = i + 1; j < activeNodes.length; j++) {
+                    if (activeNodes[i].position.distanceTo(activeNodes[j].position) < 4.5) {
+                        pts.push(activeNodes[i].position.clone(), activeNodes[j].position.clone());
+                    }
+                }
+            }
+            if (pts.length > 0) {
+                this.activeEdgeGroup.add(
+                    new THREE.LineSegments(
+                        new THREE.BufferGeometry().setFromPoints(pts),
+                        new THREE.LineBasicMaterial({ color: 0x38bdf8 })
+                    )
+                );
+            }
+        }
+
+        animate() {
+            requestAnimationFrame(() => this.animate());
+            const t = this.clock.getElapsedTime();
+            const sounding = this.getAllSoundingSteps();
+
+            // Auto-breathing bellows LFO when enabled & notes are sounding
+            let livePressure = state.pressure;
+            if (state.autoBreathe && sounding.size > 0) {
+                const wave = Math.sin(t * 1.15);
+                const newDir = wave >= 0 ? 1 : -1;
+                if (newDir !== state.bellowsDir) {
+                    state.bellowsDir = newDir;
+                    updateBellowsDirectionUI();
+                    if (state.bisonoric) audio.syncVoices();
+                }
+                livePressure = Math.max(0.28, Math.min(1.0, state.pressure * (0.78 + 0.22 * Math.abs(wave))));
+                audio.updateBellowsExpression(livePressure);
+            }
+
+            // 1. Animate 3D Accordion Bellows & Vibrating Brass Reeds
+            if (state.visMode === 'accordion') {
+                // Bellows span expands on PULL and compresses on PUSH
+                const breatheOffset = state.autoBreathe ? Math.sin(t * 1.15) * 0.65 : (state.bellowsDir * -0.4);
+                const halfSpan = 2.6 + (1.0 - livePressure) * 0.65 + breatheOffset;
+
+                this.leftCap.position.x = -halfSpan - 0.28;
+                this.rightCap.position.x = halfSpan + 0.28;
+
+                const nFolds = this.bellowsFolds.length;
+                for (let i = 0; i < nFolds; i++) {
+                    const frac = (i + 0.5) / nFolds;
+                    const fold = this.bellowsFolds[i];
+                    fold.position.x = -halfSpan + frac * (halfSpan * 2);
+                    // Fan-like slight V-tilt characteristic of real accordion bellows
+                    fold.rotation.z = (frac - 0.5) * 0.08 * breatheOffset;
+                }
+
+                // Vibrate active brass reeds in the cutaway reed chamber
+                for (const reed of this.reedMeshes) {
+                    const step = reed.userData.step;
+                    if (sounding.has(step)) {
+                        reed.material.color.setHex(0xfef08a);
+                        reed.material.emissive.setHex(0xd97706);
+                        reed.rotation.x = Math.sin(t * (38 + step * 2.5)) * (0.14 * livePressure);
+                    } else {
+                        reed.material.color.setHex(0xb45309);
+                        reed.material.emissive.setHex(0x000000);
+                        reed.rotation.x = 0;
+                    }
+                }
+            }
+
+            // 2. Animate Waveform, FFT & Lissajous Scope
+            if (state.visMode === 'scope') {
+                const wavePos = this.waveLine.geometry.attributes.position.array;
+                const fftPos = this.fftLines.geometry.attributes.position.array;
+                const lissPos = this.lissajousLine.geometry.attributes.position.array;
+                const hasAudio = audio.ctx && audio.analyser && sounding.size > 0;
+
+                if (hasAudio) {
+                    audio.analyser.getFloatTimeDomainData(audio.timeData);
+                    audio.analyser.getByteFrequencyData(audio.freqData);
+                }
+
+                for (let i = 0; i < 512; i++) {
+                    wavePos[i * 3] = (i / 511) * 6.4 - 3.2;
+                    wavePos[i * 3 + 1] = hasAudio ? audio.timeData[i * 2] * 2.1 : Math.sin(i * 0.08 + t * 3) * 0.04;
+                    wavePos[i * 3 + 2] = 0;
+                }
+                this.waveLine.geometry.attributes.position.needsUpdate = true;
+
+                for (let i = 0; i < 96; i++) {
+                    const x = (i / 95) * 6.4 - 3.2;
+                    const mag = hasAudio ? (audio.freqData[i * 2] / 255) * 2.3 : 0.03;
+                    const idx = i * 6;
+                    fftPos[idx] = x; fftPos[idx + 1] = 0; fftPos[idx + 2] = 0;
+                    fftPos[idx + 3] = x; fftPos[idx + 4] = mag; fftPos[idx + 5] = 0;
+                }
+                this.fftLines.geometry.attributes.position.needsUpdate = true;
+
+                for (let i = 0; i < 900; i++) {
+                    if (hasAudio) {
+                        lissPos[i * 3] = audio.timeData[i + 40] * 3.0;
+                        lissPos[i * 3 + 1] = audio.timeData[i] * 3.0;
+                    } else {
+                        const a = (i / 900) * Math.PI * 2;
+                        lissPos[i * 3] = Math.cos(a * 3 + t) * 1.2;
+                        lissPos[i * 3 + 1] = Math.sin(a * 5) * 1.2;
+                    }
+                    lissPos[i * 3 + 2] = 0;
+                }
+                this.lissajousLine.geometry.attributes.position.needsUpdate = true;
+            }
+
+            this.renderer.render(this.scene, this.camera);
+        }
+
+        bindEvents() {
+            window.addEventListener('resize', () => {
+                const w = this.wrapper.clientWidth;
+                const h = this.wrapper.clientHeight;
+                if (w > 0 && h > 0) {
+                    this.camera.aspect = w / h;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(w, h);
+                }
+            });
+
+            this.canvas.addEventListener('pointerdown', (e) => {
+                this.isDragging = true;
+                this.dragMoved = false;
+                this.prevMouse = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('pointerup', (e) => {
+                if (this.isDragging && !this.dragMoved) {
+                    this.handleCanvasClick(e);
+                }
+                this.isDragging = false;
+            });
+
+            this.canvas.addEventListener('pointermove', (e) => {
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+                if (this.isDragging) {
+                    const dx = e.clientX - this.prevMouse.x;
+                    const dy = e.clientY - this.prevMouse.y;
+                    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) this.dragMoved = true;
+
+                    if (state.visMode === 'accordion') {
+                        // Horizontal drag directly pumps the accordion bellows!
+                        state.autoBreathe = false;
+                        document.getElementById('btn-auto-bellows').textContent = 'Auto-Breathe: OFF';
+                        document.getElementById('btn-auto-bellows').className = 'px-2 py-1.5 rounded bg-ebony-800 border border-ebony-700 text-[11px] font-mono text-slate-400 transition';
+
+                        const newDir = dx >= 0 ? 1 : -1;
+                        if (newDir !== state.bellowsDir) {
+                            state.bellowsDir = newDir;
+                            updateBellowsDirectionUI();
+                            if (state.bisonoric) audio.syncVoices();
+                        }
+                        state.pressure = Math.max(0.15, Math.min(1.0, state.pressure + Math.abs(dx) * 0.004 - 0.002));
+                        document.getElementById('slider-pressure').value = state.pressure;
+                        document.getElementById('val-pressure').textContent = `${Math.round(state.pressure * 100)}%`;
+                        audio.updateBellowsExpression();
+
+                        // Vertical drag tilts camera view over reed chamber
+                        this.spherical.phi = Math.max(0.35, Math.min(1.5, this.spherical.phi - dy * 0.007));
+                        this.updateCamera();
+                    } else if (state.visMode === 'lattice') {
+                        this.spherical.theta += dx * 0.0075;
+                        this.spherical.phi = Math.max(0.25, Math.min(Math.PI - 0.25, this.spherical.phi - dy * 0.0075));
+                        this.updateCamera();
+                    }
+                    this.prevMouse = { x: e.clientX, y: e.clientY };
+                } else {
+                    this.handleHover(e.clientX - rect.left, e.clientY - rect.top);
+                }
+            });
+
+            this.canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (state.visMode === 'accordion') {
+                    // Scroll wheel modulates Bellows Air Pressure!
+                    state.pressure = Math.max(0.1, Math.min(1.0, state.pressure - e.deltaY * 0.0008));
+                    document.getElementById('slider-pressure').value = state.pressure;
+                    document.getElementById('val-pressure').textContent = `${Math.round(state.pressure * 100)}%`;
+                    audio.updateBellowsExpression();
+                } else if (state.visMode === 'lattice') {
+                    this.spherical.radius = Math.max(6.5, Math.min(22, this.spherical.radius + e.deltaY * 0.01));
+                    this.updateCamera();
+                }
+            }, { passive: false });
+        }
+
+        handleHover(px, py) {
+            const tooltip = document.getElementById('hover-tooltip');
+            const targets = state.visMode === 'accordion' ? this.reedMeshes : (state.visMode === 'lattice' ? this.latticeNodes : []);
+            if (targets.length === 0) {
+                tooltip.classList.add('hidden');
+                return;
+            }
+
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+            const hits = this.raycaster.intersectObjects(targets, false);
+            if (hits.length > 0) {
+                const step = hits[0].object.userData.step;
+                const info = getStepInfo(step);
+                this.canvas.style.cursor = 'pointer';
+                tooltip.innerHTML = `
+                    <div class="text-amber-300 font-bold">Step #${step} • ${info.noteName}</div>
+                    <div class="text-slate-300">${info.freq.toFixed(2)} Hz (${info.ratioLabel})</div>
+                `;
+                tooltip.style.left = `${Math.min(px + 12, this.wrapper.clientWidth - 190)}px`;
+                tooltip.style.top = `${Math.max(py - 48, 8)}px`;
+                tooltip.classList.remove('hidden');
+            } else {
+                this.canvas.style.cursor = this.isDragging ? 'grabbing' : 'grab';
+                tooltip.classList.add('hidden');
+            }
+        }
+
+        handleCanvasClick(e) {
+            const targets = state.visMode === 'accordion' ? this.reedMeshes : (state.visMode === 'lattice' ? this.latticeNodes : []);
+            if (targets.length === 0) return;
+
+            const rect = this.canvas.getBoundingClientRect();
+            this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+            const hits = this.raycaster.intersectObjects(targets, false);
+            if (hits.length > 0) {
+                toggleTrebleStep(hits[0].object.userData.step);
+            }
+        }
+    }
+
+    // ============================================================================
+    // 4. UI RENDERING & ACCORDION MANUAL INTERACTIONS
+    // ============================================================================
+    let stage = null;
+
+    function renderRegisterCouplers() {
+        const grid = document.getElementById('register-grid');
+        grid.innerHTML = '';
+
+        REGISTER_STOPS.forEach((stop) => {
+            const isSelected = state.registerId === stop.id;
+            const btn = document.createElement('button');
+            btn.className = `flex items-center gap-2.5 px-2.5 py-2 rounded-lg border text-left transition ${
+                isSelected
+                    ? 'bg-amber-400/15 border-amber-400 shadow-md shadow-amber-500/10'
+                    : 'bg-ebony-950/80 border-ebony-700 hover:border-slate-500'
+            }`;
+
+            // Classic Accordion Register Icon (Circle divided into 3 reed chambers: 16' top, 8' middle, 4' bottom)
+            const [d16, d8, d4] = stop.dots;
+            const iconSvg = `
+                <svg class="w-7 h-7 shrink-0" viewBox="0 0 32 32">
+                    <circle cx="16" cy="16" r="14" fill="${isSelected ? '#1e2430' : '#0d1016'}" stroke="${isSelected ? '#fbbf24' : '#64748b'}" stroke-width="1.8"/>
+                    <line x1="3" y1="11.5" x2="29" y2="11.5" stroke="${isSelected ? '#fbbf24' : '#475569'}" stroke-width="1.2"/>
+                    <line x1="3" y1="20.5" x2="29" y2="20.5" stroke="${isSelected ? '#fbbf24' : '#475569'}" stroke-width="1.2"/>
+                    ${d16 ? `<circle cx="16" cy="7.2" r="2.2" fill="#fbbf24"/>` : ''}
+                    ${d8  ? `<circle cx="${stop.id === 'musette' || stop.id === 'master' ? '12.5' : '16'}" cy="16" r="2.3" fill="#fbbf24"/>` : ''}
+                    ${(stop.id === 'musette' || stop.id === 'master') ? `<circle cx="19.5" cy="16" r="2.3" fill="#38bdf8"/>` : ''}
+                    ${d4  ? `<circle cx="16" cy="24.8" r="2.2" fill="#fbbf24"/>` : ''}
+                </svg>
+            `;
+
+            btn.innerHTML = `
+                ${iconSvg}
+                <div class="min-w-0 flex-1">
+                    <div class="text-xs font-semibold truncate ${isSelected ? 'text-amber-300' : 'text-pearl-100'}">${stop.name}</div>
+                    <div class="text-[10px] text-slate-400 truncate">${stop.subtitle}</div>
+                </div>
+            `;
+
+            btn.addEventListener('click', () => {
+                state.registerId = stop.id;
+                renderRegisterCouplers();
+                audio.syncVoices();
+            });
+            grid.appendChild(btn);
+        });
+    }
+
+    function renderDichromaticBoard() {
+        const rowOdd = document.getElementById('dichromatic-row-odd');
+        const rowEven = document.getElementById('dichromatic-row-even');
+        rowOdd.innerHTML = '';
+        rowEven.innerHTML = '';
+
+        // Compute shape hint steps based on selected shape + shapeAnchorStep
+        const activeShape = CHORD_SHAPES.find(s => s.id === state.selectedShapeId);
+        const shapeSteps = new Set(
+            activeShape ? activeShape.offsets.map(off => state.shapeAnchorStep + off) : []
+        );
+
+        // Reverse key lookup for shortcut badges
+        const evenKeyByStep = {};
+        Object.entries(EVEN_ROW_KEYS).forEach(([k, s]) => evenKeyByStep[s] = k.toUpperCase());
+        const oddKeyByStep = {};
+        Object.entries(ODD_ROW_KEYS).forEach(([k, s]) => oddKeyByStep[s] = k.toUpperCase());
+
+        // Inner Row (Odd steps: 1, 3, 5, ..., 25)
+        for (let step = 1; step <= 25; step += 2) {
+            rowOdd.appendChild(createTrebleButton(step, false, shapeSteps.has(step), oddKeyByStep[step]));
+        }
+
+        // Outer Row (Even steps: 0, 2, 4, ..., 26)
+        for (let step = 0; step <= 26; step += 2) {
+            rowEven.appendChild(createTrebleButton(step, true, shapeSteps.has(step), evenKeyByStep[step]));
+        }
+    }
+
+    function createTrebleButton(step, isEvenRow, isShapeHint, shortcutKey) {
+        const info = getStepInfo(step);
+        const isActive = state.trebleSteps.has(step);
+        const isTritaveRoot = (step % 13 === 0);
+
+        const btn = document.createElement('button');
+        btn.className = [
+            'w-14 h-14 rounded-full flex flex-col items-center justify-center relative shrink-0 focus:outline-none',
+            isEvenRow ? 'acc-btn-pearl' : 'acc-btn-obsidian',
+            isActive ? 'active' : '',
+            isShapeHint && !isActive ? 'shape-hint' : ''
+        ].join(' ');
+
+        btn.innerHTML = `
+            <span class="text-[9px] font-mono leading-none opacity-75">#${step}${shortcutKey ? `·${shortcutKey}` : ''}</span>
+            <span class="text-sm font-bold font-mono leading-tight my-0.5 ${isTritaveRoot ? 'underline decoration-2' : ''}">${info.noteName}</span>
+            <span class="text-[9px] font-mono leading-none opacity-80">${info.ratioLabel}</span>
+        `;
+
+        btn.title = `Step #${step} (${info.noteName}) • ${info.freq.toFixed(2)} Hz • Ratio ${info.ratioLabel}`;
+
+        btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (state.latch) {
+                toggleTrebleStep(step);
+            } else {
+                state.trebleSteps.add(step);
+                state.shapeAnchorStep = step;
+                refreshAll();
+            }
+        });
+
+        btn.addEventListener('pointerup', () => {
+            if (!state.latch) {
+                state.trebleSteps.delete(step);
+                refreshAll();
+            }
+        });
+
+        btn.addEventListener('pointerleave', () => {
+            if (!state.latch && state.trebleSteps.has(step)) {
+                state.trebleSteps.delete(step);
+                refreshAll();
+            }
+        });
+
+        return btn;
+    }
+
+    function renderStradellaBass() {
+        const container = document.getElementById('stradella-grid');
+        container.innerHTML = '';
+
+        const rowDefs = [
+            { type: 'BASS',      label: 'Bass 1/3',  badge: 'Root' },
+            { type: 'CHORD_MAJ', label: 'BP Maj',    badge: '3:5:7' },
+            { type: 'CHORD_MIN', label: 'BP Min',    badge: '15:21:35' },
+            { type: 'CHORD_NEU', label: 'Submin',    badge: '7:9:15' }
+        ];
+
+        rowDefs.forEach((row) => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'flex items-center gap-1.5';
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'w-16 shrink-0 text-right pr-1.5';
+            labelEl.innerHTML = `
+                <div class="text-[10px] font-mono font-bold text-slate-300 leading-none">${row.label}</div>
+                <div class="text-[9px] font-mono text-amber-400/80">${row.badge}</div>
+            `;
+            rowEl.appendChild(labelEl);
+
+            BP_FIFTHS_ROOTS.forEach((col, cIdx) => {
+                const noteName = BP_NOTE_NAMES[col.root];
+                const id = row.type === 'BASS'
+                    ? `BASS_${col.root}`
+                    : `CHORD_${col.root}_${row.type.split('_')[1]}`;
+
+                const isActive = state.bassNotes.has(id);
+                const btn = document.createElement('button');
+                btn.className = `stradella-btn flex-1 h-9 rounded-full flex flex-col items-center justify-center text-[11px] font-mono font-bold text-slate-200 ${isActive ? 'active' : ''}`;
+                btn.innerHTML = `
+                    <span>${noteName}${row.type === 'BASS' ? '' : (row.type === 'CHORD_MAJ' ? 'M' : (row.type === 'CHORD_MIN' ? 'm' : 'n'))}</span>
+                    ${row.type === 'BASS' ? `<span class="text-[8px] opacity-60">[${col.key}]</span>` : ''}
+                `;
+
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    if (state.latch) {
+                        if (state.bassNotes.has(id)) {
+                            state.bassNotes.delete(id);
+                        } else {
+                            // In latch mode, replace previous bass/chord of same kind for effortless oom-pah switching
+                            for (const existing of Array.from(state.bassNotes)) {
+                                if (existing.startsWith(row.type === 'BASS' ? 'BASS_' : 'CHORD_')) {
+                                    state.bassNotes.delete(existing);
+                                }
+                            }
+                            state.bassNotes.add(id);
+                        }
+                        refreshAll();
+                    } else {
+                        state.bassNotes.add(id);
+                        refreshAll();
+                    }
+                });
+
+                btn.addEventListener('pointerup', () => {
+                    if (!state.latch) {
+                        state.bassNotes.delete(id);
+                        refreshAll();
+                    }
+                });
+
+                btn.addEventListener('pointerleave', () => {
+                    if (!state.latch && state.bassNotes.has(id)) {
+                        state.bassNotes.delete(id);
+                        refreshAll();
+                    }
+                });
+
+                rowEl.appendChild(btn);
+            });
+
+            container.appendChild(rowEl);
+        });
+    }
+
+    function renderChordShapes() {
+        const grid = document.getElementById('shape-presets-grid');
+        grid.innerHTML = '';
+
+        CHORD_SHAPES.forEach((shape) => {
+            const isSelected = state.selectedShapeId === shape.id;
+            const btn = document.createElement('button');
+            btn.className = `p-2 rounded-lg border text-left transition ${
+                isSelected
+                    ? 'bg-emerald-500/15 border-emerald-400'
+                    : 'bg-ebony-950/80 border-ebony-700 hover:border-slate-500'
+            }`;
+            btn.innerHTML = `
+                <div class="flex justify-between items-center gap-1">
+                    <span class="text-[11px] font-semibold text-pearl-100 truncate">${shape.name}</span>
+                </div>
+                <div class="text-[10px] font-mono text-amber-300 mt-0.5">${shape.ratio}</div>
+            `;
+
+            btn.addEventListener('click', () => {
+                state.selectedShapeId = shape.id;
+                state.trebleSteps.clear();
+                shape.offsets.forEach(off => {
+                    const step = state.shapeAnchorStep + off;
+                    if (step <= 26) state.trebleSteps.add(step);
+                });
+                refreshAll();
+            });
+            grid.appendChild(btn);
+        });
+    }
+
+    function updateTelemetryAndRatios() {
+        const trebleArr = Array.from(state.trebleSteps).sort((a, b) => a - b);
+        const trebleText = document.getElementById('telemetry-treble');
+        const bassText = document.getElementById('telemetry-bass');
+        const readout = document.getElementById('ratio-readout');
+
+        if (trebleArr.length === 0) {
+            trebleText.textContent = 'None';
+        } else {
+            trebleText.textContent = trebleArr.map(s => `${getStepInfo(s).noteName}(#${s})`).join(', ');
+        }
+
+        if (state.bassNotes.size === 0) {
+            bassText.textContent = 'None';
+        } else {
+            bassText.textContent = Array.from(state.bassNotes).map(id => {
+                const p = id.split('_');
+                const n = BP_NOTE_NAMES[parseInt(p[1], 10)];
+                return p[0] === 'BASS' ? `${n} Bass` : `${n} ${p[2]}`;
+            }).join(' + ');
+        }
+
+        // Pairwise Interval & Odd-Limit Ratio Matrix
+        if (trebleArr.length < 2) {
+            readout.innerHTML = trebleArr.length === 1
+                ? `<div class="text-amber-300">Root Tone: ${getStepInfo(trebleArr[0]).noteName} • ${getStepInfo(trebleArr[0]).freq.toFixed(2)} Hz</div><div class="text-slate-400">Add a 2nd treble button or click a Chord Shape above to inspect ratios.</div>`
+                : `<div class="text-slate-500 italic">Click any pearl/obsidian button or press keys A–L / Q–P to sound reeds.</div>`;
+            return;
+        }
+
+        const infos = trebleArr.map(getStepInfo);
+        let html = '';
+        for (let i = 0; i < infos.length; i++) {
+            for (let j = i + 1; j < infos.length; j++) {
+                const low = infos[i];
+                const high = infos[j];
+                const ratio = high.freq / low.freq;
+                const approx = approximateOddRatio(ratio);
+                const sign = approx.centsDiff >= 0 ? '+' : '';
+                const color = Math.abs(approx.centsDiff) < 7 ? 'text-emerald-400' : 'text-amber-300';
+
+                html += `
+                    <div class="flex justify-between items-center border-b border-ebony-800/70 pb-0.5 last:border-0">
+                        <span>${low.noteName}→${high.noteName} (+${high.effectiveStep - low.effectiveStep})</span>
+                        <span class="${color}">≈ ${approx.num}:${approx.den} (${sign}${approx.centsDiff.toFixed(1)}¢)</span>
+                    </div>
+                `;
+            }
+        }
+        readout.innerHTML = html;
+    }
+
+    function updateBellowsDirectionUI() {
+        const badge = document.getElementById('bellows-dir-badge');
+        if (state.bellowsDir === 1) {
+            badge.textContent = 'PUSH →';
+            badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30';
+        } else {
+            badge.textContent = '← PULL';
+            badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        }
+    }
+
+    function toggleTrebleStep(step) {
+        if (state.trebleSteps.has(step)) {
+            state.trebleSteps.delete(step);
+        } else {
+            state.trebleSteps.add(step);
+            state.shapeAnchorStep = step;
+        }
+        refreshAll();
+    }
+
+    function refreshAll() {
+        renderDichromaticBoard();
+        renderStradellaBass();
+        renderChordShapes();
+        updateTelemetryAndRatios();
+        if (stage) stage.updateHighlights();
+        audio.syncVoices();
+    }
+
+    // ============================================================================
+    // 5. EVENT LISTENERS & INITIALIZATION
+    // ============================================================================
+    function initControls() {
+        // Tuning Toggle (13-EDT vs JI Lambda)
+        const btnET = document.getElementById('btn-tuning-et');
+        const btnJI = document.getElementById('btn-tuning-ji');
+
+        btnET.addEventListener('click', () => {
+            state.tuning = 'ET';
+            btnET.className = 'px-2.5 py-1 rounded-md text-xs font-mono transition bg-amber-400 text-slate-950 font-bold shadow';
+            btnJI.className = 'px-2.5 py-1 rounded-md text-xs font-mono transition text-slate-400 hover:text-white';
+            refreshAll();
+        });
+
+        btnJI.addEventListener('click', () => {
+            state.tuning = 'JI';
+            btnJI.className = 'px-2.5 py-1 rounded-md text-xs font-mono transition bg-amber-400 text-slate-950 font-bold shadow';
+            btnET.className = 'px-2.5 py-1 rounded-md text-xs font-mono transition text-slate-400 hover:text-white';
+            refreshAll();
+        });
+
+        // Base Frequency f0
+        document.getElementById('select-f0').addEventListener('change', (e) => {
+            state.f0 = parseFloat(e.target.value);
+            refreshAll();
+        });
+
+        // Unisonoric vs Bisonoric Toggle
+        const btnAction = document.getElementById('btn-bellows-action');
+        btnAction.addEventListener('click', () => {
+            state.bisonoric = !state.bisonoric;
+            btnAction.textContent = state.bisonoric ? 'Bisonoric (±1)' : 'Unisonoric';
+            btnAction.className = state.bisonoric
+                ? 'px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-400 text-xs font-mono text-amber-300 font-semibold transition'
+                : 'px-2.5 py-1 rounded-lg bg-ebony-950 border border-ebony-700 hover:border-amber-400/50 text-xs font-mono text-sky-300 transition';
+            refreshAll();
+        });
+
+        // Latch Toggle
+        const btnLatch = document.getElementById('btn-latch');
+        btnLatch.addEventListener('click', () => {
+            state.latch = !state.latch;
+            if (state.latch) {
+                btnLatch.textContent = 'Latch: ON';
+                btnLatch.className = 'px-2.5 py-1 rounded-lg border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 text-xs font-mono font-semibold transition';
+            } else {
+                btnLatch.textContent = 'Latch: OFF';
+                btnLatch.className = 'px-2.5 py-1 rounded-lg border border-ebony-700 bg-ebony-950 text-slate-400 text-xs font-mono transition';
+                state.trebleSteps.clear();
+                state.bassNotes.clear();
+                audio.stopAll();
+                refreshAll();
+            }
+        });
+
+        // Master Volume
+        document.getElementById('master-volume').addEventListener('input', (e) => {
+            state.volume = parseFloat(e.target.value);
+            audio.updateBellowsExpression();
+        });
+
+        // Silence / Panic
+        document.getElementById('btn-panic').addEventListener('click', () => {
+            state.trebleSteps.clear();
+            state.bassNotes.clear();
+            audio.stopAll();
+            refreshAll();
+        });
+
+        // Clear LH / Clear RH
+        document.getElementById('btn-clear-bass').addEventListener('click', () => {
+            state.bassNotes.clear();
+            refreshAll();
+        });
+        document.getElementById('btn-clear-treble').addEventListener('click', () => {
+            state.trebleSteps.clear();
+            refreshAll();
+        });
+
+        // Musette Detune & Reed Buzz Sliders
+        document.getElementById('slider-musette').addEventListener('input', (e) => {
+            state.musetteCents = parseFloat(e.target.value);
+            document.getElementById('val-musette').textContent = `+${state.musetteCents.toFixed(1)} ¢`;
+            audio.syncVoices();
+        });
+
+        document.getElementById('slider-buzz').addEventListener('input', (e) => {
+            state.reedBuzz = parseFloat(e.target.value);
+            document.getElementById('val-buzz').textContent = `${Math.round(state.reedBuzz * 100)}%`;
+            audio.syncVoices();
+        });
+
+        // Bellows Pressure & Push/Pull Controls
+        document.getElementById('slider-pressure').addEventListener('input', (e) => {
+            state.pressure = parseFloat(e.target.value);
+            document.getElementById('val-pressure').textContent = `${Math.round(state.pressure * 100)}%`;
+            audio.updateBellowsExpression();
+        });
+
+        document.getElementById('btn-push-pull').addEventListener('click', () => {
+            state.autoBreathe = false;
+            document.getElementById('btn-auto-bellows').textContent = 'Auto-Breathe: OFF';
+            document.getElementById('btn-auto-bellows').className = 'px-2 py-1.5 rounded bg-ebony-800 border border-ebony-700 text-[11px] font-mono text-slate-400 transition';
+            state.bellowsDir *= -1;
+            updateBellowsDirectionUI();
+            if (state.bisonoric) refreshAll();
+        });
+
+        const btnAuto = document.getElementById('btn-auto-bellows');
+        btnAuto.addEventListener('click', () => {
+            state.autoBreathe = !state.autoBreathe;
+            btnAuto.textContent = state.autoBreathe ? 'Auto-Breathe: ON' : 'Auto-Breathe: OFF';
+            btnAuto.className = state.autoBreathe
+                ? 'px-2 py-1.5 rounded bg-amber-500/15 border border-amber-500/40 text-[11px] font-mono text-amber-300 font-semibold transition'
+                : 'px-2 py-1.5 rounded bg-ebony-800 border border-ebony-700 text-[11px] font-mono text-slate-400 transition';
+        });
+
+        // Arpeggiate / Strum Active Treble Chord
+        document.getElementById('btn-strum').addEventListener('click', () => {
+            const steps = Array.from(state.trebleSteps).sort((a, b) => a - b);
+            if (steps.length === 0) return;
+            const saved = new Set(steps);
+            state.trebleSteps.clear();
+            audio.syncVoices();
+
+            steps.forEach((step, idx) => {
+                setTimeout(() => {
+                    if (saved.has(step)) {
+                        state.trebleSteps.add(step);
+                        refreshAll();
+                    }
+                }, idx * 120);
+            });
+        });
+
+        // WebGL Mode Buttons
+        const modeBtns = {
+            accordion: document.getElementById('mode-accordion'),
+            lattice: document.getElementById('mode-lattice'),
+            scope: document.getElementById('mode-scope')
+        };
+
+        Object.entries(modeBtns).forEach(([mode, btn]) => {
+            btn.addEventListener('click', () => {
+                stage.setMode(mode);
+                Object.entries(modeBtns).forEach(([m, b]) => {
+                    b.className = (m === mode)
+                        ? 'px-2.5 py-1 rounded text-[11px] font-mono font-bold bg-amber-400 text-slate-950 transition'
+                        : 'px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white transition';
+                });
+            });
+        });
+
+        document.getElementById('btn-cam-reset').addEventListener('click', () => {
+            stage.resetCameraForMode();
+        });
+
+        // Computer Keyboard Bindings (2 Dichromatic Rows + Number Keys 1-6 for Stradella Bass)
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+            const k = e.key.toLowerCase();
+
+            if (k in EVEN_ROW_KEYS) {
+                const step = EVEN_ROW_KEYS[k];
+                if (state.latch) toggleTrebleStep(step);
+                else { state.trebleSteps.add(step); refreshAll(); }
+            } else if (k in ODD_ROW_KEYS) {
+                const step = ODD_ROW_KEYS[k];
+                if (state.latch) toggleTrebleStep(step);
+                else { state.trebleSteps.add(step); refreshAll(); }
+            } else if (['1', '2', '3', '4', '5', '6'].includes(k)) {
+                const col = BP_FIFTHS_ROOTS[parseInt(k, 10) - 1];
+                if (col) {
+                    const bassId = `BASS_${col.root}`;
+                    if (state.bassNotes.has(bassId)) state.bassNotes.delete(bassId);
+                    else state.bassNotes.add(bassId);
+                    refreshAll();
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (state.latch) return;
+            const k = e.key.toLowerCase();
+            if (k in EVEN_ROW_KEYS) {
+                state.trebleSteps.delete(EVEN_ROW_KEYS[k]);
+                refreshAll();
+            } else if (k in ODD_ROW_KEYS) {
+                state.trebleSteps.delete(ODD_ROW_KEYS[k]);
+                refreshAll();
+            }
+        });
+    }
+
+    window.addEventListener('load', () => {
+        const wrapper = document.getElementById('webgl-wrapper');
+        const canvas = document.getElementById('webgl-canvas');
+        stage = new AccordionWebGLStage(wrapper, canvas);
+
+        renderRegisterCouplers();
+        initControls();
+        refreshAll();
+    });
+    </script>
+</body>
+</html>
