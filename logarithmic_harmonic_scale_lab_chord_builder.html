@@ -1,0 +1,2518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101522">
+<title>Logarithmic Harmonic Scale Lab</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0c111b;
+  --panel: #151e2c;
+  --panel2: #101927;
+  --edge: #2b394d;
+  --ink: #eaf0f8;
+  --muted: #9cacbf;
+  --cyan: #63d5e8;
+  --gold: #f5c66a;
+  --green: #8ed9ad;
+  --danger: #ff9b91;
+  --radius: 14px;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: radial-gradient(ellipse at 15% 0%, #18283b 0%, var(--bg) 50%); color: var(--ink); }
+button, input, select { font: inherit; }
+button, select, input[type="number"] { color: var(--ink); }
+button { cursor: pointer; }
+.shell { width: min(1500px, 100%); margin: 0 auto; padding: 26px clamp(12px, 2.2vw, 30px) 40px; }
+header { display: flex; gap: 18px; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.eyebrow { color: var(--cyan); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; font-weight: 800; }
+h1 { font-size: clamp(25px, 4vw, 39px); line-height: 1.08; margin: 7px 0 9px; letter-spacing: -.035em; }
+.lede { max-width: 850px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.header-mark { flex: 0 0 auto; border: 1px solid var(--edge); background: #172334; color: var(--cyan); border-radius: 12px; padding: 10px 12px; font-size: 11px; text-align: right; line-height: 1.45; }
+.layout { display: grid; grid-template-columns: minmax(290px, 360px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.panel { background: linear-gradient(180deg, rgba(24,35,51,.96), rgba(17,26,39,.96)); border: 1px solid var(--edge); border-radius: var(--radius); padding: 16px; box-shadow: 0 12px 36px rgba(0,0,0,.16); min-width: 0; }
+.panel + .panel { margin-top: 14px; }
+h2 { margin: 0 0 13px; font-size: 15px; letter-spacing: -.01em; }
+h3 { margin: 0; font-size: 12px; }
+.section-note { margin: -5px 0 13px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.field { margin: 0 0 13px; min-width: 0; }
+.field:last-child { margin-bottom: 0; }
+.field label, .field .field-label { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 6px; color: #c8d4e2; font-size: 11px; font-weight: 700; }
+.hint { color: var(--muted); font-size: 10px; font-weight: 500; }
+input[type="number"], select { width: 100%; border: 1px solid #3a4b62; background: #0d1725; border-radius: 8px; padding: 9px 10px; min-height: 36px; outline: none; }
+input:focus, select:focus, button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+input[type="range"] { width: 100%; accent-color: var(--cyan); }
+.range-line { display: grid; grid-template-columns: 1fr 48px; gap: 10px; align-items: center; }
+.range-value { color: var(--cyan); font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.btn { background: #203149; border: 1px solid #405672; color: var(--ink); border-radius: 9px; padding: 9px 12px; font-size: 11px; font-weight: 750; transition: background .15s, border-color .15s, transform .1s; }
+.btn:hover { background: #29405c; border-color: #65839f; }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: #165365; border-color: #287f93; color: #eaffff; }
+.btn.primary:hover { background: #1b6b7d; }
+.btn.soft { background: transparent; border-color: #40506a; color: #c3d0e0; }
+.btn.danger { border-color: #70464a; color: #ffb4ab; background: #332027; }
+.inline { display: flex; gap: 8px; align-items: center; }
+.hidden { display: none !important; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.stat { background: #0e1927; border: 1px solid #293a50; border-radius: 10px; padding: 10px; min-width: 0; }
+.stat .v { display: block; color: var(--cyan); font-size: 19px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stat .k { display: block; color: var(--muted); font-size: 9px; line-height: 1.3; margin-top: 3px; }
+.main-col { min-width: 0; }
+.toolbar { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 11px; }
+.toolbar p { margin: 0; color: var(--muted); font-size: 11px; }
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid #345164; background: #132a38; border-radius: 99px; color: #a7e8f1; font-size: 10px; font-weight: 750; }
+.keyboard-wrap { overflow-x: auto; padding: 2px 1px 10px; scrollbar-color: #405875 #101927; }
+.keyboard { display: flex; gap: 5px; width: max-content; min-width: 100%; }
+.key { width: 67px; height: 88px; flex: 0 0 67px; border-radius: 8px; border: 1px solid #43546a; background: linear-gradient(180deg, #f1f4f7, #c4ced9); color: #182334; padding: 8px 6px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; text-align: left; position: relative; overflow: hidden; }
+.key:hover { background: #fff; border-color: var(--cyan); }
+.key.selected { background: linear-gradient(180deg, #b9f0f2, #63c9d4); border-color: #77e4ee; box-shadow: inset 0 0 0 2px rgba(8,73,87,.18), 0 0 14px rgba(83,204,220,.18); }
+.key .degree { font-size: 15px; line-height: 1; font-weight: 850; }
+.key .cents { font-size: 10px; opacity: .85; font-variant-numeric: tabular-nums; }
+.key .ratio { align-self: flex-end; font-size: 9px; font-weight: 750; opacity: .7; }
+.key .play-mark { position: absolute; top: 6px; right: 6px; color: #276b78; font-size: 9px; opacity: 0; }
+.key:active .play-mark, .key.selected .play-mark { opacity: .75; }
+.instrument-foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 10px; }
+.chord-summary { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.chip { border: 1px solid #34495f; background: #0e1927; padding: 7px 9px; border-radius: 8px; min-width: 0; }
+.chip strong { display: block; font-size: 11px; color: #e5f4ff; }
+.chip small { display: block; color: var(--muted); font-size: 9px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.chip .err { color: var(--gold); }
+.viz-panel { padding: 14px 14px 11px; }
+.viz-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 2px 9px; }
+.viz-head h2 { margin: 0; }
+.legend { color: var(--muted); font-size: 10px; display: flex; gap: 12px; flex-wrap: wrap; }
+.legend span::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; background: var(--cyan); }
+.legend span:nth-child(2)::before { background: var(--gold); }
+.legend span:nth-child(3)::before { background: #fff; box-shadow: 0 0 7px #fff; }
+.viz { position: relative; width: 100%; height: clamp(310px, 39vw, 490px); border: 1px solid #29394d; border-radius: 11px; overflow: hidden; background: #09121e; }
+.viz canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+#plotCanvas { cursor: crosshair; touch-action: none; outline: none; }
+.plot-tooltip { position:absolute; z-index:4; display:none; max-width:min(340px,calc(100% - 20px)); padding:9px 11px; border:1px solid #59718b; border-radius:9px; background:rgba(7,15,25,.96); color:#e8f2fb; box-shadow:0 8px 24px rgba(0,0,0,.4); font:10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; pointer-events:none; white-space:normal; }
+.plot-tools { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 9px; }
+.plot-tools label { color:#c8d4e2; font-size:10px; font-weight:700; }
+.plot-tools select { width:auto; min-width:210px; min-height:32px; padding:6px 9px; font-size:10px; }
+.plot-toggle { display:inline-flex; align-items:center; gap:5px; color:var(--muted); font-size:10px; }
+.plot-toggle input { accent-color:var(--cyan); }
+.plot-readout { margin-top:8px; border:1px solid #30445b; border-radius:8px; background:#0d1927; color:#cbd9e8; padding:8px 10px; min-height:34px; font-size:10px; line-height:1.45; font-variant-numeric:tabular-nums; }
+.plot-readout b { color:#f4cc7b; }
+@media(max-width:560px){.plot-tools select{min-width:0;max-width:100%;flex:1}.plot-tools{gap:7px}.plot-readout{font-size:9px}}
+.viz-caption { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 10px; margin: 9px 2px 0; line-height: 1.4; }
+.analysis-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(230px,.8fr); gap: 12px; margin-top: 14px; }
+.analysis-card { background: #101a28; border: 1px solid #2c3c51; border-radius: 11px; padding: 12px; min-width: 0; }
+.analysis-card h3 { margin-bottom: 8px; }
+.analysis-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.match-list { display: grid; gap: 6px; margin-top: 8px; }
+.match { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(68,88,111,.35); color: #d5e1ed; font-size: 10px; }
+.match:last-child { border-bottom: 0; }
+.match b { color: var(--green); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.diagnostic-section { margin-top: 14px; border-top: 1px solid #2c3c51; padding-top: 14px; }
+.diagnostic-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.diagnostic-head p { margin:4px 0 0; color:var(--muted); font-size:10px; line-height:1.45; max-width:720px; }
+.diagnostic-controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.diagnostic-controls label { color:#c8d4e2; font-size:10px; font-weight:700; }
+.diagnostic-controls select { width:auto; min-width:120px; min-height:30px; padding:5px 8px; font-size:10px; }
+.diag-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:10px 0; }
+.diag-metric { background:#0e1927; border:1px solid #293a50; border-radius:9px; padding:9px; min-width:0; }
+.diag-metric strong { display:block; font-size:17px; color:var(--cyan); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.diag-metric span { display:block; color:var(--muted); font-size:9px; line-height:1.35; margin-top:3px; }
+.diag-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px; }
+.diag-card { min-width:0; background:#101a28; border:1px solid #2c3c51; border-radius:11px; padding:11px; }
+.diag-card h3 { margin-bottom:6px; }
+.diag-card p { color:var(--muted); font-size:9px; line-height:1.4; margin:0 0 7px; }
+.diag-canvas { display:block; width:100%; height:190px; border:1px solid #29394d; border-radius:8px; background:#0b1420; }
+.diag-list { display:grid; gap:5px; margin-top:7px; max-height:150px; overflow:auto; }
+.diag-row { display:flex; justify-content:space-between; gap:10px; border-bottom:1px solid rgba(68,88,111,.32); padding:5px 1px; color:#cbd8e6; font-size:9px; }
+.diag-row span:first-child { min-width:0; overflow-wrap:anywhere; }
+.diag-row b { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--gold); }
+.diag-note { margin-top:9px; color:var(--muted); font-size:9px; line-height:1.45; }
+.roughness-scale { display:flex; align-items:center; gap:6px; margin-top:6px; color:var(--muted); font-size:9px; }
+.roughness-scale i { display:block; flex:1; height:7px; border-radius:99px; background:linear-gradient(90deg,#28a878 0%,#c8bd55 50%,#f24e43 100%); }
+.midi-panel { margin-top:14px; padding:13px; border:1px solid #35516a; border-radius:11px; background:linear-gradient(140deg,rgba(18,45,60,.72),rgba(13,24,38,.86)); }
+.midi-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+.midi-head h3 { margin:0 0 5px; color:#dff8fb; font-size:12px; }
+.midi-head p { margin:0; max-width:680px; color:var(--muted); font-size:10px; line-height:1.45; }
+.midi-controls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; margin-top:11px; }
+.midi-controls .field { margin:0; }
+.midi-controls input,.midi-controls select { font-size:11px; }
+.midi-preview { margin-top:10px; border:1px solid #2d435a; border-radius:8px; overflow:auto; max-height:190px; background:#0b1623; }
+.midi-preview table { min-width:500px; font-size:9px; }
+.midi-preview th,.midi-preview td { padding:6px 8px; }
+.midi-preview .empty { padding:10px; color:var(--muted); font-size:10px; }
+.midi-preview .bend-positive { color:#85d9b0; }
+.midi-preview .bend-negative { color:#f3c66b; }
+@media(max-width:560px){.midi-controls{grid-template-columns:1fr 1fr}.midi-head .badge{white-space:normal}}
+
+.legend span:nth-child(4)::before { background:#ff765e; box-shadow:0 0 7px rgba(255,118,94,.6); }
+@media (max-width:760px) { .diag-grid { grid-template-columns:1fr; } .diag-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .diag-canvas { height:180px; } }
+details { margin-top: 14px; border: 1px solid #2c3c51; background: #101a28; border-radius: 10px; padding: 11px 12px; }
+summary { cursor: pointer; font-size: 11px; font-weight: 750; color: #cfe0ed; }
+.table-wrap { overflow: auto; max-height: 320px; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 10px; min-width: 540px; }
+th, td { text-align: right; padding: 7px 8px; border-bottom: 1px solid #29384c; font-variant-numeric: tabular-nums; }
+th { color: #aebfd1; position: sticky; top: 0; background: #142033; }
+th:first-child, td:first-child { text-align: left; }
+td { color: #dbe5ef; }
+.formula { color: #a8dfe8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+.footer-note { color: var(--muted); font-size: 10px; line-height: 1.55; margin: 14px 2px 0; }
+.audio-status { margin-top: 9px; min-height: 14px; color: var(--muted); font-size: 10px; }
+.audio-status.error { color: var(--danger); }
+.chord-discovery { margin-top: 12px; padding-top: 12px; border-top: 1px solid #2c3c51; }
+.chord-discovery h3 { margin-bottom: 6px; }
+.chord-discovery-note { color: var(--muted); font-size: 10px; line-height: 1.45; margin: 0 0 10px; }
+.discovery-results { display: grid; gap: 6px; margin-top: 9px; max-height: 390px; overflow: auto; padding-right: 2px; }
+.discovery-result { display: block; width: 100%; text-align: left; border: 1px solid #34495f; background: #0d1826; color: var(--ink); border-radius: 8px; padding: 8px 9px; cursor: pointer; }
+.discovery-result:hover { background: #172b40; border-color: #63a7bb; }
+.discovery-result strong { display: block; font-size: 10px; color: #e5f4ff; line-height: 1.35; }
+.discovery-result small { display: block; color: var(--muted); font-size: 9px; margin-top: 3px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.discovery-empty { color: var(--muted); font-size: 10px; line-height: 1.45; padding: 8px 0; }
+@media (max-width: 600px) { .discovery-results { max-height: 330px; } }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .layout > aside { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; align-items: start; } .layout > aside .panel { margin-top: 0; } .layout > aside .panel:first-child { grid-column: span 2; } }
+@media (max-width: 600px) { .shell { padding-top: 18px; } header { display: block; } .header-mark { display: inline-block; margin-top: 12px; text-align: left; } .layout > aside { display: block; } .layout > aside .panel { margin-top: 12px; } .layout > aside .panel:first-child { margin-top: 0; } .analysis-grid { grid-template-columns: 1fr; } .stats { gap: 6px; } .stat { padding: 8px; } .stat .v { font-size: 17px; } }
+
+.main-tabs{display:flex;gap:8px;margin:14px 0 0;padding:0 2px;border-bottom:1px solid #304057}
+.main-tab{border:1px solid #344961;border-bottom:0;border-radius:10px 10px 0 0;background:#111c2a;color:#9fb2c7;padding:10px 15px;font-size:11px;font-weight:800}
+.main-tab[aria-selected="true"]{background:#1a3044;color:#dffaff;border-color:#397387;box-shadow:inset 0 2px 0 #63d5e8}
+.tab-panel{margin-top:12px}
+.builder-intro{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.builder-intro p{margin:4px 0 0;max-width:760px;color:var(--muted);font-size:11px;line-height:1.5}
+.builder-controls{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px;margin:12px 0}
+.builder-controls .field{margin:0}
+.builder-viz{position:relative;height:clamp(340px,42vw,520px);border:1px solid #2c4057;border-radius:11px;overflow:hidden;background:#09121e}
+.builder-viz canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:crosshair}
+.builder-readout{margin-top:8px;min-height:34px;padding:8px 10px;border:1px solid #30445b;border-radius:8px;background:#0d1927;color:#cbd9e8;font-size:10px;line-height:1.5;font-variant-numeric:tabular-nums}
+.builder-lower{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr);gap:12px;margin-top:13px}
+.builder-card{background:#101a28;border:1px solid #2c3c51;border-radius:11px;padding:12px;min-width:0}
+.builder-card h3{margin-bottom:8px}
+.builder-card p{margin:0;color:var(--muted);font-size:10px;line-height:1.45}
+.builder-voices{display:grid;gap:6px;margin-top:9px}
+.builder-voice{display:grid;grid-template-columns:minmax(0,1fr) 88px auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid #2c4056;border-radius:8px;background:#0d1724}
+.builder-voice strong{display:block;font-size:10px;overflow-wrap:anywhere}
+.builder-voice small{display:block;color:var(--muted);font-size:9px;margin-top:2px;font-variant-numeric:tabular-nums}
+.builder-voice select{min-height:30px;padding:5px 7px;font-size:10px}
+.builder-voice .btn{padding:6px 8px}
+.builder-empty{padding:12px;border:1px dashed #3b5068;border-radius:8px;color:var(--muted);font-size:10px;line-height:1.5}
+.builder-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.builder-statline{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.builder-statline span{border:1px solid #30465d;background:#0d1927;color:#bfd0e2;padding:5px 8px;border-radius:7px;font-size:9px}
+@media(max-width:760px){.builder-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.builder-lower{grid-template-columns:1fr}}
+@media(max-width:420px){.builder-controls{grid-template-columns:1fr 1fr}.builder-voice{grid-template-columns:minmax(0,1fr) 78px auto;gap:5px}.main-tab{padding:9px 10px;font-size:10px}}
+
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div>
+      <div class="eyebrow">Microtonal instrument · harmonic geometry · interactive canvas</div>
+      <h1>Logarithmic Harmonic Scale Lab</h1>
+      <p class="lede">Build scales from equal logarithmic divisions or from rational relationships between harmonics. Select notes, compose octave-spread chords, hear them, and inspect where their partials line up in log-frequency space.</p>
+    </div>
+    <div class="header-mark">FREQUENCY → LOG PITCH<br>PARTIALS → RELATIONSHIPS</div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <section class="panel">
+        <h2>1 · Scale generator</h2>
+        <div class="field">
+          <label for="tuningMode">Tuning construction</label>
+          <select id="tuningMode">
+            <option value="edo">Equal divisions of the octave (EDO)</option>
+            <option value="ratio">Harmonic ratio lattice</option>
+            <option value="overtone">Folded overtone nodes</option>
+          </select>
+        </div>
+        <div id="edoControls">
+          <div class="field">
+            <label for="edoSelect">Equal divisions</label>
+            <select id="edoSelect">
+              <option value="12">12-EDO · 100¢</option>
+              <option value="19">19-EDO · 63.16¢</option>
+              <option value="24">24-EDO · 50¢</option>
+              <option value="31">31-EDO · 38.71¢</option>
+              <option value="41">41-EDO · 29.27¢</option>
+              <option value="53">53-EDO · 22.64¢</option>
+              <option value="72">72-EDO · 16.67¢</option>
+              <option value="96">96-EDO · 12.5¢</option>
+              <option value="120">120-EDO · 10¢</option>
+              <option value="custom">Custom division count…</option>
+            </select>
+          </div>
+          <div class="field hidden" id="customNWrap">
+            <label for="customN">Custom divisions per octave <span class="hint">2–240</span></label>
+            <input id="customN" type="number" min="2" max="240" step="1" value="48">
+          </div>
+          <div class="field">
+            <label for="divisionWarp">Octave subdivision geometry</label>
+            <select id="divisionWarp">
+              <option value="0">Equal log-frequency increments · constant cents / ratio</option>
+              <option value="0.25">Power-coordinate hybrid · α = 0.25</option>
+              <option value="0.5">Power-coordinate hybrid · α = 0.5</option>
+              <option value="0.75">Power-coordinate hybrid · α = 0.75</option>
+              <option value="1">Equal frequency increments · arithmetic Hz</option>
+              <option value="geometric-steps">Geometric progression of step widths · new</option>
+            </select>
+            <p class="section-note">The first mode is the canonical logarithmic division: log₂(fᵢ/f₀) = i/N, equivalently fᵢ = f₀·2^(i/N). Every step has the same ratio and the same cents size. Equal-Hz spacing is a different geometry.</p>
+          </div>
+          <div class="field hidden" id="stepGrowthWrap">
+            <label for="stepGrowth">Last interval / first interval ratio <span class="hint">R · geometric step-width span</span></label>
+            <div class="range-line"><input id="stepGrowth" type="range" min="0.25" max="4" step="0.01" value="1.80"><output class="range-value" id="stepGrowthOut">1.80×</output></div>
+            <p class="section-note">Cents-step widths form a geometric sequence across the octave. R = 1 gives equal log-frequency division; R &gt; 1 widens intervals toward the octave; R &lt; 1 narrows them. R is the final step divided by the first, independent of the number of subdivisions.</p>
+          </div>
+        </div>
+        <div id="harmonicControls" class="hidden">
+          <div class="field">
+            <label for="harmonicSource">Harmonic construction</label>
+            <select id="harmonicSource">
+              <option value="lattice">Pairwise ratios · p/q</option>
+              <option value="partials">Overtone positions · n/1</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="primeLimit">Allowed prime factors</label>
+            <select id="primeLimit">
+              <option value="3">3-limit · 2, 3</option>
+              <option value="5">5-limit · 2, 3, 5</option>
+              <option value="7" selected>7-limit · up to 7</option>
+              <option value="11">11-limit · up to 11</option>
+              <option value="13">13-limit · up to 13</option>
+              <option value="97">Unrestricted integers</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="harmonicLimit">Harmonic / ratio limit <span class="hint">numerator and denominator</span></label>
+            <div class="range-line"><input id="harmonicLimit" type="range" min="4" max="40" step="1" value="18"><output class="range-value" id="harmonicLimitOut">18</output></div>
+          </div>
+          <p class="section-note">The lattice enumerates reduced fractions p/q within the limit, folds each ratio into one octave, and merges near-duplicates. It is a finite sample of the rational pitch lattice, not a claim that nature supplies a finite scale.</p>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label for="rootHz">Root frequency <span class="hint">Hz</span></label>
+          <input id="rootHz" type="number" min="20" max="2000" step="0.001" value="261.626">
+        </div>
+        <div class="field">
+          <label for="octaveShift">Instrument octave</label>
+          <select id="octaveShift">
+            <option value="-2">−2 octaves</option>
+            <option value="-1">−1 octave</option>
+            <option value="0" selected>Reference octave</option>
+            <option value="1">+1 octave</option>
+            <option value="2">+2 octaves</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="regenerateBtn">Regenerate scale</button>
+          <button class="btn soft" id="resetBtn">Reset lab</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>2 · Chord constructor</h2>
+        <div class="field">
+          <label for="chordRoot">Chord root <span class="hint">scale degree</span></label>
+          <select id="chordRoot"></select>
+        </div>
+        <div class="field">
+          <label for="chordPreset">Chord vocabulary <span class="hint">rational targets</span></label>
+          <select id="chordPreset"></select>
+        </div>
+        <div class="actions">
+          <button class="btn" id="buildChordBtn">Snap chord to scale</button>
+          <button class="btn soft" id="clearChordBtn">Clear notes</button>
+        </div>
+        <div class="field" style="margin-top:15px">
+          <label for="partials">Audible / plotted partials <span class="hint">1 to 32</span></label>
+          <div class="range-line"><input id="partials" type="range" min="1" max="32" value="16"><output class="range-value" id="partialsOut">16</output></div>
+        </div>
+        <div class="field">
+          <label for="rolloff">Spectral roll-off <span class="hint">amplitude ∝ 1 / nᵅ</span></label>
+          <div class="range-line"><input id="rolloff" type="range" min="0.4" max="2.5" step="0.1" value="1.1"><output class="range-value" id="rolloffOut">1.1</output></div>
+        </div>
+        <div class="field">
+          <label for="tolerance">Coincidence tolerance <span class="hint">cents</span></label>
+          <div class="range-line"><input id="tolerance" type="range" min="1" max="30" step="1" value="8"><output class="range-value" id="toleranceOut">8¢</output></div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="playChordBtn">▶ Play chord</button>
+          <button class="btn danger" id="stopBtn">■ Stop</button>
+        </div>
+        <div id="audioStatus" class="audio-status">Audio starts after the first user gesture. No microphone is required.</div>
+        <div class="chord-discovery">
+          <h3>Discover chords from this scale</h3>
+          <p class="chord-discovery-note">Searches the actual available pitch positions, then ranks combinations by pairwise proximity to low-complexity harmonic ratios. Denser and nonuniform scales can reveal chord structures that a 12-note vocabulary cannot represent.</p>
+          <div class="two-col">
+            <div class="field">
+              <label for="discoveryVoices">Chord size</label>
+              <select id="discoveryVoices">
+                <option value="all" selected>3–6 voices</option>
+                <option value="3">3 voices</option>
+                <option value="4">4 voices</option>
+                <option value="5">5 voices</option>
+                <option value="6">6 voices</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="discoverySpacing">Minimum spacing</label>
+              <select id="discoverySpacing">
+                <option value="0">No filter</option>
+                <option value="12" selected>12¢</option>
+                <option value="25">25¢</option>
+                <option value="40">40¢</option>
+                <option value="60">60¢</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="discoveryCount">Results to show <span class="hint">24–80</span></label>
+            <div class="range-line"><input id="discoveryCount" type="range" min="24" max="80" step="8" value="40"><output class="range-value" id="discoveryCountOut">40</output></div>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="discoverChordsBtn">Discover scale chords</button>
+          </div>
+          <p id="discoverySummary" class="chord-discovery-note" aria-live="polite">Generate a scale, then discover its harmonic chord combinations.</p>
+          <div id="discoveredChords" class="discovery-results"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Scale geometry</h2>
+        <div class="stats">
+          <div class="stat"><span class="v" id="noteCount">12</span><span class="k">pitch classes</span></div>
+          <div class="stat"><span class="v" id="minStep">100¢</span><span class="k">smallest step</span></div>
+          <div class="stat"><span class="v" id="maxStep">100¢</span><span class="k">largest step</span></div>
+        </div>
+        <p class="footer-note" id="scaleDescription">12 equally spaced logarithmic positions. Every step has the same frequency ratio.</p>
+      </section>
+    </aside>
+
+    <main class="main-col">
+      <section class="panel">
+        <div class="toolbar">
+          <div><h2 style="margin:0 0 4px">3 · Playable scale</h2><p>Tap a key to audition it; click to add or remove it from the chord.</p></div>
+          <span class="badge" id="scaleBadge">12-EDO · 100¢ steps</span>
+        </div>
+        <div class="keyboard-wrap"><div id="keyboard" class="keyboard" aria-label="Scale note keyboard"></div></div>
+        <div class="instrument-foot"><span>Keyboard pitch classes and the chord builder share one chord; the builder can place multiple voices in different octaves.</span><span>Computer keys: A W S E D F T G Y H U J K O L P</span></div>
+        <div id="chordSummary" class="chord-summary"></div>
+        <div class="midi-panel">
+          <div class="midi-head">
+            <div><h3>Per-voice microtonal MIDI export</h3><p>Each chord tone gets its own MIDI channel, with a nearest-semitone note number and an independent pitch-bend offset.</p></div>
+            <span class="badge">SMF · channel-separated bends</span>
+          </div>
+          <div class="midi-controls">
+            <div class="field"><label for="midiTempo">Tempo <span class="hint">BPM</span></label><input id="midiTempo" type="number" min="30" max="300" value="120"></div>
+            <div class="field"><label for="midiDuration">Chord duration</label><select id="midiDuration"><option value="1">1 beat</option><option value="2">2 beats</option><option value="4" selected>4 beats</option><option value="8">8 beats</option></select></div>
+            <div class="field"><label for="midiBendRange">Pitch-bend range</label><select id="midiBendRange"><option value="1">±1 semitone</option><option value="2" selected>±2 semitones</option><option value="12">±12 semitones</option><option value="24">±24 semitones</option></select></div>
+          </div>
+          <div id="midiPreview" class="midi-preview" aria-live="polite">Select notes to preview their MIDI note numbers and pitch bends.</div>
+          <div class="actions"><button class="btn primary" id="exportMidiBtn">↓ Export selected chord as MIDI</button></div>
+          <p class="diag-note">Uses standard MIDI pitch-bend messages (14-bit) and RPN 0,0 to set the bend range. Voices use separate channels (excluding percussion channel 10). Import into a DAW that preserves MIDI channels and per-channel pitch bend; the receiving instrument must honor the transmitted bend range.</p>
+        </div>
+      </section>
+
+      <div class="main-tabs" role="tablist" aria-label="Instrument workspace">
+        <button class="main-tab" id="analysisTabBtn" type="button" role="tab" aria-selected="true" aria-controls="analysisTabPanel">Spectrum analysis</button>
+        <button class="main-tab" id="builderTabBtn" type="button" role="tab" aria-selected="false" aria-controls="builderTabPanel">Interactive chord builder</button>
+      </div>
+      <div class="tab-panel" id="analysisTabPanel" role="tabpanel" aria-labelledby="analysisTabBtn">
+      <section class="panel viz-panel">
+        <div class="viz-head">
+          <h2>4 · Harmonic spectrum and interaction explorer</h2>
+          <span class="badge" id="plotModeBadge">Harmonic lanes · log pitch</span>
+        </div>
+        <div class="plot-tools">
+          <label for="plotView">View</label>
+          <select id="plotView" aria-label="Visualization mode">
+            <option value="spectrum">Harmonic lanes · logarithmic pitch</option>
+            <option value="roughness">Dissonance map · ERB separation vs pitch</option>
+            <option value="beating">Beating map · beat rate vs pitch</option>
+            <option value="matrix">Voice-pair roughness matrix</option>
+            <option value="amplitude">Spectral envelope · amplitude vs log pitch</option>
+          </select>
+          <label class="plot-toggle"><input type="checkbox" id="plotScaleToggle" checked> Scale grid</label>
+          <label class="plot-toggle"><input type="checkbox" id="plotAlignToggle" checked> Harmonic alignment</label>
+          <label class="plot-toggle"><input type="checkbox" id="plotClashToggle" checked> Roughness links</label>
+          <button class="btn soft" id="plotResetZoom" type="button">Reset zoom</button>
+          <button class="btn soft" id="plotClearFocus" type="button">Clear focus</button>
+        </div>
+        <div class="viz" id="vizBox">
+          <canvas id="plotCanvas" role="img" tabindex="0" aria-label="Interactive harmonic spectrum and dissonance visualization. Use mouse wheel to zoom, drag to pan, and click points for details."></canvas>
+          <div class="plot-tooltip" id="plotTooltip" role="status" aria-live="polite"></div>
+        </div>
+        <div class="viz-caption"><span id="plotCaption">Horizontal position is pitch in cents above the root (a logarithmic frequency coordinate); vertical lanes are chord voices.</span><span>Wheel = zoom · drag = pan · hover = inspect · click = focus voice pair</span></div>
+        <div class="plot-readout" id="plotReadout" aria-live="polite">Select or hover a plotted point to inspect its exact partial frequencies, beat rate, ERB separation and estimated roughness.</div>
+        <div class="analysis-grid">
+          <div class="analysis-card">
+            <h3>Partial relationships</h3>
+            <p id="matchSummary">Select at least two notes to compare the partials of their harmonic spectra.</p>
+            <div id="matchList" class="match-list"></div>
+          </div>
+          <div class="analysis-card">
+            <h3>Reading the plot</h3>
+            <p>Two dots on different rows at the same horizontal position represent partials with the same frequency. Short vertical connectors mark pairs within the selected cents tolerance. This is a spectral alignment view, not a claim that every alignment is automatically consonant: amplitude, masking, critical bands and musical context still matter.</p>
+          </div>
+        </div>
+        <div class="diagnostic-section">
+          <div class="diagnostic-head">
+            <div>
+              <h2 style="margin:0 0 3px">5 · Dissonance, beating & intermodulation</h2>
+              <p>Cross-tone partial interactions are evaluated using an ERB-scaled Plomp–Levelt roughness approximation. Beat rates are shown in Hz. Intermodulation products are predictions for a nonlinear stage, not components generated by the lab’s linear additive synthesizer.</p>
+            </div>
+            <div class="diagnostic-controls">
+              <label for="imdOrder">IM products</label>
+              <select id="imdOrder"><option value="all" selected>2nd + 3rd order</option><option value="2">2nd order only</option><option value="3">3rd order only</option></select>
+            </div>
+          </div>
+          <div class="diag-metrics">
+            <div class="diag-metric"><strong id="roughnessMetric">—</strong><span>relative roughness index · 0–100</span></div>
+            <div class="diag-metric"><strong id="clashMetric">—</strong><span>roughness-active partial clashes</span></div>
+            <div class="diag-metric"><strong id="beatMetric">—</strong><span>close-partial beat interactions ≤300 Hz</span></div>
+            <div class="diag-metric"><strong id="imdMetric">—</strong><span>candidate IM products in 20 Hz–20 kHz</span></div>
+          </div>
+          <div class="diag-grid">
+            <div class="diag-card">
+              <h3>Pairwise roughness map</h3>
+              <p>Each cell compares two voices. Higher values indicate greater mean weighted roughness across their cross-partial pairs; the color scale is shared across the matrix.</p>
+              <canvas class="diag-canvas" id="roughnessCanvas" aria-label="Pairwise roughness heatmap"></canvas>
+              <div class="roughness-scale"><span>0 · lower</span><i></i><span>50</span><i></i><span>100 · higher</span></div>
+              <div id="roughnessList" class="diag-list"></div>
+            </div>
+            <div class="diag-card">
+              <h3>Beating spectrum</h3>
+              <p>Horizontal position is the absolute frequency difference between two partials; the canvas plots the 700 strongest interactions. Slow modulation and faster unresolved roughness are separated approximately, not as hard psychoacoustic boundaries.</p>
+              <canvas class="diag-canvas" id="beatingCanvas" aria-label="Partial beating rate distribution"></canvas>
+              <div id="beatingList" class="diag-list"></div>
+            </div>
+            <div class="diag-card">
+              <h3>Potential intermodulation products</h3>
+              <p>Products from pairs of partials belonging to different notes: f₂±f₁ and 2f₁±f₂ / 2f₂±f₁. Horizontal position is logarithmic frequency.</p>
+              <canvas class="diag-canvas" id="imdCanvas" aria-label="Intermodulation products by frequency"></canvas>
+              <div id="imdList" class="diag-list"></div>
+            </div>
+            <div class="diag-card">
+              <h3>How to interpret these estimates</h3>
+              <p id="diagnosticSummary">Select at least two notes to calculate cross-partial interactions.</p>
+              <p>Roughness uses exp(−3.5s) − exp(−5.75s), with s = partial separation / ERB at the pair’s mean frequency. Partial amplitudes are weighted by 1/nᵅ. The 0–100 index averages only partial pairs within one estimated ERB and normalizes that amplitude-weighted mean against the peak of this roughness kernel; it is comparative, not calibrated loudness or a universal consonance scale.</p>
+              <p>Beat rate is |fₐ−fᵦ|. Exact coincidences are harmonic alignment, not beating. This display includes nonzero differences up to 300 Hz only when the partials fall within one estimated ERB. The slow / flutter / roughness-region divisions are heuristic, not universal perceptual boundaries.</p>
+              <p>Second-order products are f₂±f₁. Third-order products include 2f₁±f₂ and 2f₂±f₁. Their displayed strength is an amplitude-product proxy only. Proxies are normalized separately within each order and must not be compared across orders; actual levels require a specified nonlinear transfer function, coefficient, operating level and phase.</p>
+            </div>
+          </div>
+          <p class="diag-note" id="diagnosticLimitNote">Analysis includes cross-voice partial pairs. To keep dense chords responsive, at most twelve selected voices and sixteen partials per voice are used for the intermodulation estimate; the main spectrum retains its full selected partial count.</p>
+        </div>
+      </section>
+      </div>
+      <section class="panel tab-panel hidden" id="builderTabPanel" role="tabpanel" aria-labelledby="builderTabBtn">
+        <div class="builder-intro">
+          <div>
+            <h2>Interactive chord builder · harmonic layers</h2>
+            <p>Compose directly on a logarithmic pitch canvas. The lower pitch rail contains the active scale repeated across octaves; click a position to add or remove that voice. Above it, each row shows the voice’s harmonic partials at their true frequency ratios. Octave placement is independent per voice, and the same chord feeds the spectrum diagnostics, synthesizer and channel-per-voice MIDI exporter.</p>
+          </div>
+          <span class="badge" id="builderVoiceBadge">1 voice · 12-tone scale</span>
+        </div>
+        <div class="builder-controls">
+          <div class="field"><label for="builderDegree">Scale degree</label><select id="builderDegree"></select></div>
+          <div class="field"><label for="builderOctave">Register</label><select id="builderOctave"><option value="-3">−3 octaves</option><option value="-2">−2 octaves</option><option value="-1">−1 octave</option><option value="0" selected>Reference octave</option><option value="1">+1 octave</option><option value="2">+2 octaves</option><option value="3">+3 octaves</option><option value="4">+4 octaves</option><option value="5">+5 octaves</option></select></div>
+          <div class="field"><label for="builderRange">Visible pitch range</label><select id="builderRange"><option value="0:1">One octave</option><option value="-1:1">Two octaves</option><option value="-1:2" selected>Three octaves</option><option value="-1:4">Five octaves · partial view</option><option value="-2:6">Eight octaves · wide view</option></select></div>
+          <div class="field"><label for="builderPartialScale">Partial display</label><select id="builderPartialScale"><option value="8">1–8 partials</option><option value="16" selected>1–16 partials</option><option value="32">1–32 partials</option></select></div>
+        </div>
+        <div class="builder-viz"><canvas id="builderCanvas" tabindex="0" role="img" aria-label="Interactive chord builder. Click a scale position in the lower rail to add or remove a voice. Harmonic partials are shown in separate lanes."></canvas></div>
+        <div class="builder-readout" id="builderReadout" aria-live="polite">Click a scale position in the lower rail to add it to the chord. Click it again to remove it. Hover to inspect pitch and harmonic partial positions.</div>
+        <div class="builder-statline" id="builderStats"><span>Voices: 1</span><span>Scale: 12 positions</span><span>Partial range: 1–16</span></div>
+        <div class="builder-lower">
+          <div class="builder-card">
+            <h3>Chord voices and register</h3>
+            <p>Each voice is independently octave-shiftable. The voice list is the authoritative chord definition; all analysis and MIDI export use these exact pitches.</p>
+            <div class="builder-voices" id="builderVoices"></div>
+            <div class="builder-actions">
+              <button class="btn primary" id="builderAddBtn" type="button">+ Add selected scale degree</button>
+              <button class="btn" id="builderPlayBtn" type="button">▶ Play chord</button>
+              <button class="btn" id="builderStopBtn" type="button">■ Stop</button>
+              <button class="btn soft" id="builderReloadBtn" type="button">Reset to keyboard pitch classes</button>
+              <button class="btn danger" id="builderClearBtn" type="button">Clear voices</button>
+            </div>
+          </div>
+          <div class="builder-card">
+            <h3>Harmonic-layer reading</h3>
+            <p>Horizontal position is 1200·log₂(f / reference), in cents. For voice fundamental f₀, partial n is at f = n·f₀ and therefore appears at its own logarithmic position, 1200·log₂(n) cents above that voice. This view keeps the fundamental and overtone geometry visible together; it does not quantize partials to scale notes.</p>
+            <div id="builderVoiceSummary" class="match-list"></div>
+            <div class="builder-actions"><button class="btn primary" id="builderMidiBtn" type="button">↓ Export this chord as MIDI</button><button class="btn soft" id="builderShowAnalysisBtn" type="button">Open spectrum diagnostics</button></div>
+          </div>
+        </div>
+      </section>
+      <details>
+        <summary>Inspect every scale degree and its interval to the next degree</summary>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Degree</th><th>Position</th><th>Next step</th><th>Ratio / generator</th><th>Offset from nearest 12-EDO</th></tr></thead>
+            <tbody id="scaleTable"></tbody>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>Mathematical model and limitations</summary>
+        <div class="footer-note" style="margin-top:10px">
+          <div class="formula">Equal divisions: f(k) = f₀ · 2^(k/N)</div>
+          <div class="formula">Harmonic ratios: c(r) = 1200 · frac(log₂(r))</div>
+          <div class="formula">Partial n: fₙ = n · f₀ · 2^(c/1200)</div>
+          <p>For the ratio lattice, p/q is reduced before filtering. A prime limit allows only prime factors no larger than the chosen limit; the numerator and denominator are each bounded by the harmonic limit. Ratios are folded modulo the octave and near-identical pitch classes are merged. Because the rational lattice is dense, increasing the limit creates more positions but does not converge to a finite “natural” scale.</p>
+          <p>The expanded chord catalogue includes triads, neutral and septimal structures, sixths, sevenths, extended chords, quartal/quintal stacks and harmonic-partial sonorities. Each preset starts from rational target ratios and snaps to the nearest available scale degrees.</p>
+          <p>Scale-derived chord discovery uses every pitch class in the active scale, ranks a bounded subset by low-complexity root ratios, then scores 3–6 voice combinations by pairwise harmonic-ratio fit. This bounded search makes dense grids tractable; it is a ranked candidate generator, not an exhaustive enumeration of every possible subset. The ratio bank is a scoring reference, while the actual chord tones always come from the selected scale.</p>
+          <p>The audio engine uses additive harmonic synthesis with amplitudes proportional to 1/nᵅ. The spectrum chart uses the same partial count, but coincidence counts are geometric diagnostics, not psychoacoustic consonance scores.</p>
+          <p>Pitch is represented logarithmically because intervals are frequency ratios. Octave folding uses modulo 1200 cents; the equal-tempered grid is one possible coordinate lattice, while the harmonic ratio scale is nonuniform.</p>
+        </div>
+      </details>
+      <p class="footer-note">Standalone file: all controls, synthesis, scale generation and interactive canvas rendering run locally in this browser. Audio requires a user gesture and a browser with Web Audio support.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const noteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+  const chordCatalogue = [
+    { group: 'Triads · conventional and microtonal', id: 'major', name: 'Major triad', ratios: ['1/1','5/4','3/2'] },
+    { group: 'Triads · conventional and microtonal', id: 'minor', name: 'Minor triad', ratios: ['1/1','6/5','3/2'] },
+    { group: 'Triads · conventional and microtonal', id: 'diminished', name: 'Diminished triad', ratios: ['1/1','6/5','7/5'] },
+    { group: 'Triads · conventional and microtonal', id: 'augmented', name: 'Augmented triad', ratios: ['1/1','5/4','25/16'] },
+    { group: 'Triads · conventional and microtonal', id: 'sus2', name: 'Suspended second', ratios: ['1/1','9/8','3/2'] },
+    { group: 'Triads · conventional and microtonal', id: 'sus4', name: 'Suspended fourth', ratios: ['1/1','4/3','3/2'] },
+    { group: 'Triads · conventional and microtonal', id: 'septimalMinor', name: 'Septimal subminor', ratios: ['1/1','7/6','3/2'] },
+    { group: 'Triads · conventional and microtonal', id: 'neutralThird', name: '11-limit neutral third', ratios: ['1/1','11/9','3/2'] },
+    { group: 'Triads · conventional and microtonal', id: 'supermajor', name: 'Supermajor third', ratios: ['1/1','9/7','3/2'] },
+    { group: 'Triads · conventional and microtonal', id: 'subminor', name: 'Subminor triad', ratios: ['1/1','7/6','7/5'] },
+    { group: 'Triads · conventional and microtonal', id: 'harmonicSeventhTriad', name: 'Harmonic-seventh triad', ratios: ['1/1','5/4','7/4'] },
+    { group: 'Triads · conventional and microtonal', id: 'phrygian', name: 'Phrygian / minor-second triad', ratios: ['1/1','16/15','3/2'] },
+    { group: 'Triads · conventional and microtonal', id: 'lydian', name: 'Lydian tritone triad', ratios: ['1/1','5/4','45/32'] },
+    { group: 'Triads · conventional and microtonal', id: 'wideNeutral', name: 'Wide neutral triad', ratios: ['1/1','11/9','7/5'] },
+    { group: 'Triads · conventional and microtonal', id: 'bluesMinor', name: 'Blues minor shell', ratios: ['1/1','6/5','7/4'] },
+
+    { group: 'Sixths and sevenths', id: 'maj7', name: 'Major seventh', ratios: ['1/1','5/4','3/2','15/8'] },
+    { group: 'Sixths and sevenths', id: 'dom7', name: 'Harmonic dominant seventh', ratios: ['1/1','5/4','3/2','7/4'] },
+    { group: 'Sixths and sevenths', id: 'min7', name: 'Minor seventh', ratios: ['1/1','6/5','3/2','7/4'] },
+    { group: 'Sixths and sevenths', id: 'minMaj7', name: 'Minor–major seventh', ratios: ['1/1','6/5','3/2','15/8'] },
+    { group: 'Sixths and sevenths', id: 'dim7', name: 'Diminished seventh', ratios: ['1/1','6/5','7/5','8/5'] },
+    { group: 'Sixths and sevenths', id: 'halfDim7', name: 'Half-diminished seventh', ratios: ['1/1','6/5','7/5','5/3'] },
+    { group: 'Sixths and sevenths', id: 'augMaj7', name: 'Augmented major seventh', ratios: ['1/1','5/4','25/16','15/8'] },
+    { group: 'Sixths and sevenths', id: 'aug7', name: 'Augmented dominant seventh', ratios: ['1/1','5/4','25/16','7/4'] },
+    { group: 'Sixths and sevenths', id: 'maj6', name: 'Major sixth', ratios: ['1/1','5/4','3/2','5/3'] },
+    { group: 'Sixths and sevenths', id: 'min6', name: 'Minor sixth', ratios: ['1/1','6/5','3/2','5/3'] },
+    { group: 'Sixths and sevenths', id: 'sixNine', name: 'Six–nine', ratios: ['1/1','5/4','3/2','5/3','9/8'] },
+    { group: 'Sixths and sevenths', id: 'sevenSus4', name: 'Dominant seventh suspended fourth', ratios: ['1/1','4/3','3/2','7/4'] },
+    { group: 'Sixths and sevenths', id: 'sevenSus2', name: 'Dominant seventh suspended second', ratios: ['1/1','9/8','3/2','7/4'] },
+    { group: 'Sixths and sevenths', id: 'sevenFlatFive', name: 'Dominant seventh flat five', ratios: ['1/1','5/4','7/5','7/4'] },
+    { group: 'Sixths and sevenths', id: 'sevenSharpFive', name: 'Dominant seventh sharp five', ratios: ['1/1','5/4','25/16','7/4'] },
+    { group: 'Sixths and sevenths', id: 'lydianMaj7', name: 'Lydian major seventh', ratios: ['1/1','5/4','45/32','3/2','15/8'] },
+    { group: 'Sixths and sevenths', id: 'harmonicSeventh', name: 'Harmonic 1–5–6–7 sonority', ratios: ['1/1','5/4','3/2','7/4'] },
+
+    { group: 'Ninths, elevenths and thirteenths', id: 'add9', name: 'Major add nine', ratios: ['1/1','5/4','3/2','9/8'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'add11', name: 'Major add eleven', ratios: ['1/1','5/4','3/2','4/3'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'add13', name: 'Major add thirteen', ratios: ['1/1','5/4','3/2','5/3'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'maj9', name: 'Major ninth', ratios: ['1/1','9/8','5/4','3/2','15/8'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'dom9', name: 'Dominant ninth', ratios: ['1/1','9/8','5/4','3/2','7/4'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'min9', name: 'Minor ninth', ratios: ['1/1','9/8','6/5','3/2','7/4'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'maj9Sharp11', name: 'Major ninth sharp eleven', ratios: ['1/1','9/8','5/4','45/32','3/2','15/8'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'dom9Flat9', name: 'Dominant ninth with flat nine', ratios: ['1/1','16/15','5/4','3/2','7/4'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'min11', name: 'Minor eleventh', ratios: ['1/1','9/8','6/5','4/3','3/2','7/4'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'dom11', name: 'Dominant eleventh', ratios: ['1/1','9/8','5/4','4/3','3/2','7/4'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'maj13', name: 'Major thirteenth', ratios: ['1/1','9/8','5/4','3/2','15/8','5/3'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'dom13', name: 'Dominant thirteenth', ratios: ['1/1','9/8','5/4','3/2','7/4','5/3'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'min13', name: 'Minor thirteenth', ratios: ['1/1','9/8','6/5','3/2','7/4','5/3'] },
+    { group: 'Ninths, elevenths and thirteenths', id: 'nineSus4', name: 'Ninth suspended fourth', ratios: ['1/1','9/8','4/3','3/2','7/4'] },
+
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'quartal', name: 'Quartal triad', ratios: ['1/1','4/3','16/9'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'quartal4', name: 'Four-note quartal stack', ratios: ['1/1','4/3','16/9','32/27'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'quartal5', name: 'Five-note quartal stack', ratios: ['1/1','4/3','16/9','32/27','128/81'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'quintal', name: 'Quintal stack', ratios: ['1/1','9/8','3/2','27/16'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'fifthStack', name: 'Three-fifths stack', ratios: ['1/1','9/8','3/2','27/16','81/64'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'semitoneCluster', name: 'Minor-second cluster', ratios: ['1/1','16/15','9/8','6/5'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'microCluster', name: 'Microtonal 11-limit cluster', ratios: ['1/1','12/11','11/10','10/9','9/8'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'wholeToneCluster', name: 'Whole-tone cluster', ratios: ['1/1','9/8','81/64','3/2','27/16'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'tritoneCluster', name: 'Tritone / seventh cluster', ratios: ['1/1','7/5','45/32','3/2','7/4'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'partial6789', name: 'Harmonic partials 6–7–8–9', ratios: ['1/1','7/6','4/3','3/2'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'partial45679', name: 'Harmonic partials 4–5–6–7–9', ratios: ['1/1','9/8','5/4','3/2','7/4'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'partial4567911', name: 'Harmonic partials 4–5–6–7–9–11', ratios: ['1/1','9/8','11/8','5/4','3/2','7/4'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'oddHarmonic', name: 'Odd-harmonic sonority', ratios: ['1/1','7/6','11/8','3/2','7/4'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'elevenLimit', name: '11-limit color chord', ratios: ['1/1','11/10','5/4','11/8','3/2'] },
+    { group: 'Quartal, quintal, clusters and harmonic stacks', id: 'thirteenLimit', name: '13-limit color chord', ratios: ['1/1','13/12','13/10','3/2','13/8'] }
+  ];
+
+  const chordTargets = Object.fromEntries(chordCatalogue.map(chord => [chord.id, chord.ratios.map(value => {
+    const [n, d] = value.split('/').map(Number);
+    return { r: n / d, label: value };
+  })]));
+
+  let scale = [];
+  let selected = [];
+  let builderVoices = []; // { degree: scale index, octave: integer relative to instrument octave }
+  let idealTargets = new Map();
+  let audioCtx = null;
+  let masterGain = null;
+  let activeVoices = new Map();
+  const requestedVoices = new Set();
+  let pointerVoiceCounter = 0;
+  let lastChordMatches = [];
+  let lastAcousticAnalysis = null;
+
+  const mod = (x, m) => ((x % m) + m) % m;
+  const gcd = (a, b) => { while (b) { const t = b; b = a % b; a = t; } return Math.abs(a); };
+  const centsOfRatio = (r) => 1200 * Math.log2(r);
+  const signedCents = (v) => { let x = mod(v + 600, 1200) - 600; return Math.abs(x) < 0.00005 ? 0 : x; };
+  const fmt = (v, digits = 2) => Number(v).toFixed(digits);
+  const escapeHtml = (value) => String(value).replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+
+  function allowedFactors(n, primeLimit) {
+    let x = n;
+    for (let p = 2; p <= x && p <= primeLimit; p++) {
+      while (x % p === 0) x /= p;
+    }
+    return x === 1;
+  }
+
+  function foldedRatioLabel(p, q) {
+    let a = p, b = q;
+    while (a / b < 1) a *= 2;
+    while (a / b >= 2) b *= 2;
+    const g = gcd(a, b);
+    a /= g; b /= g;
+    return `${a}:${b}`;
+  }
+
+  // Generalized octave subdivision. alpha=0 is equal division in log-frequency
+  // (geometric progression / conventional EDO); alpha=1 is equal-Hz spacing.
+  // Intermediate alpha values divide a power-linearized frequency coordinate.
+  function generateEDO(n, alpha = 0) {
+    const notes = [];
+    const a = Math.max(0, Math.min(1, Number(alpha) || 0));
+    for (let i = 0; i < n; i++) {
+      const u = i / n;
+      const ratio = a < 1e-8 ? Math.pow(2, u) : Math.pow(1 + u * (Math.pow(2, a) - 1), 1 / a);
+      const cents = centsOfRatio(ratio);
+      notes.push({ cents, label: i === 0 ? '1:1' : `${i}/${n}`, ratio: `${ratio.toFixed(7)}:1`, source: a < 1e-8 ? 'equal-log' : (a > 1 - 1e-8 ? 'equal-Hz' : `power-α${a}`) });
+    }
+    return notes;
+  }
+
+  // A second, distinct logarithmic construction: the *sizes* of the cents steps
+  // form a geometric progression across the octave. R is the last/first step
+  // width ratio, so the control has the same meaning for N=12 and N=240.
+  // The per-step multiplier is q = R^(1/(N-1)); R=1 is exactly EDO.
+  function generateGeometricStepScale(n, endRatio = 1.8) {
+    const R = Math.max(0.25, Math.min(4, Number(endRatio) || 1));
+    const logR = Math.log(R);
+    const span = Math.max(1, n - 1);
+    const exponents = Array.from({ length: n }, (_, i) => logR * i / span);
+    const maxExponent = Math.max(...exponents);
+    const weights = exponents.map(v => Math.exp(v - maxExponent));
+    const total = weights.reduce((sum, v) => sum + v, 0);
+    let position = 0;
+    const notes = [];
+    for (let i = 0; i < n; i++) {
+      const ratio = Math.pow(2, position / 1200);
+      notes.push({
+        cents: position,
+        label: i === 0 ? '1:1' : `G${i + 1}`,
+        ratio: `${ratio.toFixed(7)}:1`,
+        source: `geometric-step-R${R.toFixed(2)}`
+      });
+      position += 1200 * weights[i] / total;
+    }
+    return notes;
+  }
+
+  function generateHarmonicScale(mode, limit, primeLimit) {
+    const candidates = [{ cents: 0, label: '1:1', ratio: '1:1', complexity: 0, source: 'root' }];
+    if (mode === 'partials') {
+      for (let n = 2; n <= limit; n++) {
+        if (!allowedFactors(n, primeLimit)) continue;
+        const cents = mod(centsOfRatio(n), 1200);
+        candidates.push({ cents, label: foldedRatioLabel(n, 1), ratio: `${n}:1`, complexity: n + 1, source: 'overtone' });
+      }
+    } else {
+      for (let p = 1; p <= limit; p++) {
+        if (!allowedFactors(p, primeLimit)) continue;
+        for (let q = 1; q <= limit; q++) {
+          if (p === q || !allowedFactors(q, primeLimit) || gcd(p, q) !== 1) continue;
+          const cents = mod(centsOfRatio(p / q), 1200);
+          if (cents < 0.0001 || cents > 1199.9999) continue;
+          candidates.push({ cents, label: foldedRatioLabel(p, q), ratio: `${p}:${q}`, complexity: p + q, source: 'ratio' });
+        }
+      }
+    }
+    candidates.sort((a, b) => a.cents - b.cents || a.complexity - b.complexity);
+    const unique = [];
+    for (const item of candidates) {
+      const previous = unique[unique.length - 1];
+      if (previous && Math.abs(item.cents - previous.cents) < 0.65) {
+        if (item.complexity < previous.complexity) unique[unique.length - 1] = item;
+      } else unique.push(item);
+    }
+    // Circular deduplication at the octave boundary.
+    if (unique.length > 1 && (1200 - unique[unique.length - 1].cents) + unique[0].cents < 0.65) unique.pop();
+    return unique.map((item, index) => ({ ...item, degree: index }));
+  }
+
+  function currentTuningMode() { return $('tuningMode').value; }
+  function getDivisionCount() {
+    const v = $('edoSelect').value;
+    return v === 'custom' ? Math.max(2, Math.min(240, Math.round(Number($('customN').value) || 48))) : Number(v);
+  }
+
+
+  // Preserve selected pitch positions across tuning changes.
+  function scaleIndexForCents(cents) {
+    let best = 0, bestDiff = Infinity;
+    for (let i = 0; i < scale.length; i++) {
+      const d = Math.abs(signedCents(scale[i].cents - cents));
+      if (d < bestDiff) { bestDiff = d; best = i; }
+    }
+    return best;
+  }
+
+  function noteLabel(index) {
+    const item = scale[index];
+    if (!item) return `D${index + 1}`;
+    if (currentTuningMode() === 'edo' && getDivisionCount() === 12) return noteNames[index % 12];
+    if (currentTuningMode() === 'edo') return `D${String(index + 1).padStart(2, '0')}`;
+    return item.label;
+  }
+
+  function nearestScaleIndex(targetCents) {
+    return scaleIndexForCents(mod(targetCents, 1200));
+  }
+
+  function syncBuilderFromSelected() {
+    builderVoices = selected.map(degree => ({ degree, octave: 0 }));
+    sortBuilderVoices();
+  }
+
+  function sortBuilderVoices() {
+    builderVoices.sort((a,b) => (scale[a.degree]?.cents ?? 0) + 1200*a.octave - ((scale[b.degree]?.cents ?? 0) + 1200*b.octave));
+  }
+
+  function syncSelectedFromBuilder() {
+    selected = [...new Set(builderVoices.map(v => v.degree))].sort((a,b) => a-b);
+  }
+
+  function builderVoiceKey(voice) { return `${voice.degree}:${voice.octave}`; }
+
+  function buildChord() {
+    const type = $('chordPreset').value;
+    const targets = chordTargets[type] || chordTargets.major;
+    const rootIndex = Math.max(0, Math.min(scale.length - 1, Number($('chordRoot').value) || 0));
+    const rootCents = scale[rootIndex]?.cents || 0;
+    const mapped = [];
+    const nextIdeal = new Map();
+    for (const t of targets) {
+      const targetCents = mod(rootCents + centsOfRatio(t.r), 1200);
+      const idx = nearestScaleIndex(targetCents);
+      if (!mapped.includes(idx)) mapped.push(idx);
+      nextIdeal.set(idx, { cents: targetCents, ratio: t.label });
+    }
+    selected = mapped.sort((a, b) => a - b);
+    syncBuilderFromSelected();
+    idealTargets = nextIdeal;
+    renderAll();
+  }
+
+  function toggleDegree(index) {
+    const has = builderVoices.some(v => v.degree === index);
+    if (has) builderVoices = builderVoices.filter(v => v.degree !== index);
+    else builderVoices.push({ degree: index, octave: 0 });
+    sortBuilderVoices(); syncSelectedFromBuilder();
+    idealTargets = new Map();
+    renderAll();
+  }
+
+  function scaleStats() {
+    if (!scale.length) return { min: 0, max: 0 };
+    const gaps = scale.map((v, i) => mod(scale[(i + 1) % scale.length].cents - v.cents, 1200));
+    return { min: Math.min(...gaps), max: Math.max(...gaps), gaps };
+  }
+
+  function populateChordCatalogue() {
+    const select = $('chordPreset');
+    select.innerHTML = '';
+    let activeGroup = null, groupNode = null;
+    for (const chord of chordCatalogue) {
+      if (chord.group !== activeGroup) {
+        activeGroup = chord.group;
+        groupNode = document.createElement('optgroup');
+        groupNode.label = activeGroup;
+        select.appendChild(groupNode);
+      }
+      const option = document.createElement('option');
+      option.value = chord.id;
+      option.textContent = `${chord.name} · ${chord.ratios.join(' : ')}`;
+      groupNode.appendChild(option);
+    }
+    select.value = 'major';
+  }
+
+  function renderChordRootOptions() {
+    const select = $('chordRoot');
+    const prior = Number(select.value);
+    select.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    scale.forEach((item, i) => {
+      const option = document.createElement('option');
+      option.value = String(i);
+      option.textContent = `Degree ${i + 1} · ${fmt(item.cents, 2)}¢ · ${item.label}`;
+      fragment.appendChild(option);
+    });
+    select.appendChild(fragment);
+    select.value = String(Number.isFinite(prior) && prior >= 0 && prior < scale.length ? prior : 0);
+  }
+
+  function renderStats() {
+    const stats = scaleStats();
+    $('noteCount').textContent = scale.length;
+    $('minStep').textContent = `${fmt(stats.min, 1)}¢`;
+    $('maxStep').textContent = `${fmt(stats.max, 1)}¢`;
+    const mode = currentTuningMode();
+    let desc;
+    if (mode === 'edo') {
+      const geometry = $('divisionWarp').value;
+      if (geometry === 'geometric-steps') {
+        const R = Number($('stepGrowth').value);
+        const q = Math.pow(R, 1 / Math.max(1, getDivisionCount() - 1));
+        desc = `${getDivisionCount()} positions from geometric interval-width progression. The final cents-step is ${R.toFixed(2)}× the first; the per-step width multiplier is q=${q.toFixed(5)}. ${R > 1 ? 'Intervals widen' : R < 1 ? 'Intervals narrow' : 'All intervals are equal'} toward the octave. R=1 is exactly equal-log EDO.`;
+      } else {
+        const a = Number(geometry);
+        desc = a === 0
+          ? `${getDivisionCount()} equal steps in log₂(frequency): each interval is ${fmt(1200/getDivisionCount(), 3)}¢ and has the same ratio 2^(1/${getDivisionCount()}) = ${fmt(Math.pow(2, 1 / getDivisionCount()), 7)}. This is the standard logarithmic octave division.`
+          : a === 1
+            ? `${getDivisionCount()} equal-Hz intervals. The frequency difference is constant, so the pitch intervals in cents get progressively smaller toward the top of the octave.`
+            : `${getDivisionCount()} power-coordinate hybrid positions (α=${a}). This bends between equal log-frequency spacing (α=0) and equal-Hz spacing (α=1).`;
+      }
+    } else {
+      const src = mode === 'overtone' ? 'folded overtone partials' : ($('harmonicSource').value === 'partials' ? 'folded overtone partials' : 'reduced numerator/denominator ratios');
+      desc = `${src}; prime-factor limit ${$('primeLimit').selectedOptions[0].textContent.split(' · ')[0]}, numerator/denominator limit ${$('harmonicLimit').value}. The octave is folded modulo 1200¢ and near-duplicates are merged.`;
+    }
+    $('scaleDescription').textContent = desc;
+  }
+
+  function renderKeyboard() {
+    const container = $('keyboard');
+    container.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    scale.forEach((item, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `key${selected.includes(i) ? ' selected' : ''}`;
+      btn.dataset.degree = String(i);
+      btn.title = `Degree ${i + 1}; ${fmt(item.cents, 3)} cents; ratio ${item.label}; click to select, hold to sound`;
+      const degree = document.createElement('span'); degree.className = 'degree'; degree.textContent = noteLabel(i);
+      const cents = document.createElement('span'); cents.className = 'cents'; cents.textContent = `${fmt(item.cents, 1)}¢`;
+      const ratio = document.createElement('span'); ratio.className = 'ratio'; ratio.textContent = item.label;
+      const play = document.createElement('span'); play.className = 'play-mark'; play.textContent = '●';
+      btn.append(degree, cents, ratio, play);
+      fragment.appendChild(btn);
+    });
+    container.appendChild(fragment);
+  }
+
+  function renderChordSummary() {
+    const container = $('chordSummary');
+    container.innerHTML = '';
+    if (!builderVoices.length) {
+      const empty = document.createElement('div'); empty.className = 'chip'; empty.textContent = 'No notes selected'; container.appendChild(empty); return;
+    }
+    builderVoices.forEach((voice, voiceNo) => {
+      const item = scale[voice.degree];
+      if (!item) return;
+      const chip = document.createElement('div'); chip.className = 'chip';
+      const strong = document.createElement('strong');
+      strong.textContent = `${noteLabel(voice.degree)}${voice.octave ? ` · ${voice.octave > 0 ? '+' : ''}${voice.octave} oct` : ''}`;
+      const small = document.createElement('small');
+      const target = idealTargets.get(voice.degree);
+      const absoluteCents = item.cents + 1200*voice.octave;
+      if (target && voice.octave === 0) {
+        const error = signedCents(item.cents - target.cents);
+        small.innerHTML = `${target.ratio} target · <span class="err">${error >= 0 ? '+' : ''}${fmt(error, 2)}¢</span>`;
+      } else small.textContent = `${fmt(absoluteCents, 2)}¢ · ${item.label} · voice ${voiceNo+1}`;
+      chip.append(strong, small); container.appendChild(chip);
+    });
+  }
+
+  function renderScaleTable() {
+    const body = $('scaleTable'); body.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    scale.forEach((item, i) => {
+      const next = scale[(i + 1) % scale.length];
+      const gap = mod(next.cents - item.cents, 1200);
+      const nearest = Math.round(item.cents / 100) * 100;
+      const offset = signedCents(item.cents - nearest);
+      const row = document.createElement('tr');
+      const values = [String(i + 1), `${fmt(item.cents, 3)}¢`, `${fmt(gap, 3)}¢`, item.label, `${offset >= 0 ? '+' : ''}${fmt(offset, 2)}¢`];
+      values.forEach(v => { const td = document.createElement('td'); td.textContent = v; row.appendChild(td); });
+      frag.appendChild(row);
+    });
+    body.appendChild(frag);
+  }
+
+  function selectedVoiceData() {
+    const voices = builderVoices.length ? builderVoices : selected.map(degree => ({ degree, octave: 0 }));
+    return voices.filter(v => scale[v.degree]).map((v, voiceIndex) => ({
+      index: v.degree, degree: v.degree, octave: v.octave,
+      cents: scale[v.degree].cents + 1200*v.octave,
+      label: `${noteLabel(v.degree)}${v.octave ? ` ${v.octave > 0 ? '+' : ''}${v.octave}oct` : ''}`,
+      ratio: scale[v.degree].label, voiceIndex
+    }));
+  }
+
+  function erbWidthHz(frequency) {
+    // Glasberg–Moore equivalent rectangular bandwidth approximation.
+    return 24.7 * (4.37 * Math.max(0, frequency) / 1000 + 1);
+  }
+
+  // The difference-of-exponentials kernel peaks at this value. Using its true
+  // maximum makes the displayed 0–100 scale internally consistent.
+  const ROUGHNESS_KERNEL_PEAK = 0.1807746;
+
+  function plompLeveltRoughness(deltaHz, meanHz) {
+    if (deltaHz <= 1e-9 || !(meanHz > 0)) return 0;
+    const normalized = deltaHz / erbWidthHz(meanHz);
+    return Math.max(0, Math.exp(-3.5 * normalized) - Math.exp(-5.75 * normalized));
+  }
+
+  function analyzeAcousticInteractions(voices) {
+    const requestedPartialCount = Number($('partials').value);
+    const rolloff = Number($('rolloff').value);
+    const root = Math.max(20, Math.min(2000, Number($('rootHz').value) || 261.626));
+    const octave = Number($('octaveShift').value) || 0;
+    const maxVoices = Math.min(12, voices.length);
+    const activeVoices = voices.slice(0, maxVoices);
+    const partialCount = Math.max(1, requestedPartialCount);
+    const imdPartialCount = Math.min(partialCount, 16);
+    const partialsByVoice = activeVoices.map((voice, voiceIndex) => {
+      const fundamental = root * Math.pow(2, octave + voice.cents / 1200);
+      const partials = [];
+      for (let n = 1; n <= partialCount; n++) {
+        partials.push({
+          voiceIndex, voiceLabel: voice.label, n,
+          frequency: fundamental * n,
+          cents: voice.cents + 1200 * Math.log2(n),
+          amplitude: 1 / Math.pow(n, rolloff)
+        });
+      }
+      return partials;
+    });
+
+    const pairMetrics = [];
+    const roughnessInteractions = [];
+    const beating = [];
+    const coincidenceMatches = [];
+    const intermodulation = [];
+    const imdMode = $('imdOrder') ? $('imdOrder').value : 'all';
+    let weightedRoughnessSum = 0;
+    let roughnessWeightSum = 0;
+    let insideOneErb = 0;
+    let roughnessClashCount = 0;
+    let crossPairs = 0;
+
+    for (let i = 0; i < partialsByVoice.length; i++) {
+      for (let j = i + 1; j < partialsByVoice.length; j++) {
+        let pairRoughness = 0;
+        let pairWeight = 0;
+        let pairInside = 0;
+        let pairClashes = 0;
+        const aParts = partialsByVoice[i];
+        const bParts = partialsByVoice[j];
+        for (const a of aParts) {
+          for (const b of bParts) {
+            crossPairs++;
+            const deltaHz = Math.abs(a.frequency - b.frequency);
+            const meanHz = (a.frequency + b.frequency) * 0.5;
+            const erb = erbWidthHz(meanHz);
+            const normalizedSeparation = deltaHz / erb;
+            const roughness = plompLeveltRoughness(deltaHz, meanHz);
+            const weight = a.amplitude * b.amplitude;
+            const weighted = roughness * weight;
+            // The roughness score is meaningful inside a common auditory
+            // filter. Do not dilute it with every distant cross-partial pair.
+            if (normalizedSeparation < 1) {
+              pairRoughness += weighted;
+              pairWeight += weight;
+              weightedRoughnessSum += weighted;
+              roughnessWeightSum += weight;
+              insideOneErb++;
+              pairInside++;
+              // Keep links visible for the most relevant interactions, but use
+              // a separate, stricter threshold for the headline clash count.
+              if (roughness > 0.00015 && weighted > 0.000002) {
+                roughnessInteractions.push({
+                  i, j, a: a.n, b: b.n, centsA: a.cents, centsB: b.cents,
+                  frequencyA: a.frequency, frequencyB: b.frequency,
+                  deltaHz, normalizedSeparation, roughness, weighted,
+                  beatHz: deltaHz, labelA: a.voiceLabel, labelB: b.voiceLabel,
+                  meanFrequency: meanHz, meanCents: (a.cents + b.cents) * 0.5,
+                  amplitudeA: a.amplitude, amplitudeB: b.amplitude
+                });
+              }
+              if (roughness >= 0.025 && weighted >= 0.00005) {
+                roughnessClashCount++;
+                pairClashes++;
+              }
+              // Only close partials in a common auditory filter are classified
+              // as beating / roughness-region modulation. Exact coincidence is
+              // reported separately as harmonic alignment.
+              if (deltaHz >= 0.05 && deltaHz <= 300) {
+                const beatClass = deltaHz < 15 ? 'slow' : deltaHz < 70 ? 'flutter' : 'rough';
+                const beatStrength = weight * Math.exp(-normalizedSeparation * 1.5);
+                beating.push({
+                  i, j, a: a.n, b: b.n, rate: deltaHz, weight,
+                  strength: beatStrength, roughness, normalizedSeparation,
+                  beatClass, labelA: a.voiceLabel, labelB: b.voiceLabel,
+                  frequencyA: a.frequency, frequencyB: b.frequency,
+                  meanFrequency: meanHz, meanCents: (a.cents + b.cents) * 0.5
+                });
+              }
+            }
+
+            const centsDelta = Math.abs(a.cents - b.cents);
+            if (centsDelta <= Number($('tolerance').value)) {
+              coincidenceMatches.push({ i, j, a: a.n, b: b.n, delta: centsDelta, weight });
+            }
+          }
+        }
+        const meanRoughness = pairWeight > 0 ? pairRoughness / pairWeight : 0;
+        pairMetrics.push({
+          i, j, labelA: activeVoices[i].label, labelB: activeVoices[j].label,
+          score: Math.max(0, Math.min(100, meanRoughness / ROUGHNESS_KERNEL_PEAK * 100)),
+          meanRoughness, inside: pairInside, clashes: pairClashes
+        });
+      }
+    }
+
+    // Potential products of a memoryless polynomial nonlinearity. These are
+    // frequency candidates and amplitude-product proxies, not synthesized
+    // components: real levels depend on the device's coefficients and phases.
+    for (let i = 0; i < partialsByVoice.length; i++) {
+      for (let j = i + 1; j < partialsByVoice.length; j++) {
+        const aParts = partialsByVoice[i].slice(0, imdPartialCount);
+        const bParts = partialsByVoice[j].slice(0, imdPartialCount);
+        for (const a of aParts) {
+          for (const b of bParts) {
+            const low = a.frequency <= b.frequency ? a : b;
+            const high = a.frequency <= b.frequency ? b : a;
+            const ampProduct = a.amplitude * b.amplitude;
+            const candidates = [];
+            if (imdMode === 'all' || imdMode === '2') {
+              candidates.push({ order: 2, kind: 'difference', frequency: high.frequency - low.frequency, proxy: ampProduct });
+              candidates.push({ order: 2, kind: 'sum', frequency: high.frequency + low.frequency, proxy: ampProduct });
+            }
+            if (imdMode === 'all' || imdMode === '3') {
+              candidates.push({ order: 3, kind: '2low−high', frequency: Math.abs(2 * low.frequency - high.frequency), proxy: low.amplitude * low.amplitude * high.amplitude });
+              candidates.push({ order: 3, kind: '2high−low', frequency: Math.abs(2 * high.frequency - low.frequency), proxy: high.amplitude * high.amplitude * low.amplitude });
+              candidates.push({ order: 3, kind: '2low+high', frequency: 2 * low.frequency + high.frequency, proxy: low.amplitude * low.amplitude * high.amplitude });
+              candidates.push({ order: 3, kind: '2high+low', frequency: 2 * high.frequency + low.frequency, proxy: high.amplitude * high.amplitude * low.amplitude });
+            }
+            for (const product of candidates) {
+              if (!Number.isFinite(product.frequency) || product.frequency < 0.01) continue;
+              intermodulation.push({
+                ...product,
+                source: `${a.voiceLabel} h${a.n} × ${b.voiceLabel} h${b.n}`,
+                voiceA: a.voiceLabel, voiceB: b.voiceLabel,
+                partialA: a.n, partialB: b.n
+              });
+            }
+          }
+        }
+      }
+    }
+
+    roughnessInteractions.sort((a, b) => b.weighted - a.weighted);
+    beating.sort((a, b) => b.strength - a.strength);
+    intermodulation.sort((a, b) => b.proxy - a.proxy);
+    coincidenceMatches.sort((a, b) => a.delta - b.delta || b.weight - a.weight);
+    const meanWeightedRoughness = roughnessWeightSum > 0 ? weightedRoughnessSum / roughnessWeightSum : 0;
+    const relativeRoughness = Math.max(0, Math.min(100, meanWeightedRoughness / ROUGHNESS_KERNEL_PEAK * 100));
+    const audibleProducts = intermodulation.filter(p => p.frequency >= 20 && p.frequency <= 20000);
+    return {
+      voices: activeVoices, partialsByVoice, pairMetrics,
+      roughnessInteractions: roughnessInteractions.slice(0, 2400),
+      beating: beating.slice(0, 2400), intermodulation,
+      coincidenceMatches, relativeRoughness, insideOneErb, roughnessClashCount, crossPairs,
+      beatingCount: beating.length, audibleProductCount: audibleProducts.length,
+      imdPartialCount, requestedPartialCount,
+      omittedVoices: Math.max(0, voices.length - maxVoices)
+    };
+  }
+
+  function drawDiagnosticCanvas(canvasId, painter) {
+    const canvas = $(canvasId);
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.round(rect.width * dpr));
+    const height = Math.max(1, Math.round(rect.height * dpr));
+    if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    painter(ctx, rect.width, rect.height);
+  }
+
+  function diagText(ctx, text, x, y, color = '#91a8bd', align = 'left') {
+    ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(text, x, y);
+  }
+
+  function renderRoughnessDiagnostics(data) {
+    const pairMetrics = data?.pairMetrics || [];
+    const voices = data?.voices || [];
+    const max = voices.length;
+    drawDiagnosticCanvas('roughnessCanvas', (ctx, w, h) => {
+      ctx.font = '10px ui-monospace, monospace';
+      if (max < 2) { diagText(ctx, 'Select at least two notes', w / 2, h / 2, '#91a8bd', 'center'); return; }
+      const left = 35, top = 20, size = Math.min((w - left - 12) / max, (h - top - 24) / max);
+      for (let i = 0; i < max; i++) {
+        diagText(ctx, voices[i].label.slice(0, 7), left - 5, top + (i + 0.5) * size + 3, '#91a8bd', 'right');
+        diagText(ctx, voices[i].label.slice(0, 7), left + (i + 0.5) * size, top - 7, '#91a8bd', 'center');
+        for (let j = 0; j < max; j++) {
+          const x = left + j * size, y = top + i * size;
+          if (i === j) { ctx.fillStyle = '#1b2939'; ctx.fillRect(x + 1, y + 1, size - 2, size - 2); continue; }
+          const pair = pairMetrics.find(p => (p.i === Math.min(i,j) && p.j === Math.max(i,j)));
+          const score = pair ? pair.score : 0;
+          const t = Math.max(0, Math.min(1, score / 100));
+          const r = Math.round(40 + 205 * t), g = Math.round(160 - 120 * t), b = Math.round(95 - 60 * t);
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
+          ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
+          ctx.fillStyle = '#07111b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          if (size >= 27) ctx.fillText(score.toFixed(0), x + size/2, y + size/2);
+        }
+      }
+      ctx.textBaseline = 'alphabetic';
+    });
+    const list = $('roughnessList'); list.innerHTML = '';
+    if (!pairMetrics.length) {
+      const row = document.createElement('div'); row.className = 'diag-row'; row.textContent = 'No cross-voice pairs yet.'; list.appendChild(row); return;
+    }
+    [...pairMetrics].sort((a,b) => b.score - a.score).slice(0, 6).forEach(p => {
+      const row = document.createElement('div'); row.className = 'diag-row';
+      const left = document.createElement('span'); left.textContent = `${p.labelA} ↔ ${p.labelB} · ${p.inside} within 1 ERB · ${p.clashes} stronger clashes`;
+      const right = document.createElement('b'); right.textContent = `${fmt(p.score, 1)}/100`;
+      row.append(left, right); list.appendChild(row);
+    });
+  }
+
+  function renderBeatingDiagnostics(data) {
+    const beats = data?.beating || [];
+    drawDiagnosticCanvas('beatingCanvas', (ctx, w, h) => {
+      const left = 38, right = w - 10, top = 24, bottom = h - 30;
+      const minF = 0.1, maxF = 300, bins = 48;
+      const logMin = Math.log10(minF), logSpan = Math.log10(maxF) - logMin;
+      const xFor = f => left + (Math.log10(Math.max(minF, Math.min(maxF, f))) - logMin) / logSpan * (right - left);
+      const categories = ['slow', 'flutter', 'rough'];
+      const colors = { slow: '#f3c66b', flutter: '#ffad75', rough: '#e87983' };
+      const hist = Array.from({ length: bins }, () => ({ slow: 0, flutter: 0, rough: 0 }));
+      for (const b of beats) {
+        const ix = Math.max(0, Math.min(bins - 1, Math.floor((Math.log10(b.rate) - logMin) / logSpan * bins)));
+        hist[ix][b.beatClass] += b.strength;
+      }
+      const peak = Math.max(1e-12, ...hist.map(v => categories.reduce((sum, k) => sum + v[k], 0)));
+      ctx.font = '9px ui-monospace, monospace';
+      for (const tick of [0.1, 1, 10, 100, 300]) {
+        const x = xFor(tick); ctx.strokeStyle = 'rgba(120,150,180,.22)'; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+        diagText(ctx, `${tick}`, x, h - 9, '#91a8bd', 'center');
+      }
+      ctx.strokeStyle = '#40536a'; ctx.beginPath(); ctx.moveTo(left, top); ctx.lineTo(left, bottom); ctx.lineTo(right, bottom); ctx.stroke();
+      const barW = (right - left) / bins;
+      hist.forEach((v, i) => {
+        let yBottom = bottom;
+        const x = left + i * barW + 0.5;
+        for (const key of categories) {
+          const amount = (v[key] / peak) * (bottom - top) * 0.88;
+          if (amount <= 0) continue;
+          ctx.fillStyle = colors[key]; ctx.globalAlpha = 0.82;
+          ctx.fillRect(x, yBottom - amount, Math.max(1, barW - 1), amount);
+          yBottom -= amount;
+        }
+      });
+      ctx.globalAlpha = 1;
+      let lx = left;
+      for (const key of categories) {
+        ctx.fillStyle = colors[key]; ctx.fillRect(lx, 8, 7, 7);
+        diagText(ctx, key, lx + 11, 14, '#b8c7d6');
+        lx += key === 'slow' ? 62 : key === 'flutter' ? 72 : 0;
+      }
+      diagText(ctx, 'relative weighted pair strength', left, top - 8, '#91a8bd');
+    });
+    const list = $('beatingList'); list.innerHTML = '';
+    if (!beats.length) {
+      const row = document.createElement('div'); row.className = 'diag-row'; row.textContent = 'No nonzero cross-voice partial differences within one ERB and below 300 Hz.'; list.appendChild(row); return;
+    }
+    beats.slice(0, 7).forEach(b => {
+      const row = document.createElement('div'); row.className = 'diag-row';
+      const left = document.createElement('span'); left.textContent = `${b.labelA} h${b.a} ↔ ${b.labelB} h${b.b} · ${b.beatClass}`;
+      const right = document.createElement('b'); right.textContent = `${fmt(b.rate, 2)} Hz`;
+      row.append(left, right); list.appendChild(row);
+    });
+  }
+
+  function renderIntermodDiagnostics(data) {
+    const products = data?.intermodulation || [];
+    const audible = products.filter(p => p.frequency >= 20 && p.frequency <= 20000);
+    const kindOrder = ['difference', 'sum', '2low−high', '2high−low', '2low+high', '2high+low'];
+    const kindLabels = ['f₂−f₁', 'f₁+f₂', '2f₁−f₂', '2f₂−f₁', '2f₁+f₂', '2f₂+f₁'];
+    const kindColors = ['#f5c66a', '#63d5e8', '#ff9b70', '#d98bff', '#9bdc83', '#8fa9ff'];
+    drawDiagnosticCanvas('imdCanvas', (ctx, w, h) => {
+      const left = 42, right = w - 10, top = 20, bottom = h - 24;
+      const xFor = f => left + (Math.log10(Math.max(20, Math.min(20000, f))) - Math.log10(20)) / 3 * (right - left);
+      ctx.font = '9px ui-monospace, monospace';
+      for (const tick of [20, 100, 1000, 10000, 20000]) {
+        const x = xFor(tick); ctx.strokeStyle = 'rgba(120,150,180,.22)'; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+        diagText(ctx, tick >= 1000 ? `${tick/1000}k` : `${tick}`, x, h - 8, '#91a8bd', 'center');
+      }
+      kindOrder.forEach((kind, i) => {
+        const y = top + (i + 0.5) * (bottom - top) / kindOrder.length;
+        diagText(ctx, kindLabels[i], left - 7, y + 3, kindColors[i], 'right');
+        ctx.strokeStyle = 'rgba(120,150,180,.14)'; ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+      });
+      const strongestByOrder = [2, 3].flatMap(order => audible.filter(p => p.order === order).sort((a,b) => b.proxy - a.proxy).slice(0, 450));
+      const maxProxyByOrder = {
+        2: Math.max(1e-9, ...strongestByOrder.filter(p => p.order === 2).map(p => p.proxy)),
+        3: Math.max(1e-9, ...strongestByOrder.filter(p => p.order === 3).map(p => p.proxy))
+      };
+      for (const p of strongestByOrder) {
+        const kindIdx = kindOrder.indexOf(p.kind);
+        const x = xFor(p.frequency);
+        const y = top + (kindIdx + 0.5) * (bottom - top) / kindOrder.length;
+        const strength = p.proxy / maxProxyByOrder[p.order];
+        ctx.globalAlpha = 0.25 + 0.7 * Math.sqrt(strength);
+        ctx.fillStyle = kindColors[kindIdx]; ctx.beginPath(); ctx.arc(x, y, 1.8 + 4 * Math.sqrt(strength), 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    });
+    const list = $('imdList'); list.innerHTML = '';
+    if (!products.length) {
+      const row = document.createElement('div'); row.className = 'diag-row'; row.textContent = 'Select at least two voices to generate products.'; list.appendChild(row); return;
+    }
+    [2, 3].forEach(order => {
+      const group = products.filter(p => p.order === order).slice(0, 4);
+      if (!group.length) return;
+      const heading = document.createElement('div'); heading.className = 'diag-row';
+      const headingText = document.createElement('span'); headingText.textContent = `${order === 2 ? 'SECOND' : 'THIRD'} ORDER · strongest amplitude proxies`;
+      const blank = document.createElement('b'); blank.textContent = '';
+      heading.append(headingText, blank); list.appendChild(heading);
+      group.forEach(p => {
+        const row = document.createElement('div'); row.className = 'diag-row';
+        const left = document.createElement('span'); left.textContent = `${p.kind} · ${p.source}`;
+        const right = document.createElement('b'); right.textContent = `${p.frequency < 1000 ? fmt(p.frequency, 1) + ' Hz' : fmt(p.frequency/1000, 3) + ' kHz'}`;
+        row.append(left, right); list.appendChild(row);
+      });
+    });
+  }
+
+  function renderAcousticDiagnostics(data) {
+    const d = data;
+    $('roughnessMetric').textContent = d && d.voices.length >= 2 ? fmt(d.relativeRoughness, 1) : '—';
+    $('clashMetric').textContent = d && d.voices.length >= 2 ? d.roughnessClashCount.toLocaleString() : '—';
+    $('beatMetric').textContent = d && d.voices.length >= 2 ? d.beatingCount.toLocaleString() : '—';
+    $('imdMetric').textContent = d && d.voices.length >= 2 ? d.audibleProductCount.toLocaleString() : '—';
+    if (!d || d.voices.length < 2) {
+      $('diagnosticSummary').textContent = 'Select at least two notes. Cross-voice roughness, beat-rate and intermodulation calculations will appear here.';
+    } else {
+      $('diagnosticSummary').textContent = `Analysed ${d.voices.length} voices, ${d.requestedPartialCount} partials per voice for roughness/beating, and ${d.imdPartialCount} per voice for nonlinear products. ${d.crossPairs.toLocaleString()} cross-voice partial pairs evaluated. Relative roughness = ${fmt(d.relativeRoughness, 2)}/100; ${d.roughnessClashCount.toLocaleString()} stronger clash pairs; ${d.insideOneErb.toLocaleString()} cross-partial pairs inside one ERB. ${d.omittedVoices ? `${d.omittedVoices} additional selected voice(s) omitted from diagnostics to keep dense chords responsive.` : ''}`;
+    }
+    $('diagnosticLimitNote').textContent = `Acoustic diagnostics use at most twelve voices and ${d ? d.requestedPartialCount : Number($('partials').value)} partials per voice. Roughness is averaged only over cross-voice partial pairs inside one estimated ERB; the scatter displays up to 2,400 strongest weighted interactions. Beating is counted only within one ERB and at 0.05–300 Hz. Intermodulation uses up to ${d ? d.imdPartialCount : Math.min(16, Number($('partials').value))} partials per voice. The main plot retains every selected voice and its full partial count. ${d?.omittedVoices ? `${d.omittedVoices} selected voice(s) beyond the first twelve are not included in acoustic diagnostics.` : ''}`;
+    renderRoughnessDiagnostics(d);
+    renderBeatingDiagnostics(d);
+    renderIntermodDiagnostics(d);
+  }
+
+  function analyzeMatches() {
+    // Invalidate point details when the underlying chord/spectrum changes.
+    plotState.selected = null; plotState.hover = null; plotState.focusPair = null;
+    $('plotTooltip')?.style && ($('plotTooltip').style.display = 'none');
+    const allVoices = selectedVoiceData();
+    const data = analyzeAcousticInteractions(allVoices);
+    lastAcousticAnalysis = data;
+    const matches = data.coincidenceMatches;
+    lastChordMatches = matches;
+    const summary = $('matchSummary');
+    const list = $('matchList'); list.innerHTML = '';
+    if (allVoices.length < 2) {
+      summary.textContent = 'Select at least two notes to compare the partials of their harmonic spectra.';
+    } else {
+      const close2 = matches.filter(m => m.delta <= 2).length;
+      const close5 = matches.filter(m => m.delta <= 5).length;
+      summary.textContent = `${matches.length} cross-partial pairs fall within ${$('tolerance').value}¢; ${close5} within 5¢ and ${close2} within 2¢. These are near-alignments, distinct from the roughness estimate below.`;
+      matches.slice(0, 8).forEach(m => {
+        const row = document.createElement('div'); row.className = 'match';
+        const left = document.createElement('span'); left.textContent = `${allVoices[m.i].label} · partial ${m.a} ↔ ${allVoices[m.j].label} · partial ${m.b}`;
+        const right = document.createElement('b'); right.textContent = `${fmt(m.delta, 2)}¢`;
+        row.append(left, right); list.appendChild(row);
+      });
+      if (!matches.length) {
+        const p = document.createElement('p'); p.textContent = 'No near-coincident partial pairs at the current cents tolerance.'; list.appendChild(p);
+      }
+    }
+    renderAcousticDiagnostics(data);
+  }
+
+  const MIDI_PPQ = 480;
+  const MIDI_CHANNELS = [0,1,2,3,4,5,6,7,8,10,11,12,13,14,15];
+  const midiNoteName = midi => {
+    const names = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+    return `${names[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
+  };
+
+  function getMidiVoicePlan() {
+    const root = Math.max(20, Math.min(2000, Number($('rootHz').value) || 261.626));
+    const octave = Number($('octaveShift').value) || 0;
+    const bendRange = Number($('midiBendRange').value) || 2;
+    return selectedVoiceData().map((voice, voiceNo) => {
+      const frequency = root * Math.pow(2, octave + voice.cents / 1200);
+      const midiFloat = 69 + 12 * Math.log2(frequency / 440);
+      const note = Math.round(midiFloat);
+      const bendCents = (midiFloat - note) * 100;
+      return {
+        idx: voice.degree, voiceNo, label: voice.label, frequency, midiFloat, note,
+        noteName: midiNoteName(note), bendCents,
+        channel: MIDI_CHANNELS[voiceNo], bendRange
+      };
+    });
+  }
+
+  function renderMidiPreview() {
+    const host = $('midiPreview');
+    if (!host) return;
+    const voices = getMidiVoicePlan();
+    if (!voices.length) {
+      $('exportMidiBtn').disabled = true;
+      $('exportMidiBtn').title = 'Select at least one note to export.';
+      host.innerHTML = '<div class="empty">No selected notes. Select a chord on the keyboard, load a discovered chord, or compose one in the chord builder.</div>';
+      return;
+    }
+    const range = Number($('midiBendRange').value) || 2;
+    const out = [`<table><thead><tr><th>Voice</th><th>Frequency</th><th>MIDI note</th><th>Pitch bend</th><th>Channel</th></tr></thead><tbody>`];
+    voices.forEach(v => {
+      const sign = v.bendCents >= 0 ? '+' : '';
+      const cls = v.bendCents >= 0 ? 'bend-positive' : 'bend-negative';
+      out.push(`<tr><td>${escapeHtml(v.label)}</td><td>${v.frequency.toFixed(3)} Hz</td><td>${v.noteName} · ${v.note}</td><td class="${cls}">${sign}${v.bendCents.toFixed(2)}¢</td><td>${Number.isInteger(v.channel) ? v.channel + 1 : '—'}</td></tr>`);
+    });
+    out.push('</tbody></table>');
+    host.innerHTML = out.join('');
+    const invalid = voices.some(v => v.note < 0 || v.note > 127 || Math.abs(v.bendCents) > range * 100 + 1e-6);
+    $('exportMidiBtn').disabled = invalid || voices.length > MIDI_CHANNELS.length;
+    $('exportMidiBtn').title = voices.length > MIDI_CHANNELS.length ? 'The selected chord exceeds the 15 independent melodic MIDI channels.' : invalid ? 'A note or pitch bend is outside the MIDI range.' : '';
+  }
+
+  function midiVLQ(value) {
+    let buffer = value & 0x7f;
+    const bytes = [];
+    while ((value >>= 7)) { buffer <<= 8; buffer |= ((value & 0x7f) | 0x80); }
+    while (true) {
+      bytes.push(buffer & 0xff);
+      if (buffer & 0x80) buffer >>= 8; else break;
+    }
+    return bytes;
+  }
+
+  function midiChunk(tag, data) {
+    const length = data.length;
+    return [...tag.split('').map(c => c.charCodeAt(0)),
+      (length >>> 24) & 255, (length >>> 16) & 255, (length >>> 8) & 255, length & 255, ...data];
+  }
+
+  function createChordMidiBytes() {
+    const voices = getMidiVoicePlan();
+    if (!voices.length) throw new Error('Select at least one note before exporting MIDI.');
+    if (voices.length > MIDI_CHANNELS.length) throw new Error('A maximum of 15 simultaneously tuned voices can be exported because each voice needs its own MIDI channel.');
+    const tempo = Math.max(30, Math.min(300, Number($('midiTempo').value) || 120));
+    const durationBeats = Math.max(1, Math.min(32, Number($('midiDuration').value) || 4));
+    const bendRange = Math.max(1, Math.min(24, Number($('midiBendRange').value) || 2));
+    const noteEndTick = Math.round(durationBeats * MIDI_PPQ);
+    const microsPerQuarter = Math.round(60000000 / tempo);
+    const events = [];
+    let sequence = 0;
+    const add = (tick, priority, bytes) => events.push({ tick, priority, sequence: sequence++, bytes });
+
+    // Track name and tempo map.
+    const trackName = [...'Harmonic Scale Lab'.split('').map(c => c.charCodeAt(0))];
+    add(0, -3, [0xff,0x03,...midiVLQ(trackName.length),...trackName]);
+    add(0, -2, [0xff,0x51,0x03,(microsPerQuarter >>> 16) & 255,(microsPerQuarter >>> 8) & 255,microsPerQuarter & 255]);
+
+    voices.forEach((voice, index) => {
+      const channel = MIDI_CHANNELS[index];
+      if (voice.note < 0 || voice.note > 127) throw new Error(`${voice.label} falls outside the MIDI note range.`);
+      if (Math.abs(voice.bendCents) > bendRange * 100 + 1e-6) throw new Error(`${voice.label} requires more than the selected ±${bendRange}-semitone pitch-bend range.`);
+      // MIDI RPN 0,0: pitch-bend sensitivity in semitones/cents.
+      add(0, -1, [0xB0 | channel, 101, 0]);
+      add(0, -1, [0xB0 | channel, 100, 0]);
+      add(0, -1, [0xB0 | channel, 6, bendRange]);
+      add(0, -1, [0xB0 | channel, 38, 0]);
+      add(0, -1, [0xB0 | channel, 101, 127]);
+      add(0, -1, [0xB0 | channel, 100, 127]);
+      const normalized = voice.bendCents / (bendRange * 100);
+      const bendValue = Math.max(0, Math.min(16383,
+        8192 + Math.round(normalized >= 0 ? normalized * 8191 : normalized * 8192)));
+      add(0, 0, [0xE0 | channel, bendValue & 0x7f, (bendValue >> 7) & 0x7f]);
+      add(0, 1, [0x90 | channel, voice.note, 96]);
+      add(noteEndTick, 0, [0x80 | channel, voice.note, 0]);
+      add(noteEndTick, 1, [0xE0 | channel, 0, 64]);
+    });
+
+    events.sort((a,b) => a.tick - b.tick || a.priority - b.priority || a.sequence - b.sequence);
+    const track = [];
+    let previousTick = 0;
+    for (const event of events) {
+      const delta = event.tick - previousTick;
+      track.push(...midiVLQ(delta), ...event.bytes);
+      previousTick = event.tick;
+    }
+    track.push(0x00,0xff,0x2f,0x00);
+    const header = [0x4d,0x54,0x68,0x64,0,0,0,6, 0,0, 0,1, (MIDI_PPQ >> 8) & 255, MIDI_PPQ & 255];
+    return new Uint8Array([...header, ...midiChunk('MTrk', track)]);
+  }
+
+  function exportChordMidi() {
+    try {
+      const bytes = createChordMidiBytes();
+      const blob = new Blob([bytes], { type: 'audio/midi' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = 'harmonic-scale-chord.mid';
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      $('audioStatus').textContent = `MIDI exported · ${getMidiVoicePlan().length} voices · channel-specific pitch bends.`;
+    } catch (error) {
+      alert(error.message || String(error));
+    }
+  }
+
+  // --- Harmonic-layer chord builder ----------------------------------------
+  function builderRange() {
+    const parts = String($('builderRange')?.value || '-1:2').split(':').map(Number);
+    return { min: Number.isFinite(parts[0]) ? parts[0] : -1, max: Number.isFinite(parts[1]) ? parts[1] : 2 };
+  }
+
+  function renderBuilderControls() {
+    const select = $('builderDegree');
+    if (!select) return;
+    const previous = Number(select.value);
+    select.innerHTML = '';
+    scale.forEach((item, degree) => {
+      const option = document.createElement('option');
+      option.value = String(degree);
+      option.textContent = `${noteLabel(degree)} · ${fmt(item.cents,2)}¢ · ${item.label}`;
+      select.appendChild(option);
+    });
+    select.value = String(Number.isInteger(previous) && previous >= 0 && previous < scale.length ? previous : 0);
+  }
+
+  function renderBuilderVoices() {
+    const host = $('builderVoices');
+    const summary = $('builderVoiceSummary');
+    if (!host || !summary) return;
+    host.innerHTML = ''; summary.innerHTML = '';
+    const badge = $('builderVoiceBadge');
+    if (badge) badge.textContent = `${builderVoices.length} voice${builderVoices.length===1?'':'s'} · ${scale.length}-position scale`;
+    const stats = $('builderStats');
+    if (stats) stats.innerHTML = `<span>Voices: ${builderVoices.length}</span><span>Scale: ${scale.length} positions</span><span>Partial range: 1–${Number($('builderPartialScale').value)||16}</span>`;
+    $('builderAddBtn').disabled = builderVoices.length >= 12;
+    if (!builderVoices.length) {
+      const empty=document.createElement('div'); empty.className='builder-empty'; empty.textContent='No voices yet. Click a pitch position on the lower rail, choose a scale degree above, or load the keyboard chord.'; host.appendChild(empty);
+      const msg=document.createElement('p'); msg.textContent='The harmonic lanes will appear here as soon as you add a voice.'; summary.appendChild(msg);
+      return;
+    }
+    builderVoices.forEach((voice,index) => {
+      const item=scale[voice.degree]; if(!item) return;
+      const row=document.createElement('div'); row.className='builder-voice';
+      const info=document.createElement('div');
+      const strong=document.createElement('strong'); strong.textContent=`V${index+1} · ${noteLabel(voice.degree)}${voice.octave?` · ${voice.octave>0?'+':''}${voice.octave} oct`:''}`;
+      const root=Number($('rootHz').value)||261.626;
+      const absoluteFreq=root*Math.pow(2,(Number($('octaveShift').value)||0)+item.cents/1200+voice.octave);
+      const small=document.createElement('small'); small.textContent=`${fmt(item.cents+1200*voice.octave,2)}¢ · ${fmt(absoluteFreq,3)} Hz · ${item.label}`;
+      info.append(strong,small);
+      const octave=document.createElement('select'); octave.setAttribute('aria-label',`Octave register for voice ${index+1}`);
+      for(let o=-3;o<=5;o++){const op=document.createElement('option');op.value=String(o);op.textContent=o===0?'0 oct':`${o>0?'+':''}${o} oct`;octave.appendChild(op);} octave.value=String(voice.octave);
+      octave.addEventListener('change',()=>{voice.octave=Number(octave.value)||0;sortBuilderVoices();syncSelectedFromBuilder();renderAll();});
+      const remove=document.createElement('button');remove.type='button';remove.className='btn danger';remove.textContent='Remove';remove.setAttribute('aria-label',`Remove voice ${index+1}`);
+      remove.addEventListener('click',()=>{builderVoices.splice(builderVoices.indexOf(voice),1);syncSelectedFromBuilder();renderAll();});
+      row.append(info,octave,remove);host.appendChild(row);
+
+      const line=document.createElement('div');line.className='match';
+      const lowest=builderVoices[0], bassCents=(scale[lowest.degree]?.cents||0)+1200*lowest.octave;
+      const thisCents=item.cents+1200*voice.octave, interval=thisCents-bassCents;
+      const ratio=Math.pow(2,interval/1200);
+      const left=document.createElement('span');left.textContent=`Voice ${index+1} · ${noteLabel(voice.degree)} · ${index===0?'bass / 1:1':`${fmt(interval,2)}¢ above bass · ${fmt(ratio,5)}:1`} · h1–h${Number($('builderPartialScale').value)||16}`;
+      const right=document.createElement('b');right.textContent=fmt(absoluteFreq,2)+' Hz';line.append(left,right);summary.appendChild(line);
+    });
+  }
+
+  function renderBuilderCanvas() {
+    const canvas=$('builderCanvas'); if(!canvas) return;
+    const rect=canvas.getBoundingClientRect(); if(!rect.width||!rect.height) return;
+    const dpr=Math.min(window.devicePixelRatio||1,2), W=rect.width, H=rect.height;
+    const pxW=Math.max(1,Math.round(W*dpr)), pxH=Math.max(1,Math.round(H*dpr));
+    if(canvas.width!==pxW||canvas.height!==pxH){canvas.width=pxW;canvas.height=pxH;}
+    const ctx=canvas.getContext('2d'); if(!ctx)return;
+    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+    const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a1725');bg.addColorStop(1,'#08111b');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    const range=builderRange(), minC=range.min*1200,maxC=range.max*1200;
+    const left=58,right=W-18,top=28,bottom=H-58,railTop=H-49,railBottom=H-8;
+    const x=c=>left+(c-minC)/(maxC-minC)*(right-left);
+    const laneCount=Math.max(1,builderVoices.length), laneH=(bottom-top)/laneCount;
+    const partialCount=Math.max(1,Math.min(32,Number($('builderPartialScale').value)||16));
+    const root=Math.max(20,Math.min(2000,Number($('rootHz').value)||261.626));
+    const globalOct=Number($('octaveShift').value)||0;
+    ctx.fillStyle='#a9bfd3';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('VOICE / PARTIAL LANES',8,15);
+    ctx.textAlign='center';ctx.fillText('LOGARITHMIC PITCH · cents from reference frequency', (left+right)/2,15);
+    // octave regions and equal-log scale positions
+    for(let oct=range.min;oct<range.max;oct++){
+      const x0=x(oct*1200),x1=x((oct+1)*1200);
+      ctx.fillStyle=(oct-range.min)%2===0?'rgba(34,66,91,.14)':'rgba(15,38,57,.12)';ctx.fillRect(x0,top,x1-x0,H-top);
+      ctx.strokeStyle='rgba(132,169,197,.34)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,top);ctx.lineTo(x0,railBottom);ctx.stroke();
+      ctx.fillStyle='#9ab0c5';ctx.textAlign='left';ctx.fillText(`${oct>=0?'+':''}${oct} oct`,Math.max(left+2,x0+3),H-51);
+    }
+    ctx.strokeStyle='rgba(132,169,197,.34)';ctx.beginPath();ctx.moveTo(x(maxC),top);ctx.lineTo(x(maxC),railBottom);ctx.stroke();
+    const degreeStep=Math.max(1,Math.ceil(scale.length/44));
+    const addHits=[];
+    for(let oct=range.min;oct<range.max;oct++){
+      scale.forEach((item,degree)=>{
+        const cents=oct*1200+item.cents, xp=x(cents);if(xp<left-1||xp>right+1)return;
+        const existing=builderVoices.find(v=>v.degree===degree&&v.octave===oct);
+        ctx.strokeStyle=existing?'rgba(99,213,232,.95)':'rgba(99,213,232,.22)';ctx.lineWidth=existing?1.4:.7;
+        ctx.beginPath();ctx.moveTo(xp,railTop+5);ctx.lineTo(xp,railBottom-4);ctx.stroke();
+        ctx.fillStyle=existing?'#78e4ee':'#497b90';ctx.beginPath();ctx.arc(xp,(railTop+railBottom)/2,existing?5:2.3,0,Math.PI*2);ctx.fill();
+        if(degree%degreeStep===0 && W>420){ctx.fillStyle=existing?'#dffcff':'#7793a9';ctx.font='8px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(`D${degree+1}`,xp,railTop-4);}
+        addHits.push({x:xp,degree,octave:oct,cents,existing:!!existing,label:noteLabel(degree),ratio:item.label});
+      });
+    }
+    // Lane backgrounds and actual harmonic partials.
+    if(!builderVoices.length){ctx.fillStyle='#a9bfd3';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText('Add a note on the pitch rail below to begin building a chord.',(left+right)/2,(top+bottom)/2);}
+    builderVoices.forEach((voice,vi)=>{
+      const cy=top+(vi+.5)*laneH;
+      ctx.fillStyle=vi%2===0?'rgba(18,36,53,.34)':'rgba(11,27,42,.24)';ctx.fillRect(left,top+vi*laneH,right-left,laneH);
+      ctx.strokeStyle='rgba(117,147,174,.16)';ctx.beginPath();ctx.moveTo(left,top+(vi+1)*laneH);ctx.lineTo(right,top+(vi+1)*laneH);ctx.stroke();
+      const baseC=scale[voice.degree].cents+1200*voice.octave;
+      const color=`hsl(${(vi*79+185)%360} 72% 68%)`;
+      const fundamental=root*Math.pow(2,globalOct+baseC/1200);
+      ctx.fillStyle=color;ctx.font='bold 10px system-ui';ctx.textAlign='left';ctx.fillText(`V${vi+1} · ${noteLabel(voice.degree)}${voice.octave?` ${voice.octave>0?'+':''}${voice.octave}o`:''}`,7,cy-3);
+      ctx.fillStyle='#7890a6';ctx.font='8px ui-monospace,monospace';ctx.fillText(fmt(fundamental,1)+' Hz',7,cy+10);
+      for(let n=1;n<=partialCount;n++){
+        const cents=baseC+1200*Math.log2(n),xp=x(cents);if(xp<left||xp>right)continue;
+        const amp=1/Math.pow(n,Number($('rolloff').value)||1.1),stem=8+24*amp;
+        ctx.strokeStyle=color;ctx.globalAlpha=.32+.68*amp;ctx.lineWidth=n===1?2.4:1.1;
+        ctx.beginPath();ctx.moveTo(xp,cy+stem*.45);ctx.lineTo(xp,cy-stem*.55);ctx.stroke();
+        ctx.fillStyle=color;ctx.beginPath();ctx.arc(xp,cy-stem*.55,n===1?4:Math.max(1.6,2.7*amp),0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        if(n===1||n===2||n===3||n===4||n===5||n===8||n===16){ctx.fillStyle='#e2edf7';ctx.font='8px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(`h${n}`,xp,cy-stem*.55-6);}
+      }
+    });
+    ctx.strokeStyle='#52677d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left,railBottom);ctx.lineTo(right,railBottom);ctx.stroke();
+    ctx.fillStyle='#8fa7bc';ctx.font='9px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('ADD / REMOVE SCALE TONES · click a marker',left, H-3);
+    canvas._builderHits=addHits;canvas._builderPlot={left,right,top,bottom,railTop,railBottom,minC,maxC};
+  }
+
+  function builderAddOrToggle(degree,octave) {
+    if(!scale[degree])return;
+    const at=builderVoices.findIndex(v=>v.degree===degree&&v.octave===octave);
+    if(at>=0)builderVoices.splice(at,1);
+    else {
+      if(builderVoices.length>=12){$('builderReadout').textContent='The builder is limited to 12 simultaneous voices so harmonic analysis remains responsive. Remove a voice before adding another.';return;}
+      builderVoices.push({degree,octave});
+    }
+    sortBuilderVoices();syncSelectedFromBuilder();idealTargets.clear();renderAll();
+    $('builderReadout').textContent=at>=0?`Removed ${noteLabel(degree)} at octave ${octave}.`:`Added ${noteLabel(degree)} at octave ${octave}. Harmonic lanes, diagnostics and MIDI preview have been updated.`;
+  }
+
+  function installBuilderInteractions() {
+    const canvas=$('builderCanvas'); if(!canvas)return;
+    const hitAt=(event)=>{
+      const rect=canvas.getBoundingClientRect(),px=event.clientX-rect.left;
+      const plot=canvas._builderPlot;if(!plot)return null;
+      const railY=event.clientY-rect.top;
+      if(railY<plot.railTop-5)return null;
+      const hits=canvas._builderHits||[];let best=null,dist=Infinity;
+      for(const h of hits){const d=Math.abs(h.x-px);if(d<dist){dist=d;best=h;}}
+      return dist<=Math.max(7,rect.width/160)?best:null;
+    };
+    canvas.addEventListener('pointermove',event=>{
+      const hit=hitAt(event);canvas.style.cursor=hit?'pointer':'crosshair';
+      if(hit){const f=(Number($('rootHz').value)||261.626)*Math.pow(2,(Number($('octaveShift').value)||0)+hit.cents/1200);$('builderReadout').textContent=`${hit.existing?'Already in chord':'Available scale tone'} · ${hit.label} · degree ${hit.degree+1} · octave ${hit.octave} · ${fmt(hit.cents,3)}¢ · ${hit.ratio} · ${fmt(f,3)} Hz. Click to ${hit.existing?'remove':'add'}.`;}
+    });
+    canvas.addEventListener('pointerleave',()=>{canvas.style.cursor='crosshair';});
+    canvas.addEventListener('click',event=>{const hit=hitAt(event);if(hit)builderAddOrToggle(hit.degree,hit.octave);});
+    canvas.addEventListener('keydown',event=>{if(event.key==='Escape'){$('builderReadout').textContent='Builder ready. Select a scale position on the lower pitch rail.';}});
+  }
+
+  function setMainTab(tab) {
+    const builder=tab==='builder';
+    $('analysisTabPanel').classList.toggle('hidden',builder);
+    $('builderTabPanel').classList.toggle('hidden',!builder);
+    $('analysisTabBtn').setAttribute('aria-selected',String(!builder));
+    $('builderTabBtn').setAttribute('aria-selected',String(builder));
+    if(builder){requestAnimationFrame(()=>{renderBuilderCanvas();renderBuilderVoices();});}
+    else requestAnimationFrame(()=>drawSpectrum());
+  }
+
+  function renderAll() {
+    renderChordRootOptions();
+    renderStats(); renderKeyboard(); renderChordSummary(); renderMidiPreview(); renderScaleTable(); renderBuilderControls(); renderBuilderVoices(); renderBuilderCanvas(); analyzeMatches(); drawSpectrum();
+  }
+
+  // --- Scale-derived chord discovery ---------------------------------------
+  // Build a finite bank of low-complexity rational intervals. It is a scoring
+  // vocabulary, not the scale itself; every chord tone must still exist in the
+  // currently selected scale.
+  function buildDiscoveryRatioBank() {
+    const bound = Math.max(8, Math.min(24, Number($('harmonicLimit').value) || 18));
+    const primeLimit = Number($('primeLimit').value) || 7;
+    const bank = [{ cents: 0, label: '1/1', complexity: 2, p: 1, q: 1 }];
+    for (let p = 2; p <= bound * 2; p++) {
+      if (!allowedFactors(p, primeLimit)) continue;
+      for (let q = 1; q <= bound; q++) {
+        if (p <= q || p >= 2 * q || !allowedFactors(q, primeLimit) || gcd(p, q) !== 1) continue;
+        bank.push({ cents: centsOfRatio(p / q), label: `${p}/${q}`, complexity: p + q, p, q });
+      }
+    }
+    bank.sort((a, b) => a.cents - b.cents || a.complexity - b.complexity);
+    const unique = [];
+    for (const item of bank) {
+      if (!unique.length || Math.abs(item.cents - unique[unique.length - 1].cents) > 0.04) unique.push(item);
+      else if (item.complexity < unique[unique.length - 1].complexity) unique[unique.length - 1] = item;
+    }
+    return unique;
+  }
+
+  function bestRatioFit(cents, bank) {
+    let best = null;
+    for (const ratio of bank) {
+      const error = Math.abs(cents - ratio.cents);
+      // A gentle complexity cost prevents a high integer fraction winning
+      // solely because it is microscopically closer than a simpler ratio.
+      const score = error + 0.22 * Math.max(0, ratio.complexity - 2);
+      if (!best || score < best.score) best = { ...ratio, error, score };
+    }
+    return best || { cents: 0, label: '1/1', complexity: 2, error: 0, score: 0 };
+  }
+
+  function discoverScaleChords() {
+    const summary = $('discoverySummary');
+    const output = $('discoveredChords');
+    output.innerHTML = '';
+    if (scale.length < 3) {
+      summary.textContent = 'This scale has fewer than three pitch classes; at least three are needed.';
+      return;
+    }
+
+    const rootIndex = Math.max(0, Math.min(scale.length - 1, Number($('chordRoot').value) || 0));
+    const rootCents = scale[rootIndex].cents;
+    const ratioBank = buildDiscoveryRatioBank();
+    const minSpacing = Number($('discoverySpacing').value) || 0;
+    const requestedSize = $('discoveryVoices').value;
+    const sizes = requestedSize === 'all' ? [3,4,5,6] : [Number(requestedSize)];
+    const maxResults = Number($('discoveryCount').value) || 40;
+
+    // Rank all available scale degrees by how well their root interval is
+    // explained by a small rational ratio. Keep a bounded pool so 240-EDO does
+    // not trigger an explosive combinatorial search.
+    const degreeCandidates = [];
+    for (let i = 0; i < scale.length; i++) {
+      if (i === rootIndex) continue;
+      const cents = mod(scale[i].cents - rootCents, 1200);
+      if (cents < 0.001 || cents > 1199.999) continue;
+      const fit = bestRatioFit(cents, ratioBank);
+      degreeCandidates.push({ index: i, cents, fit });
+    }
+    degreeCandidates.sort((a, b) => a.fit.score - b.fit.score || a.cents - b.cents);
+
+    const pool = [];
+    for (const candidate of degreeCandidates) {
+      if (minSpacing > 0 && pool.some(existing => Math.abs(candidate.cents - existing.cents) < minSpacing)) continue;
+      pool.push(candidate);
+      if (pool.length >= 22) break;
+    }
+    if (pool.length < 2) {
+      summary.textContent = 'Not enough distinct scale degrees survived the spacing filter. Reduce minimum spacing or use a denser scale.';
+      return;
+    }
+
+    // Include the root as pitch 0 and precompute every pair's best harmonic fit.
+    const nodes = [{ index: rootIndex, cents: 0, fit: { label: '1/1', error: 0, score: 0, complexity: 2 } }, ...pool];
+    nodes.sort((a, b) => a.cents - b.cents);
+    const pair = Array.from({ length: nodes.length }, () => Array(nodes.length));
+    for (let a = 0; a < nodes.length; a++) {
+      for (let b = a + 1; b < nodes.length; b++) {
+        const fit = bestRatioFit(nodes[b].cents - nodes[a].cents, ratioBank);
+        pair[a][b] = fit;
+      }
+    }
+    const rootNode = nodes.findIndex(n => n.index === rootIndex);
+    const candidatePositions = nodes.map((n, i) => i).filter(i => i !== rootNode);
+    const scored = [];
+    let evaluated = 0;
+
+    for (const size of sizes) {
+      if (size < 3 || size > 6 || size > nodes.length) continue;
+      const chosen = [rootNode];
+      function visit(start, need) {
+        if (need === 0) {
+          evaluated++;
+          let errorSum = 0, scoreSum = 0, complexitySum = 0, pairs = 0;
+          for (let i = 0; i < chosen.length; i++) {
+            for (let j = i + 1; j < chosen.length; j++) {
+              const a = Math.min(chosen[i], chosen[j]), b = Math.max(chosen[i], chosen[j]);
+              const fit = pair[a][b];
+              errorSum += fit.error; scoreSum += fit.score; complexitySum += fit.complexity; pairs++;
+            }
+          }
+          const meanError = errorSum / Math.max(1, pairs);
+          const meanScore = scoreSum / Math.max(1, pairs);
+          const meanComplexity = complexitySum / Math.max(1, pairs);
+          // Slight preference for a clean root relationship, balanced against
+          // pairwise consistency, so the search doesn't become root-interval only.
+          const rootFit = chosen.slice(1).reduce((sum, idx) => sum + nodes[idx].fit.score, 0) / Math.max(1, chosen.length - 1);
+          const totalScore = meanScore * 0.82 + rootFit * 0.18;
+          scored.push({ indices: chosen.map(i => nodes[i].index), cents: chosen.map(i => nodes[i].cents), size, score: totalScore, error: meanError, complexity: meanComplexity });
+          return;
+        }
+        for (let pos = start; pos <= candidatePositions.length - need; pos++) {
+          chosen.push(candidatePositions[pos]);
+          visit(pos + 1, need - 1);
+          chosen.pop();
+        }
+      }
+      visit(0, size - 1);
+    }
+
+    scored.sort((a, b) => a.score - b.score || a.error - b.error || a.size - b.size);
+    // Deduplicate enharmonic / near-identical signatures and keep a practical list.
+    const seen = new Set();
+    const results = [];
+    for (const item of scored) {
+      const signature = item.indices.slice().sort((a,b) => a-b).join(',');
+      if (seen.has(signature)) continue;
+      seen.add(signature); results.push(item);
+      if (results.length >= maxResults) break;
+    }
+
+    summary.textContent = `Scale: ${scale.length} pitch classes · root degree ${rootIndex + 1} · ${pool.length} harmonic-relevant candidate tones · ${evaluated.toLocaleString()} combinations scored. Showing ${results.length} ranked chords. Pairwise ratios use ${$('primeLimit').value}-limit candidates where available; lower fit is better.`;
+    if (!results.length) {
+      const empty = document.createElement('div'); empty.className = 'discovery-empty'; empty.textContent = 'No chord combinations found. Try a different chord size, prime limit or spacing filter.'; output.appendChild(empty); return;
+    }
+
+    for (let rank = 0; rank < results.length; rank++) {
+      const result = results[rank];
+      const relative = result.indices.map(index => mod(scale[index].cents - rootCents, 1200)).sort((a,b) => a-b);
+      const intervalLabels = relative.slice(1).map(cents => {
+        const fit = bestRatioFit(cents, ratioBank);
+        return `${fit.error > 4 ? '~' : ''}${fit.label}`;
+      });
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'discovery-result';
+      const strong = document.createElement('strong');
+      strong.textContent = `#${rank + 1} · ${result.size}-tone · ${intervalLabels.join(' + ')}`;
+      const small = document.createElement('small');
+      small.textContent = `degrees ${result.indices.map(i => i + 1).join(' · ')} · mean pair error ${fmt(result.error, 2)}¢ · fit ${fmt(result.score, 2)}`;
+      button.append(strong, small);
+      button.addEventListener('click', () => {
+        selected = result.indices.slice().sort((a,b) => a-b);
+        syncBuilderFromSelected();
+        idealTargets = new Map();
+        for (const idx of selected) {
+          const rel = mod(scale[idx].cents - rootCents, 1200);
+          const fit = bestRatioFit(rel, ratioBank);
+          idealTargets.set(idx, { cents: mod(rootCents + fit.cents, 1200), ratio: fit.label });
+        }
+        renderAll();
+        $('audioStatus').textContent = `Applied discovered ${result.size}-tone chord · mean pair error ${fmt(result.error, 2)}¢. Press Play chord to hear it.`;
+      });
+      output.appendChild(button);
+    }
+  }
+
+  // --- Additive Web Audio instrument ---------------------------------------
+  async function ensureAudio() {
+    if (!audioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) throw new Error('Web Audio is not supported by this browser.');
+      audioCtx = new AudioContextClass();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.22;
+      masterGain.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+  }
+
+  function createWave() {
+    const count = Number($('partials').value);
+    const rolloff = Number($('rolloff').value);
+    const real = new Float32Array(count + 1);
+    const imag = new Float32Array(count + 1);
+    for (let n = 1; n <= count; n++) imag[n] = 1 / Math.pow(n, rolloff);
+    return audioCtx.createPeriodicWave(real, imag, { disableNormalization: false });
+  }
+
+  function noteFrequency(index) {
+    const root = Math.max(20, Math.min(2000, Number($('rootHz').value) || 261.626));
+    const octave = Number($('octaveShift').value);
+    return root * Math.pow(2, octave + scale[index].cents / 1200);
+  }
+
+  async function noteOn(token, index) {
+    requestedVoices.add(token);
+    try {
+      await ensureAudio();
+      // A very short tap can release before AudioContext.resume() resolves.
+      // Do not create a voice after its key has already been released.
+      if (!requestedVoices.has(token) || activeVoices.has(token) || !scale[index]) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.setPeriodicWave(createWave());
+      osc.frequency.setValueAtTime(noteFrequency(index), now);
+      osc.connect(gain); gain.connect(masterGain);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.018);
+      osc.start(now);
+      activeVoices.set(token, { osc, gain });
+      $('audioStatus').classList.remove('error');
+      $('audioStatus').textContent = `Audio active · ${fmt(noteFrequency(index), 2)} Hz · additive ${$('partials').value}-partial tone`;
+    } catch (err) {
+      requestedVoices.delete(token);
+      $('audioStatus').classList.add('error');
+      $('audioStatus').textContent = err.message || String(err);
+    }
+  }
+
+  function noteOff(token) {
+    requestedVoices.delete(token);
+    const voice = activeVoices.get(token);
+    if (!voice || !audioCtx) return;
+    const now = audioCtx.currentTime;
+    try {
+      voice.gain.gain.cancelScheduledValues(now);
+      voice.gain.gain.setValueAtTime(Math.max(0.0001, voice.gain.gain.value), now);
+      voice.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      voice.osc.stop(now + 0.18);
+    } catch (_) {}
+    activeVoices.delete(token);
+    if (activeVoices.size === 0 && requestedVoices.size === 0) $('audioStatus').textContent = 'Audio ready · held note released.';
+  }
+
+  async function playChord() {
+    const chordVoices = selectedVoiceData();
+    if (!chordVoices.length) return;
+    try {
+      await ensureAudio();
+      const wave = createWave();
+      const now = audioCtx.currentTime;
+      const duration = 1.65;
+      chordVoices.forEach((voice, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.setPeriodicWave(wave);
+        const root = Math.max(20, Math.min(2000, Number($('rootHz').value) || 261.626));
+        const baseOctave = Number($('octaveShift').value) || 0;
+        osc.frequency.setValueAtTime(root * Math.pow(2, baseOctave + voice.cents/1200), now);
+        osc.connect(gain); gain.connect(masterGain);
+        const level = 0.13 / Math.sqrt(Math.max(1, chordVoices.length));
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(level, now + 0.025 + i * 0.003);
+        gain.gain.setValueAtTime(level, now + duration);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration + 0.35);
+        osc.start(now); osc.stop(now + duration + 0.4);
+      });
+      $('audioStatus').classList.remove('error');
+      $('audioStatus').textContent = `Playing ${chordVoices.length} tone${chordVoices.length === 1 ? '' : 's'} · independent voice registers · root ${fmt(Number($('rootHz').value) || 261.626, 2)} Hz`;
+    } catch (err) {
+      $('audioStatus').classList.add('error'); $('audioStatus').textContent = err.message || String(err);
+    }
+  }
+
+  function stopAll() {
+    for (const token of [...requestedVoices]) noteOff(token);
+    for (const token of [...activeVoices.keys()]) noteOff(token);
+    $('audioStatus').textContent = 'Active held notes released.';
+  }
+
+  // --- Interactive logarithmic-pitch / auditory-interaction explorer -------
+  // Canvas 2D is used intentionally here: text, axes, hit regions and hover
+  // inspection remain crisp and deterministic across mobile/desktop browsers.
+  const plotState = {
+    view: 'spectrum', zoom: 1, pan: 0, hits: [], geometry: null,
+    hover: null, selected: null, focusPair: null, drag: null
+  };
+
+  const plotColor = (value) => {
+    const t = Math.max(0, Math.min(1, value));
+    const stops = [
+      [0.00, [43, 166, 139]],
+      [0.45, [218, 190, 83]],
+      [1.00, [244, 83, 70]]
+    ];
+    let a = stops[0], b = stops[1];
+    if (t > stops[1][0]) { a = stops[1]; b = stops[2]; }
+    const u = (t - a[0]) / Math.max(1e-9, b[0] - a[0]);
+    return `rgb(${a[1].map((v,i)=>Math.round(v+(b[1][i]-v)*u)).join(',')})`;
+  };
+  const plotEsc = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const plotStateLabels = {
+    spectrum: 'Harmonic lanes · log pitch', roughness: 'Dissonance map · ERB separation',
+    beating: 'Beating map · rate vs pitch', matrix: 'Voice-pair roughness matrix',
+    amplitude: 'Spectral envelope · log pitch'
+  };
+  const fmtHz = f => f>=1000 ? `${fmt(f/1000,3)} kHz` : `${fmt(f,2)} Hz`;
+  const plotBaseCaption = {
+    spectrum: 'Pitch position is 1200·log₂(f / root) cents. Each horizontal lane is one selected voice; harmonic partials are placed by their actual frequency ratios.',
+    roughness: 'Each dot is one cross-voice partial pair. Horizontal position is geometric-mean pitch; vertical position is partial separation divided by the ERB at that frequency. The curve peaks near 0.22 ERB.',
+    beating: 'Each dot is a cross-voice partial pair. Horizontal position is |fₐ−fᵦ| in Hz on a logarithmic axis; vertical position is the pair’s geometric-mean pitch.',
+    matrix: 'Each cell summarizes the mean weighted roughness for one pair of voices, considering cross-partial pairs within one estimated ERB. Click a cell to focus that voice pair.',
+    amplitude: 'Each voice is shown as a harmonic stick spectrum. Horizontal position is logarithmic pitch; vertical position is partial amplitude in dB relative to that voice’s fundamental.'
+  };
+
+  function plotDomainForView(view, data, voices) {
+    const partialCount = Math.max(1, Number($('partials').value) || 1);
+    const minVoice = voices.length ? Math.min(0, ...voices.map(v => v.cents)) : 0;
+    const maxVoice = voices.length ? Math.max(0, ...voices.map(v => v.cents + 1200*Math.log2(partialCount))) : 1200;
+    const pitchMin = Math.floor((minVoice - 180) / 1200) * 1200;
+    const pitchMax = Math.ceil((maxVoice + 240) / 1200) * 1200;
+    if (view === 'spectrum' || view === 'roughness' || view === 'amplitude') return [pitchMin, Math.max(pitchMin + 1200, pitchMax)];
+    if (view === 'beating') return [Math.log10(0.05), Math.log10(300)];
+    if (view === 'matrix') return [0, Math.max(1, voices.length)];
+    return [pitchMin, Math.max(pitchMin + 1200, pitchMax)];
+  }
+
+  function plotVisibleRange(baseMin, baseMax) {
+    const baseSpan = Math.max(1e-9, baseMax - baseMin);
+    const viewSpan = baseSpan / plotState.zoom;
+    const start = baseMin + plotState.pan * (baseSpan - viewSpan);
+    return [start, start + viewSpan];
+  }
+
+  function drawSpectrum() {
+    const canvas = $('plotCanvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.round(rect.width * dpr));
+    const height = Math.max(1, Math.round(rect.height * dpr));
+    if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width, H = rect.height;
+    ctx.clearRect(0, 0, W, H);
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#0a1522'); bg.addColorStop(1, '#08111c');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    plotState.hits = [];
+
+    const allVoices = lastAcousticAnalysis?.voices?.length
+      ? lastAcousticAnalysis.voices
+      : selectedVoiceData();
+        const voices = allVoices;
+    const data = lastAcousticAnalysis;
+    const view = $('plotView')?.value || plotState.view;
+    plotState.view = view;
+    const baseDomain = plotDomainForView(view, data, voices);
+    const [domainMin, domainMax] = plotVisibleRange(baseDomain[0], baseDomain[1]);
+    const left = view === 'matrix' ? 66 : 62;
+    const right = W - 18;
+    const top = 30;
+    const bottom = H - 40;
+    const pw = Math.max(30, right - left), ph = Math.max(30, bottom - top);
+    const xMap = value => left + (value - domainMin) / Math.max(1e-9, domainMax-domainMin) * pw;
+    const yMap = value => bottom - value * ph;
+    const addHit = (x, y, r, item) => plotState.hits.push({x,y,r,item});
+
+    ctx.font = '10px ui-monospace,SFMono-Regular,Menlo,monospace';
+    ctx.textBaseline = 'middle';
+    const drawGrid = (xTicks, yTicks, xLabelFn, yLabelFn) => {
+      ctx.lineWidth = 1;
+      xTicks.forEach(t => {
+        const x = xMap(t.value);
+        if (x < left-1 || x > right+1) return;
+        ctx.strokeStyle = t.major ? 'rgba(132,169,197,.27)' : 'rgba(132,169,197,.11)';
+        ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+        ctx.fillStyle = '#90a7bd'; ctx.textAlign = 'center'; ctx.fillText(xLabelFn(t.value), x, H-20);
+      });
+      yTicks.forEach(t => {
+        const y = yMap(t.value);
+        if (y < top-1 || y > bottom+1) return;
+        ctx.strokeStyle = t.major ? 'rgba(132,169,197,.24)' : 'rgba(132,169,197,.10)';
+        ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+        ctx.fillStyle = '#90a7bd'; ctx.textAlign = 'right'; ctx.fillText(yLabelFn(t.value), left-9, y);
+      });
+      ctx.strokeStyle = '#52677d'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(left,top); ctx.lineTo(left,bottom); ctx.lineTo(right,bottom); ctx.stroke();
+    };
+    const pitchTicks = () => {
+      const span = domainMax-domainMin;
+      const step = span > 7000 ? 1200 : span > 3200 ? 600 : span > 1400 ? 300 : span > 700 ? 100 : 50;
+      const first = Math.ceil(domainMin/step)*step, arr=[];
+      for (let v=first; v<=domainMax && arr.length<160; v+=step) arr.push({value:v,major:Math.abs(v%1200)<0.01});
+      return arr;
+    };
+    const formatPitch = cents => {
+      if (Math.abs(cents)<0.5) return 'root';
+      const oct = Math.floor(cents/1200), rem = cents-oct*1200;
+      return `${oct?`+${oct}o `:''}${Math.round(rem)}¢`;
+    };
+    const pitchYTicks = voices.map((v,i)=>({value:(i+.5)/Math.max(1,voices.length),major:true,label:v.label}));
+    const getPartialsForVoice = (v,i) => {
+      if (data?.partialsByVoice?.[i]) return data.partialsByVoice[i];
+      const fundamental = (Number($('rootHz').value)||261.626)*Math.pow(2,(Number($('octaveShift').value)||0)+v.cents/1200);
+      return Array.from({length:Number($('partials').value)},(_,n)=>({voiceIndex:i,voiceLabel:v.label,n:n+1,frequency:fundamental*(n+1),cents:v.cents+1200*Math.log2(n+1),amplitude:1/Math.pow(n+1,Number($('rolloff').value)||1.1)}));
+    };
+    const partialsByVoice = voices.map((v,i)=>getPartialsForVoice(v,i));
+    const activeFocus = plotState.focusPair;
+    const voiceAlpha = i => !activeFocus ? 1 : activeFocus.includes(i) ? 1 : 0.16;
+    const voiceColor = i => {
+      const hue=(i*79+185)%360;
+      return `hsl(${hue} 72% 68%)`;
+    };
+
+    // View 1: note lanes in true logarithmic pitch coordinates.
+    if (view === 'spectrum') {
+      drawGrid(pitchTicks(), voices.map((v,i)=>({value:(i+.5)/Math.max(1,voices.length),major:true})), formatPitch, v => v.label || '');
+      ctx.fillStyle='#a9bed1'; ctx.textAlign='left'; ctx.fillText('VOICE',8,14);
+      ctx.textAlign='center'; ctx.fillText('LOG-PITCH POSITION · cents above root', (left+right)/2, 12);
+      if ($('plotScaleToggle').checked) {
+        const firstOctave=Math.floor(domainMin/1200), lastOctave=Math.ceil(domainMax/1200);
+        for(let o=firstOctave;o<lastOctave;o++) for(const item of scale){
+          const x=xMap(o*1200+item.cents);
+          if(x<left||x>right) continue;
+          ctx.strokeStyle='rgba(99,213,232,.26)'; ctx.lineWidth= item.cents===0?1.4:0.8;
+          ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+Math.min(12,ph*.04));ctx.stroke();
+        }
+      }
+      voices.forEach((voice,vi)=>{
+        const y=bottom-(vi+.5)/Math.max(1,voices.length)*ph;
+        ctx.strokeStyle='rgba(119,149,176,.18)';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();
+        ctx.fillStyle=voiceColor(vi);ctx.globalAlpha=voiceAlpha(vi);ctx.textAlign='right';ctx.fillText(`${voice.label} · ${fmt(voice.cents,1)}¢`,left-8,y);
+        const list=partialsByVoice[vi]||[];
+        list.forEach(part=>{
+          const x=xMap(part.cents);if(x<left-8||x>right+8)return;
+          const radius=Math.max(2.2,7.5*Math.sqrt(Math.max(.001,part.amplitude)));
+          ctx.globalAlpha=voiceAlpha(vi)*(.25+.75*Math.sqrt(part.amplitude));
+          ctx.strokeStyle=voiceColor(vi);ctx.lineWidth=Math.max(1,radius*.32);
+          ctx.beginPath();ctx.moveTo(x,y+9);ctx.lineTo(x,y-radius-2);ctx.stroke();
+          ctx.fillStyle=voiceColor(vi);ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();
+          if(part.n<=3 && spanForLabel(domainMax-domainMin)){ctx.globalAlpha=voiceAlpha(vi)*.9;ctx.fillStyle='#d8e7f2';ctx.textAlign='center';ctx.fillText(`h${part.n}`,x,y-radius-9);}
+          addHit(x,y,radius+7,{type:'partial',...part,voiceIndex:vi});
+        });
+        ctx.globalAlpha=1;
+      });
+      if ($('plotAlignToggle').checked && data) {
+        data.coincidenceMatches.slice(0,260).forEach(m=>{
+          const a=partialsByVoice[m.i]?.[m.a-1],b=partialsByVoice[m.j]?.[m.b-1];if(!a||!b)return;
+          const x=xMap((a.cents+b.cents)*.5);if(x<left||x>right)return;
+          const y1=bottom-(m.i+.5)/Math.max(1,voices.length)*ph,y2=bottom-(m.j+.5)/Math.max(1,voices.length)*ph;
+          ctx.strokeStyle=`rgba(244,218,157,${Math.max(.16,.78*(1-m.delta/Math.max(1,Number($('tolerance').value))))})`;
+          ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2);ctx.stroke();
+          addHit(x,(y1+y2)*.5,7,{type:'alignment',match:m,partialA:a,partialB:b});
+        });
+      }
+      if ($('plotClashToggle').checked && data) {
+        data.roughnessInteractions.slice(0,360).forEach(item=>{
+          const a=partialsByVoice[item.i]?.[item.a-1],b=partialsByVoice[item.j]?.[item.b-1];if(!a||!b)return;
+          const x1=xMap(a.cents),x2=xMap(b.cents);if((x1<left&&x2<left)||(x1>right&&x2>right))return;
+          const y1=bottom-(item.i+.5)/Math.max(1,voices.length)*ph,y2=bottom-(item.j+.5)/Math.max(1,voices.length)*ph;
+          const strength=Math.min(1,item.roughness/ROUGHNESS_KERNEL_PEAK);
+          ctx.strokeStyle=plotColor(strength);ctx.globalAlpha=voiceAlpha(item.i)*voiceAlpha(item.j)*(.15+.68*strength);ctx.lineWidth=.8+1.9*strength;
+          ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+          const mx=(x1+x2)*.5,my=(y1+y2)*.5;ctx.fillStyle=plotColor(strength);ctx.beginPath();ctx.arc(mx,my,2+2.8*strength,0,Math.PI*2);ctx.fill();
+          addHit(mx,my,8,{type:'roughness',interaction:item});
+          ctx.globalAlpha=1;
+        });
+      }
+    }
+
+    // View 2: dissonance scatter, explicitly tied to the roughness kernel.
+    else if (view === 'roughness') {
+      const interactions=data?.roughnessInteractions||[];
+      drawGrid(pitchTicks(),[0,.2,.4,.6,.8,1].map(v=>({value:v,major:true})),formatPitch,v=>v.toFixed(1));
+      ctx.fillStyle='#a9bed1';ctx.textAlign='left';ctx.fillText('Δ / ERB',8,14);
+      ctx.textAlign='center';ctx.fillText('GEOMETRIC-MEAN PARTIAL PITCH · cents above root',(left+right)/2,12);
+      const peakSep=0.2206386;
+      const py=yMap(peakSep);ctx.strokeStyle='rgba(255,218,133,.85)';ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(right,py);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#f3d18b';ctx.textAlign='right';ctx.fillText('kernel peak ≈ 0.22 ERB · color = kernel response · size = amplitude weight',right-4,py-10);
+      interactions.forEach(item=>{
+        const pairHighlighted=!activeFocus || (activeFocus.length===1 ? activeFocus[0]===item.i||activeFocus[0]===item.j : activeFocus.includes(item.i)&&activeFocus.includes(item.j));
+        const x=xMap(item.meanCents??(item.centsA+item.centsB)*.5),y=yMap(Math.min(1.0,item.normalizedSeparation));
+        if(x<left-8||x>right+8)return;
+        const strength=Math.min(1,item.roughness/ROUGHNESS_KERNEL_PEAK);
+        const radius=2.2+7*Math.pow(Math.max(0,item.weighted),.28);
+        ctx.globalAlpha=(.3+.7*Math.sqrt(strength))*(pairHighlighted?1:.13);ctx.fillStyle=plotColor(strength);ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=.85;ctx.strokeStyle='#07111d';ctx.lineWidth=.8;ctx.stroke();ctx.globalAlpha=1;
+        addHit(x,y,radius+6,{type:'roughness',interaction:item});
+      });
+      if(!interactions.length){ctx.fillStyle='#a9bed1';ctx.textAlign='center';ctx.fillText('Select at least two notes to reveal cross-partial interactions.',(left+right)/2,(top+bottom)/2);}
+    }
+
+    // View 3: beat modulation frequencies against the partials' mean pitch.
+    else if (view === 'beating') {
+      const beats=data?.beating||[];const minB=.05,maxB=300;
+      const bx=f=>xMap(Math.log10(Math.max(minB,Math.min(maxB,f))));
+      const pitchMax=1200+1200*Math.log2(Math.max(1,Number($('partials').value)||1))+250;
+      const yPitch=c=>bottom-c/Math.max(1,pitchMax)*ph;
+      const ticks=[.05,.1,.2,.5,1,2,5,10,20,50,100,200,300];
+      ticks.forEach(f=>{const x=bx(f);if(x<left||x>right)return;ctx.strokeStyle='rgba(132,169,197,.16)';ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();ctx.fillStyle='#90a7bd';ctx.textAlign='center';ctx.fillText(f>=1?String(f):f.toFixed(2),x,H-20);});
+      const yTicks=[];for(let c=0;c<=pitchMax;c+=1200)yTicks.push(c);
+      yTicks.forEach(c=>{const y=yPitch(c);ctx.strokeStyle='rgba(132,169,197,.16)';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.fillStyle='#90a7bd';ctx.textAlign='right';ctx.fillText(formatPitch(c),left-8,y);});
+      ctx.strokeStyle='#52677d';ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left,bottom);ctx.lineTo(right,bottom);ctx.stroke();
+      ctx.fillStyle='#a9bed1';ctx.textAlign='center';ctx.fillText('BEAT RATE · Hz (logarithmic)',(left+right)/2,12);
+      beats.forEach(item=>{
+        const pairHighlighted=!activeFocus || (activeFocus.length===1 ? activeFocus[0]===item.i||activeFocus[0]===item.j : activeFocus.includes(item.i)&&activeFocus.includes(item.j));
+        const x=bx(item.rate),y=yPitch(item.meanCents??0);
+        if(x<left-8||x>right+8||y<top-8||y>bottom+8)return;
+        const strength=Math.min(1,item.strength*5);const radius=2.5+6*Math.sqrt(Math.max(0,strength));
+        const color=item.beatClass==='slow'?'#f2c66d':item.beatClass==='flutter'?'#ffad75':'#e87983';
+        ctx.globalAlpha=(.35+.65*Math.sqrt(strength))*(pairHighlighted?1:.13);ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        addHit(x,y,radius+6,{type:'beat',interaction:item});
+      });
+      if(!beats.length){ctx.fillStyle='#a9bed1';ctx.textAlign='center';ctx.fillText('No nonzero cross-voice partial beat pairs in the analysed range.',(left+right)/2,(top+bottom)/2);}
+    }
+
+    // View 4: an actual voice-by-voice heatmap, not an aggregate everything plot.
+    else if (view === 'matrix') {
+      const n=Math.min(8,voices.length),cell=Math.min(pw/Math.max(1,n),ph/Math.max(1,n));
+      const gridW=cell*n,gridH=cell*n, gx=left+(pw-gridW)*.5, gy=top+(ph-gridH)*.5;
+      ctx.fillStyle='#a9bed1';ctx.textAlign='center';ctx.fillText(n<voices.length?'VOICE PAIR · first twelve voices (diagnostic limit)':'VOICE PAIR · mean weighted roughness within one ERB',(left+right)/2,12);
+      ctx.font='9px ui-monospace,monospace';
+      for(let i=0;i<n;i++){
+        ctx.fillStyle=voiceColor(i);ctx.textAlign='right';ctx.fillText(voices[i].label,gx-7,gy+(i+.5)*cell);
+        ctx.textAlign='center';ctx.fillText(voices[i].label,gx+(i+.5)*cell,gy-9);
+      }
+      const matrix=data?.pairMetrics||[];
+      for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+        const x=gx+j*cell,y=gy+i*cell;
+        if(i===j){ctx.fillStyle='#182b3d';ctx.fillRect(x+1,y+1,cell-2,cell-2);continue;}
+        const m=matrix.find(v=>(v.i===Math.min(i,j)&&v.j===Math.max(i,j)));
+        const score=m?.score||0;ctx.fillStyle=plotColor(score/100);ctx.globalAlpha=.2+.8*score/100;ctx.fillRect(x+1,y+1,cell-2,cell-2);ctx.globalAlpha=1;
+        if(plotState.focusPair?.length===2&&plotState.focusPair.includes(i)&&plotState.focusPair.includes(j)){ctx.strokeStyle='#f4d28a';ctx.lineWidth=2;ctx.strokeRect(x+2,y+2,cell-4,cell-4);}
+        if(cell>=34){ctx.fillStyle='#07111d';ctx.font='bold 10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(fmt(score,1),x+cell/2,y+cell/2);}
+        addHit(x+cell/2,y+cell/2,Math.max(8,cell*.48),{type:'matrix',pair:m,indices:[i,j],rect:{x,y,w:cell,h:cell}});
+      }
+      if(n<2){ctx.fillStyle='#a9bed1';ctx.textAlign='center';ctx.fillText('Select at least two notes to compare voice pairs.',(left+right)/2,(top+bottom)/2);}
+    }
+
+    // View 5: one spectral envelope per voice on the same log-pitch axis.
+    else if (view === 'amplitude') {
+      const yDb=db=>bottom-(db+60)/60*ph;
+      const yTicks=[-60,-50,-40,-30,-20,-10,0];
+      drawGrid(pitchTicks(),yTicks.map(v=>({value:(v+60)/60,major:v%20===0})),formatPitch,v=>`${Math.round(v*60-60)} dB`);
+      ctx.fillStyle='#a9bed1';ctx.textAlign='center';ctx.fillText('RELATIVE PARTIAL AMPLITUDE · dB',(left+right)/2,12);
+      partialsByVoice.forEach((list,vi)=>{
+        const visible=list.map(part=>{
+          const x=xMap(part.cents), db=Math.max(-60,20*Math.log10(Math.max(1e-6,part.amplitude)));
+          return {part,x,y:yDb(db)};
+        }).filter(p=>p.x>=left&&p.x<=right);
+        ctx.strokeStyle=voiceColor(vi);ctx.fillStyle=voiceColor(vi);ctx.globalAlpha=voiceAlpha(vi);ctx.lineWidth=1.5;
+        // Connect successive partial amplitudes to expose the spectral slope;
+        // retain stems so the discrete harmonic structure stays explicit.
+        if(visible.length>1){ctx.beginPath();visible.forEach((p,k)=>k?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();}
+        visible.forEach(({part,x,y})=>{
+          ctx.beginPath();ctx.moveTo(x,bottom);ctx.lineTo(x,y);ctx.stroke();
+          ctx.beginPath();ctx.arc(x,y,3.3,0,Math.PI*2);ctx.fill();
+          addHit(x,y,8,{type:'partial',...part,voiceIndex:vi});
+        });
+        ctx.globalAlpha=1;
+      });
+      voices.slice(0,Math.min(voices.length,8)).forEach((v,i)=>{const x=left+8+i*88;ctx.fillStyle=voiceColor(i);ctx.fillRect(x,top+3,8,3);ctx.fillStyle='#b9c9d8';ctx.textAlign='left';ctx.fillText(v.label,x+12,top+5);});
+    }
+
+    // Selected pair emphasis and viewport information.
+    if (plotState.focusPair && plotState.focusPair.length) {
+      ctx.fillStyle='#f1d18b';ctx.textAlign='right';ctx.font='10px ui-monospace,monospace';
+      const names=plotState.focusPair.map(i=>voices[i]?.label||`voice ${i+1}`).join(' ↔ ');
+      ctx.fillText(`FOCUS: ${names}`,right,top-13);
+    }
+    ctx.fillStyle='#71889e';ctx.textAlign='left';ctx.font='9px ui-monospace,monospace';
+    if(view!=='matrix')ctx.fillText(`zoom ${plotState.zoom.toFixed(2)}×`,left, H-7);
+
+    plotState.geometry={left,right,top,bottom,width:W,height:H,domainMin,domainMax,baseMin:baseDomain[0],baseMax:baseDomain[1],view};
+    $('plotModeBadge').textContent=plotStateLabels[view]||view;
+    $('plotCaption').textContent=plotBaseCaption[view]||'';
+    if(plotState.selected) renderPlotReadout(plotState.selected,false);
+  }
+
+  function spanForLabel(span){ return span < 4000; }
+
+  function formatPlotItem(hit) {
+    if(!hit)return 'Hover or click a data mark to inspect it.';
+    const esc=plotEsc;
+    if(hit.type==='partial'){
+      return `<b>${esc(hit.voiceLabel)} · harmonic h${hit.n}</b> · ${fmtHz(hit.frequency)} · ${fmt(hit.amplitude,4)} relative amplitude · ${fmt(hit.cents,2)}¢ above root`;
+    }
+    if(hit.type==='alignment'){
+      const m=hit.match;return `<b>Near harmonic alignment</b> · ${esc(m.labelA)} h${m.a} ↔ ${esc(m.labelB)} h${m.b} · ${fmt(m.delta,3)}¢ separation · ${fmtHz(hit.partialA.frequency)} / ${fmtHz(hit.partialB.frequency)}`;
+    }
+    if(hit.type==='roughness'){
+      const c=hit.interaction;return `<b>Roughness interaction</b> · ${esc(c.labelA)} h${c.a} (${fmtHz(c.frequencyA)}) ↔ ${esc(c.labelB)} h${c.b} (${fmtHz(c.frequencyB)}) · Δ ${fmt(c.deltaHz,3)} Hz · mean ${fmtHz(c.meanFrequency)} · ERB ${fmt(erbWidthHz(c.meanFrequency),2)} Hz · separation ${fmt(c.normalizedSeparation,3)} ERB · kernel ${fmt(c.roughness,4)} · amplitude-weighted ${fmt(c.weighted,6)}`;
+    }
+    if(hit.type==='beat'){
+      const b=hit.interaction;return `<b>${esc(b.beatClass)} beating</b> · ${esc(b.labelA)} h${b.a} ↔ ${esc(b.labelB)} h${b.b} · beat ${fmt(b.rate,4)} Hz · partials ${fmtHz(b.frequencyA)} / ${fmtHz(b.frequencyB)} · ${fmt(b.normalizedSeparation,3)} ERB`;
+    }
+    if(hit.type==='matrix'){
+      const m=hit.pair;return `<b>Voice pair</b> · ${esc(m?.labelA||'voice')} ↔ ${esc(m?.labelB||'voice')} · roughness ${fmt(m?.score||0,2)}/100 · ${m?.inside||0} partial pairs within one ERB · ${m?.clashes||0} stronger interactions`;
+    }
+    return 'No detail available.';
+  }
+
+  function renderPlotReadout(hit, updateTooltip=true) {
+    $('plotReadout').innerHTML=hit?formatPlotItem(hit):'Select or hover a plotted point to inspect its exact partial frequencies, beat rate, ERB separation and estimated roughness.';
+    if(updateTooltip){
+      const tip=$('plotTooltip');
+      if(!hit){tip.style.display='none';return;}
+      tip.innerHTML=formatPlotItem(hit);tip.style.display='block';
+    }
+  }
+
+  function findPlotHit(x,y) {
+    let best=null,bestD=Infinity;
+    for(const hit of plotState.hits){const d=Math.hypot(x-hit.x,y-hit.y);const limit=Math.max(9,hit.r||8);if(d<=limit&&d<bestD){best=hit.item;bestD=d;}}
+    return best;
+  }
+
+  function setPlotHover(event) {
+    const canvas=$('plotCanvas'),rect=canvas.getBoundingClientRect();
+    const x=event.clientX-rect.left,y=event.clientY-rect.top;
+    const hit=findPlotHit(x,y);plotState.hover=hit;
+    const tip=$('plotTooltip');
+    if(hit){tip.innerHTML=formatPlotItem(hit);tip.style.display='block';
+      const tw=Math.min(340,rect.width-20),th=tip.offsetHeight;
+      tip.style.left=`${Math.max(8,Math.min(rect.width-tw-8,x+14))}px`;
+      tip.style.top=`${Math.max(8,Math.min(rect.height-th-8,y+14))}px`;
+      renderPlotReadout(hit,false);canvas.style.cursor='pointer';
+    }else{tip.style.display='none';canvas.style.cursor=plotState.drag?'grabbing':'crosshair';
+      if(!plotState.selected)renderPlotReadout(null,false);}
+  }
+
+  function selectPlotHit(hit) {
+    if(!hit)return;
+    plotState.selected=hit;
+    if(hit.type==='roughness')plotState.focusPair=[hit.interaction.i,hit.interaction.j];
+    else if(hit.type==='beat')plotState.focusPair=[hit.interaction.i,hit.interaction.j];
+    else if(hit.type==='alignment')plotState.focusPair=[hit.match.i,hit.match.j];
+    else if(hit.type==='matrix')plotState.focusPair=hit.indices.slice();
+    else if(hit.type==='partial')plotState.focusPair=[hit.voiceIndex];
+    renderPlotReadout(hit,false);drawSpectrum();
+  }
+
+  function resetPlotView() {
+    plotState.zoom=1;plotState.pan=0;plotState.selected=null;plotState.hover=null;
+    $('plotTooltip').style.display='none';renderPlotReadout(null,false);drawSpectrum();
+  }
+
+  function installPlotInteractions() {
+    const canvas=$('plotCanvas');
+    canvas.addEventListener('pointerdown',event=>{
+      const rect=canvas.getBoundingClientRect();plotState.drag={x:event.clientX-rect.left,y:event.clientY-rect.top,lastX:event.clientX-rect.left,startPan:plotState.pan,moved:false};
+      try{canvas.setPointerCapture(event.pointerId);}catch(_){}
+    });
+    canvas.addEventListener('pointermove',event=>{
+      if(plotState.drag){
+        const rect=canvas.getBoundingClientRect(),x=event.clientX-rect.left;
+        const g=plotState.geometry;
+        const canPan=!!(g&&g.view!=='matrix'&&plotState.zoom>1);
+        if(canPan&&Math.abs(x-plotState.drag.x)>3)plotState.drag.moved=true;
+        if(plotState.drag.moved&&canPan){
+          const baseSpan=g.baseMax-g.baseMin,visibleSpan=(g.domainMax-g.domainMin);
+          const dx=x-plotState.drag.lastX;
+          const panDelta=-(dx/Math.max(1,g.right-g.left))*visibleSpan/Math.max(1e-9,baseSpan-visibleSpan);
+          plotState.pan=Math.max(0,Math.min(1,plotState.pan+panDelta));
+          plotState.drag.lastX=x;drawSpectrum();
+        }
+      }else setPlotHover(event);
+    });
+    canvas.addEventListener('pointerup',event=>{
+      if(!plotState.drag)return;const drag=plotState.drag;plotState.drag=null;
+      if(!drag.moved){const rect=canvas.getBoundingClientRect();selectPlotHit(findPlotHit(event.clientX-rect.left,event.clientY-rect.top));}
+      canvas.style.cursor='crosshair';
+    });
+    canvas.addEventListener('pointercancel',()=>{plotState.drag=null;});
+    canvas.addEventListener('pointerleave',()=>{if(!plotState.drag){$('plotTooltip').style.display='none';canvas.style.cursor='crosshair';}});
+    canvas.addEventListener('wheel',event=>{
+      const g=plotState.geometry;if(!g||g.view==='matrix')return;event.preventDefault();
+      const rect=canvas.getBoundingClientRect(),x=event.clientX-rect.left;
+      const fraction=Math.max(0,Math.min(1,(x-g.left)/Math.max(1,g.right-g.left)));
+      const oldSpan=g.domainMax-g.domainMin,anchor=g.domainMin+fraction*oldSpan;
+      const nextZoom=Math.max(1,Math.min(48,plotState.zoom*Math.exp(-event.deltaY*.0012)));
+      const baseSpan=g.baseMax-g.baseMin,nextSpan=baseSpan/nextZoom;
+      const nextStart=anchor-fraction*nextSpan;
+      plotState.zoom=nextZoom;plotState.pan=baseSpan===nextSpan?0:Math.max(0,Math.min(1,(nextStart-g.baseMin)/(baseSpan-nextSpan)));
+      drawSpectrum();setPlotHover(event);
+    },{passive:false});
+    canvas.addEventListener('dblclick',resetPlotView);
+    canvas.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){plotState.focusPair=null;plotState.selected=null;drawSpectrum();renderPlotReadout(null,false);}
+      if(event.key==='+'||event.key==='='){plotState.zoom=Math.min(48,plotState.zoom*1.25);drawSpectrum();}
+      if(event.key==='-'){plotState.zoom=Math.max(1,plotState.zoom/1.25);if(plotState.zoom===1)plotState.pan=0;drawSpectrum();}
+    });
+  }
+
+  function refreshControlVisibility() {
+    const mode = currentTuningMode();
+    $('edoControls').classList.toggle('hidden', mode !== 'edo');
+    $('harmonicControls').classList.toggle('hidden', mode === 'edo');
+    $('customNWrap').classList.toggle('hidden', $('edoSelect').value !== 'custom');
+    $('stepGrowthWrap').classList.toggle('hidden', mode !== 'edo' || $('divisionWarp').value !== 'geometric-steps');
+    if (mode === 'overtone') $('harmonicSource').value = 'partials';
+  }
+
+  function clearDiscoveryResults(message = 'The scale or root changed. Run discovery again to refresh these chords.') {
+    $('discoverySummary').textContent = message;
+    $('discoveredChords').innerHTML = '';
+  }
+
+  function onScaleSettingChange() {
+    clearDiscoveryResults();
+    const oldVoices = (builderVoices.length ? builderVoices : selected.map(degree => ({degree, octave:0}))).map(v => ({
+      absoluteCents: (scale[v.degree]?.cents ?? 0) + 1200*(v.octave || 0)
+    }));
+    // Generate from the new model, preserving approximate absolute pitch positions.
+    const mode = currentTuningMode();
+    if (mode === 'edo') {
+      const geometry = $('divisionWarp').value;
+      scale = geometry === 'geometric-steps'
+        ? generateGeometricStepScale(getDivisionCount(), Number($('stepGrowth').value))
+        : generateEDO(getDivisionCount(), Number(geometry));
+    }
+    else scale = generateHarmonicScale(mode === 'overtone' ? 'partials' : $('harmonicSource').value, Number($('harmonicLimit').value), Number($('primeLimit').value));
+    builderVoices = oldVoices.map(v => {
+      const octave = Math.floor(v.absoluteCents / 1200);
+      const degree = scaleIndexForCents(mod(v.absoluteCents, 1200));
+      return { degree, octave };
+    }).filter(v => Number.isInteger(v.degree));
+    // Remove exact duplicates created when two old notes snap to one new scale point.
+    builderVoices = builderVoices.filter((v,i,a) => a.findIndex(x => x.degree===v.degree && x.octave===v.octave)===i);
+    sortBuilderVoices(); syncSelectedFromBuilder();
+    idealTargets = new Map();
+    if (mode === 'edo') {
+      const geometry = $('divisionWarp').value;
+      const tag = geometry === 'geometric-steps' ? `geometric step span R=${Number($('stepGrowth').value).toFixed(2)}` : Number(geometry) === 0 ? 'equal log-frequency' : Number(geometry) === 1 ? 'equal Hz' : `power α=${geometry}`;
+      $('scaleBadge').textContent = `${getDivisionCount()} divisions · ${tag}${geometry === '0' ? ` · ${fmt(1200/getDivisionCount(),2)}¢ steps` : ''}`;
+    }
+    else $('scaleBadge').textContent = `${scale.length} positions · ${Number($('primeLimit').value) >= 97 ? 'unrestricted' : `${$('primeLimit').value}-limit`} · H≤${$('harmonicLimit').value}`;
+    renderAll();
+  }
+
+  // Pointer-held notes: press to sound, release to stop; click toggles chord membership.
+  $('keyboard').addEventListener('pointerdown', (event) => {
+    const btn = event.target.closest('button[data-degree]'); if (!btn) return;
+    event.preventDefault();
+    const index = Number(btn.dataset.degree); const token = `pointer-${++pointerVoiceCounter}`;
+    btn.dataset.voiceToken = token;
+    try { btn.setPointerCapture(event.pointerId); } catch (_) {}
+    noteOn(token, index);
+  });
+  function releasePointer(event) {
+    const btn = event.target.closest && event.target.closest('button[data-degree]');
+    if (!btn) return;
+    const token = btn.dataset.voiceToken;
+    if (token) { noteOff(token); delete btn.dataset.voiceToken; }
+  }
+  $('keyboard').addEventListener('pointerup', releasePointer);
+  $('keyboard').addEventListener('pointercancel', releasePointer);
+  $('keyboard').addEventListener('lostpointercapture', releasePointer);
+  $('keyboard').addEventListener('click', (event) => {
+    const btn = event.target.closest('button[data-degree]'); if (!btn) return;
+    toggleDegree(Number(btn.dataset.degree));
+  });
+
+  const computerKeys = ['a','w','s','e','d','f','t','g','y','h','u','j','k','o','l','p'];
+  const computerActive = new Map();
+  window.addEventListener('keydown', (event) => {
+    if (event.repeat || /INPUT|SELECT|TEXTAREA|BUTTON/.test(document.activeElement?.tagName || '')) return;
+    const key = event.key.toLowerCase(); const pos = computerKeys.indexOf(key);
+    if (pos < 0 || !scale.length) return;
+    const idx = pos % scale.length; const token = `computer-${key}`;
+    computerActive.set(key, token); noteOn(token, idx);
+  });
+  window.addEventListener('keyup', (event) => {
+    const key = event.key.toLowerCase(); const token = computerActive.get(key);
+    if (token) { noteOff(token); computerActive.delete(key); }
+  });
+  window.addEventListener('blur', () => { stopAll(); for (const token of computerActive.values()) noteOff(token); computerActive.clear(); });
+
+  $('tuningMode').addEventListener('change', () => { refreshControlVisibility(); onScaleSettingChange(); });
+  $('edoSelect').addEventListener('change', () => { refreshControlVisibility(); onScaleSettingChange(); });
+  $('customN').addEventListener('change', onScaleSettingChange);
+  $('divisionWarp').addEventListener('change', () => { refreshControlVisibility(); onScaleSettingChange(); });
+  $('stepGrowth').addEventListener('input', () => { $('stepGrowthOut').textContent = `${Number($('stepGrowth').value).toFixed(2)}×`; onScaleSettingChange(); });
+  $('harmonicSource').addEventListener('change', onScaleSettingChange);
+  $('primeLimit').addEventListener('change', onScaleSettingChange);
+  $('harmonicLimit').addEventListener('input', () => { $('harmonicLimitOut').textContent = $('harmonicLimit').value; });
+  $('harmonicLimit').addEventListener('change', onScaleSettingChange);
+  $('regenerateBtn').addEventListener('click', onScaleSettingChange);
+  $('buildChordBtn').addEventListener('click', buildChord);
+  $('chordRoot').addEventListener('change', () => { clearDiscoveryResults(); buildChord(); });
+  $('discoverChordsBtn').addEventListener('click', discoverScaleChords);
+  $('discoveryCount').addEventListener('input', () => { $('discoveryCountOut').textContent = $('discoveryCount').value; });
+  $('discoveryVoices').addEventListener('change', discoverScaleChords);
+  $('discoverySpacing').addEventListener('change', discoverScaleChords);
+  $('clearChordBtn').addEventListener('click', () => { selected = []; builderVoices = []; idealTargets.clear(); renderAll(); });
+  $('playChordBtn').addEventListener('click', playChord);
+  $('exportMidiBtn').addEventListener('click', exportChordMidi);
+  $('midiTempo').addEventListener('change', renderMidiPreview);
+  $('midiDuration').addEventListener('change', renderMidiPreview);
+  $('midiBendRange').addEventListener('change', renderMidiPreview);
+  $('stopBtn').addEventListener('click', stopAll);
+  $('partials').addEventListener('input', () => { $('partialsOut').textContent = $('partials').value; renderAll(); renderBuilderCanvas(); });
+  $('rolloff').addEventListener('input', () => { $('rolloffOut').textContent = Number($('rolloff').value).toFixed(1); analyzeMatches(); drawSpectrum(); renderBuilderCanvas(); });
+  $('tolerance').addEventListener('input', () => { $('toleranceOut').textContent = `${$('tolerance').value}¢`; analyzeMatches(); drawSpectrum(); });
+  $('imdOrder').addEventListener('change', () => { analyzeMatches(); drawSpectrum(); });
+  $('analysisTabBtn').addEventListener('click',()=>setMainTab('analysis'));
+  $('builderTabBtn').addEventListener('click',()=>setMainTab('builder'));
+  $('builderAddBtn').addEventListener('click',()=>{const d=Number($('builderDegree').value)||0,o=Number($('builderOctave').value)||0;if(builderVoices.some(v=>v.degree===d&&v.octave===o)){$('builderReadout').textContent='That exact degree and octave are already in the chord. Click its marker on the pitch rail to remove it.';return;}builderAddOrToggle(d,o);});
+  $('builderPlayBtn').addEventListener('click',playChord);
+  $('builderStopBtn').addEventListener('click',stopAll);
+  $('builderReloadBtn').addEventListener('click',()=>{syncBuilderFromSelected();renderAll();$('builderReadout').textContent='Loaded the current keyboard chord into the builder at the reference octave.';});
+  $('builderClearBtn').addEventListener('click',()=>{builderVoices=[];syncSelectedFromBuilder();idealTargets.clear();renderAll();$('builderReadout').textContent='Chord cleared. Add scale positions on the pitch rail.';});
+  $('builderMidiBtn').addEventListener('click',exportChordMidi);
+  $('builderShowAnalysisBtn').addEventListener('click',()=>setMainTab('analysis'));
+  $('builderRange').addEventListener('change',renderBuilderCanvas);
+  $('builderPartialScale').addEventListener('change',()=>{renderBuilderVoices();renderBuilderCanvas();});
+  $('builderDegree').addEventListener('change',()=>{ $('builderReadout').textContent=`Ready to add ${noteLabel(Number($('builderDegree').value)||0)} at the selected register.`; });
+  $('plotView').addEventListener('change', () => { plotState.view=$('plotView').value; plotState.zoom=1; plotState.pan=0; plotState.selected=null; plotState.focusPair=null; $('plotTooltip').style.display='none'; renderPlotReadout(null,false); drawSpectrum(); });
+  ['plotScaleToggle','plotAlignToggle','plotClashToggle'].forEach(id => $(id).addEventListener('change',drawSpectrum));
+  $('plotResetZoom').addEventListener('click',resetPlotView);
+  $('plotClearFocus').addEventListener('click',()=>{plotState.focusPair=null;plotState.selected=null;renderPlotReadout(null,false);drawSpectrum();});
+  $('rootHz').addEventListener('change', () => { const v = Number($('rootHz').value); if (!Number.isFinite(v) || v < 20 || v > 2000) $('rootHz').value = '261.626'; renderAll(); });
+  $('octaveShift').addEventListener('change', renderAll);
+  window.addEventListener('resize', () => { drawSpectrum(); renderBuilderCanvas(); if (lastAcousticAnalysis) renderAcousticDiagnostics(lastAcousticAnalysis); });
+  $('resetBtn').addEventListener('click', () => {
+    $('tuningMode').value = 'edo'; $('edoSelect').value = '12'; $('customN').value = '48'; $('divisionWarp').value = '0'; $('stepGrowth').value = '1.80'; $('stepGrowthOut').textContent = '1.80×';
+    $('harmonicSource').value = 'lattice'; $('primeLimit').value = '7'; $('harmonicLimit').value = '18';
+    $('rootHz').value = '261.626'; $('octaveShift').value = '0'; $('chordPreset').value = 'major'; $('chordRoot').value = '0';
+    $('discoveryVoices').value = 'all'; $('discoverySpacing').value = '12'; $('discoveryCount').value = '40'; $('discoveryCountOut').textContent = '40';
+    $('partials').value = '16'; $('rolloff').value = '1.1'; $('tolerance').value = '8'; $('imdOrder').value = 'all';
+    $('plotView').value='spectrum'; plotState.view='spectrum'; plotState.focusPair=null; plotState.selected=null; plotState.zoom=1; plotState.pan=0; $('plotTooltip').style.display='none'; renderPlotReadout(null,false);
+    $('harmonicLimitOut').textContent = '18'; $('partialsOut').textContent = '16'; $('rolloffOut').textContent = '1.1'; $('toleranceOut').textContent = '8¢';
+    scale = generateEDO(12); selected = [0]; builderVoices = [{degree:0,octave:0}]; idealTargets.clear(); refreshControlVisibility(); buildChord();
+    $('discoverySummary').textContent = 'Generate a scale, then discover its harmonic chord combinations.'; $('discoveredChords').innerHTML = '';
+  });
+
+  // Keep the high-DPI interactive plot crisp after layout changes.
+  installPlotInteractions();
+  installBuilderInteractions();
+  if ('ResizeObserver' in window) {
+    const observer = new ResizeObserver(() => drawSpectrum());
+    observer.observe($('vizBox'));
+    observer.observe($('builderTabPanel'));
+  } else window.addEventListener('resize', drawSpectrum);
+
+  // Boot.
+  populateChordCatalogue();
+  refreshControlVisibility();
+  scale = generateEDO(12);
+  selected = [0];
+  builderVoices = [{degree:0,octave:0}];
+  buildChord();
+})();
+</script>
+</body>
+</html>
