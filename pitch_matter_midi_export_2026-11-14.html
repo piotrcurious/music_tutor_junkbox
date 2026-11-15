@@ -1,0 +1,1587 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101719">
+<title>Pitch / Matter — continuous chord morph, hearing lab and MIDI export</title>
+<style>
+:root{
+  --bg:#101719;--panel:#182326;--panel2:#1e2b2e;--ink:#edf2e9;--muted:#a2b2ad;--line:#344548;
+  --mint:#a8e3c5;--mint2:#69b994;--amber:#f2bb73;--coral:#ed917f;--blue:#8db9dc;--violet:#b7a3e8;
+  --shadow:0 18px 55px rgba(0,0,0,.24);--radius:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse at 18% 0%,#233437 0%,transparent 38%),var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,select{font:inherit}
+button{color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.app{max-width:1440px;margin:auto;padding:28px clamp(14px,3vw,42px) 52px}
+header{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-bottom:28px}
+.brand{display:flex;gap:13px;align-items:center}.brand-mark{width:42px;height:42px;border:1px solid #58736b;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#28423b,#182b2d);color:var(--mint);font-size:22px}
+.brand strong{letter-spacing:.14em;font-size:12px}.brand span{display:block;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-top:1px}
+.top-meta{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-align:right}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:end;margin-bottom:28px}
+.eyebrow{color:var(--mint);font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+h1{font-size:clamp(34px,5vw,62px);line-height:.99;letter-spacing:-.055em;margin:11px 0 13px;font-weight:650;max-width:720px}
+.hero p{margin:0;color:#b8c5c0;max-width:690px;font-size:16px;line-height:1.65}
+.hero-note{border-left:2px solid var(--amber);padding:12px 0 12px 18px;color:#c8d2cd;font-size:13px;max-width:390px;justify-self:end}.hero-note b{color:var(--amber);font-weight:650}
+.modebar{display:flex;gap:8px;padding:6px;background:#131e20;border:1px solid var(--line);border-radius:15px;width:max-content;margin-bottom:20px}
+.mode-button{border:0;background:transparent;color:var(--muted);padding:11px 16px;border-radius:10px;font-weight:650;font-size:13px;transition:.2s}
+.mode-button.active{background:var(--mint);color:#11201a;box-shadow:0 3px 12px #0003}
+.mode-button .arrow{opacity:.65;margin:0 5px}
+.workspace{display:grid;grid-template-columns:minmax(420px,1fr) minmax(420px,1.08fr);gap:20px;align-items:start}
+.panel{background:linear-gradient(155deg,rgba(31,45,48,.97),rgba(22,33,36,.98));border:1px solid #35474a;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-pad{padding:23px}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:17px}
+.panel-kicker{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.16em;font-weight:750}.panel h2{font-size:20px;letter-spacing:-.025em;margin:4px 0 0;font-weight:620}.panel-intro{color:var(--muted);font-size:12px;margin:7px 0 0;max-width:500px}
+.pill{border:1px solid #48615e;color:var(--mint);padding:6px 9px;border-radius:999px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;white-space:nowrap}
+.wheel-layout{display:grid;grid-template-columns:minmax(250px,1fr) minmax(150px,.62fr);gap:10px;align-items:center}
+.wheel-holder{width:100%;max-width:365px;margin:auto;position:relative;aspect-ratio:1}
+#wheel{width:100%;height:100%;display:block;overflow:visible}
+.wheel-ring{fill:none;stroke:#415557;stroke-width:1}.wheel-inner{fill:none;stroke:#34494a;stroke-width:1;stroke-dasharray:3 6}.wheel-spoke{stroke:#35494a;stroke-width:1}.wheel-shape{fill:rgba(168,227,197,.15);stroke:var(--mint);stroke-width:2.2;stroke-linejoin:round;transition:all .2s}.wheel-center{fill:#182628;stroke:#637c75;stroke-width:1}.wheel-node{cursor:pointer;outline:none}.wheel-node circle{fill:#233638;stroke:#5a706f;stroke-width:1.5;transition:.18s}.wheel-node text{fill:#c8d5ce;font-size:12px;font-weight:650;text-anchor:middle;dominant-baseline:central;pointer-events:none}.wheel-node.selected circle{fill:var(--mint);stroke:#e0f4e7;stroke-width:2.5}.wheel-node.selected text{fill:#13251e}.wheel-node.root circle{fill:var(--amber);stroke:#fff0d7}.wheel-node.root text{fill:#282016}.wheel-node:hover circle{stroke:#fff;stroke-width:2.6}
+.wheel-center-text{fill:#e9f2ec;text-anchor:middle;font-size:14px;font-weight:700}.wheel-center-sub{fill:#9fb1a9;text-anchor:middle;font-size:9px;letter-spacing:1.4px}
+.side-controls{display:flex;flex-direction:column;gap:13px}.control-label{display:block;color:#9eafa8;font-size:10px;text-transform:uppercase;letter-spacing:.13em;margin-bottom:6px;font-weight:750}
+.toggle-row{display:flex;gap:5px;background:#132022;padding:4px;border-radius:10px;border:1px solid #34474a}.mini-toggle{flex:1;border:0;background:transparent;color:#9eb0a8;border-radius:7px;padding:7px 5px;font-size:11px}.mini-toggle.active{background:#38544c;color:#effaf1}
+select{width:100%;background:#142225;color:var(--ink);border:1px solid #405457;border-radius:9px;padding:8px 10px}
+.readout{background:#142123;border:1px solid #34484a;border-radius:13px;padding:12px}.readout small{display:block;color:#96aaa1;text-transform:uppercase;font-size:9px;letter-spacing:.14em}.readout strong{display:block;color:var(--amber);font-size:20px;letter-spacing:-.03em;margin-top:3px}.readout .formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#c7d4cd;margin-top:5px}
+.section-divider{height:1px;background:#344648;margin:20px 0}
+.subhead{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:10px}.subhead b{font-size:13px;font-weight:650}.subhead span{color:var(--muted);font-size:10px}
+.chord-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:7px}
+.chord-choice{min-height:58px;border:1px solid #3a4e50;background:#172426;border-radius:11px;text-align:left;padding:8px 9px;transition:.18s}.chord-choice:hover{border-color:#8abca1;transform:translateY(-1px)}.chord-choice.active{background:#284239;border-color:var(--mint);box-shadow:inset 0 0 0 1px #a8e3c533}.chord-choice b{display:block;font-size:12px;line-height:1.25}.chord-choice small{display:block;color:#9fb0a9;font-size:9px;margin-top:3px;white-space:nowrap}
+.keybed{display:grid;grid-template-columns:repeat(12,1fr);gap:4px}.key{height:54px;border:1px solid #455b5d;border-radius:7px;background:#dce6dc;color:#1b2927;position:relative;padding:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:6px;transition:.12s}.key.black{background:#25383a;color:#d3e0d8;border-color:#546969;transform:scale(.94);z-index:1}.key.selected{background:var(--mint);border-color:#e4ffed;color:#14271e;box-shadow:0 0 0 2px #a8e3c533}.key.root-key{background:var(--amber);color:#2b2014}.key span{font-size:9px;font-weight:750}.key small{font-size:8px;opacity:.75}.key:hover{filter:brightness(1.12)}
+.builder-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.action{border:1px solid #55706c;background:#233936;border-radius:10px;padding:10px 13px;font-size:12px;font-weight:700;color:#e5f4e9}.action.primary{background:var(--mint);border-color:var(--mint);color:#13271d}.action.quiet{background:transparent;color:#aebdb7;border-color:#43575a}.action.warn{border-color:#77534b;color:#f0ad9d;background:#352824}.action:active{transform:translateY(1px)}
+.explain-box{background:#142123;border:1px solid #35484b;border-radius:13px;padding:14px;margin-top:14px}.explain-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.explain-top b{font-size:12px}.explain-box p{color:#b9c8c0;font-size:12px;margin:8px 0 0;line-height:1.6}.mathline{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:9px}.math-chip{font:11px ui-monospace,monospace;background:#27393a;color:#dce9df;border:1px solid #415758;padding:5px 7px;border-radius:7px}
+.right-stack{display:flex;flex-direction:column;gap:20px}.spectrum-panel .panel-pad{padding-bottom:16px}.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:5px}.legend{display:flex;align-items:center;gap:6px;color:#a9b9b2;font-size:10px}.swatch{width:15px;height:3px;border-radius:4px;background:var(--amber)}.swatch.mechanical{background:var(--mint)}.swatch.neural{height:7px;width:7px;border-radius:50%;background:var(--violet)}
+.chart-tools{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.chart-mode{border:1px solid #42575a;background:transparent;color:#aebdb7;border-radius:8px;padding:6px 8px;font-size:10px}.chart-mode.active{background:#31473f;color:#e6f7eb;border-color:#6c9b82}
+#spectrum{width:100%;height:245px;display:block;border-radius:12px;border:1px solid #34494a;background:#101a1c;touch-action:pan-y;cursor:crosshair}
+.axis{display:flex;justify-content:space-between;padding:7px 5px 0;color:#82968e;font:9px ui-monospace,monospace}.chart-hint{color:#82968e;font-size:10px;margin:8px 2px 0}
+.partials{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:13px}.partial{border:1px solid #405457;background:#182729;border-radius:9px;padding:8px 5px;text-align:center}.partial:hover{border-color:var(--amber)}.partial b{display:block;font-size:11px;color:#f3c487}.partial small{display:block;color:#91a69c;font-size:9px;margin-top:2px}
+.cochlea-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:14px;align-items:center}.cochlea-map{background:#142123;border:1px solid #35494c;border-radius:13px;padding:13px}.map-label{display:flex;justify-content:space-between;color:#9db0a7;font-size:9px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:9px}.place-strip{height:42px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.place{border:1px solid #536c68;background:linear-gradient(100deg,#334a44,#273d40);border-radius:6px;position:relative;overflow:hidden;padding:0;font-size:9px;color:#e1eee6;font-weight:700}.place:nth-child(2){background:linear-gradient(100deg,#374b46,#34484b)}.place:nth-child(3){background:linear-gradient(100deg,#39494a,#3c444e)}.place:nth-child(4){background:linear-gradient(100deg,#3c454b,#4a3e50)}.place.active{border-color:var(--amber);box-shadow:inset 0 -3px var(--amber)}.place em{display:block;font-style:normal;opacity:.72;font-size:8px;font-weight:500}
+.place-caption{display:flex;justify-content:space-between;color:#80958c;font-size:9px;margin-top:6px}.anatomy-list{display:flex;flex-direction:column;gap:7px}.anatomy-button{display:flex;gap:10px;align-items:center;text-align:left;border:1px solid #3b5052;background:#19282a;border-radius:10px;padding:9px;min-height:51px}.anatomy-button:hover{border-color:#90bba4;background:#203532}.anatomy-icon{width:27px;height:27px;border-radius:8px;background:#304542;display:grid;place-items:center;color:var(--mint);font-size:13px;flex:none}.anatomy-button b{display:block;font-size:11px}.anatomy-button small{display:block;font-size:9px;color:#9eafa7;margin-top:1px}
+.path-status{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;border-radius:12px;background:#1d302b;border:1px solid #426458;margin-top:14px}.path-status .dot{width:7px;height:7px;background:var(--mint);border-radius:50%;margin-top:6px;box-shadow:0 0 12px #a8e3c5}.path-status b{font-size:11px;color:#ddf2e4}.path-status p{margin:3px 0 0;color:#a9bcb2;font-size:10px;line-height:1.5}
+.progression-chip{display:inline-block;margin:3px;padding:5px 8px;border:1px solid #526d65;border-radius:7px;background:#1a2b2b;color:#dcebe2;font-size:10px}.progression-chip b{color:#f2bb73}.progression-metric{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:9px}.progression-metric span{display:block;background:#142123;border:1px solid #34494c;border-radius:8px;padding:8px;color:#b8c8bf;font-size:10px}.progression-metric strong{display:block;color:#f2bb73;font-size:14px;margin-bottom:3px}.memory-card{display:none;background:#2c2722;border:1px solid #776149;border-radius:13px;padding:13px;margin-top:13px}.memory-card.show{display:block}.memory-card .memory-label{color:var(--amber);font-size:9px;text-transform:uppercase;letter-spacing:.14em;font-weight:800}.memory-card strong{display:block;font-size:16px;color:#fff0d9;margin-top:4px}.memory-card p{font-size:11px;color:#cfbda7;margin:5px 0 0;line-height:1.55}.alternatives{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.alternative{border:1px solid #775d46;border-radius:7px;padding:4px 7px;color:#eac9a2;font:10px ui-monospace,monospace}
+
+.midi-export-panel{margin-top:12px;padding:13px;background:#142123;border:1px solid #35494c;border-radius:13px}
+.midi-export-panel>p{margin:0 0 10px;color:#b9c8c0;font-size:11px;line-height:1.55}
+.midi-export-panel .morph-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+.midi-export-panel select,.midi-export-panel input[type=range]{width:100%;margin:9px 0 2px;accent-color:var(--mint);background:#1c2b2e;color:var(--ink);border:1px solid #40575a;border-radius:7px;padding:7px;font:inherit;font-size:11px}
+.midi-export-panel .path-status{display:flex;gap:9px;align-items:flex-start;background:#1d302b;border:1px solid #426458;margin-top:12px;padding:10px;border-radius:10px}
+.midi-export-panel .path-status .dot{width:7px;height:7px;flex:0 0 7px;background:var(--mint);border-radius:50%;margin-top:6px;box-shadow:0 0 12px #a8e3c5}
+.midi-export-panel .path-status b{font-size:11px;color:#ddf2e4}.midi-export-panel .path-status p{margin:3px 0 0;color:#a9bcb2;font-size:10px;line-height:1.5}
+@media(max-width:650px){.midi-export-panel .morph-controls{grid-template-columns:1fr}}
+.morph-panel{margin-top:16px;padding:14px;background:linear-gradient(145deg,#172827,#142123);border:1px solid #3d5552;border-radius:14px}
+.morph-endpoints{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.morph-endpoint{min-width:0;border:1px solid #435b57;background:#1b2c2b;border-radius:11px;padding:11px}
+.morph-endpoint .endpoint-tag{display:block;color:#9fb5aa;font-size:9px;text-transform:uppercase;letter-spacing:.15em;font-weight:800}
+.morph-endpoint strong{display:block;color:#f1c487;font-size:15px;margin-top:3px;overflow-wrap:anywhere}
+.morph-endpoint small{display:block;color:#a8b8b0;font-size:10px;min-height:28px;margin:4px 0 8px}
+.morph-endpoint .action{padding:7px 9px;font-size:10px}
+.morph-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.morph-position{margin-top:12px;padding:10px 12px;background:#111e20;border:1px solid #35494c;border-radius:10px}
+.morph-position input{width:100%;accent-color:var(--amber);margin:9px 0 2px}
+.morph-position .position-meta{display:flex;justify-content:space-between;gap:8px;color:#9eafa7;font:10px ui-monospace,monospace}
+.morph-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.morph-actions .action{padding:9px 11px}
+.morph-note{margin:9px 1px 0;color:#8fa39a;font-size:10px;line-height:1.55}
+@media(max-width:500px){.morph-endpoints,.morph-controls{grid-template-columns:1fr}.morph-endpoint small{min-height:0}.morph-actions .action{flex:1 1 42%}}
+
+.sim-controls{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:15px;padding:13px;background:#142123;border:1px solid #35494c;border-radius:13px}
+.sim-control{display:block;min-width:0}.sim-control>span{display:flex;justify-content:space-between;gap:8px;color:#dce9e1;font-size:11px;font-weight:650}.sim-control output{color:var(--amber);font-variant-numeric:tabular-nums}.sim-control input{width:100%;margin:10px 0 2px;accent-color:var(--mint)}.sim-control small{display:block;color:#849a90;font-size:9px;line-height:1.4}.sim-rerun{white-space:nowrap}
+.simulation-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.simviz{min-width:0;background:#111e20;border:1px solid #34494c;border-radius:12px;padding:11px}.simviz-wide{grid-column:1/-1}.simviz-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}.simviz-head b{font-size:11px;color:#dce9e1}.simviz-head span{font-size:9px;color:#8da198;text-align:right}.simviz canvas{display:block;width:100%;height:auto;aspect-ratio:840 / 190;background:#0d1719;border-radius:7px}.simviz-wide canvas{aspect-ratio:840 / 250}.sim-axis{display:flex;justify-content:space-between;gap:7px;color:#7f958b;font:9px ui-monospace,monospace;margin-top:6px}.fiber-legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:8px;color:#9ba9a4;font-size:9px}.fiber-legend span{display:flex;align-items:center;gap:5px}.fiber-dot{width:7px;height:7px;border-radius:50%;display:inline-block}.fiber-dot.high{background:#a8e3c5}.fiber-dot.medium{background:#f2bb73}.fiber-dot.low{background:#b7a3e8}.sim-readout{margin-top:12px;padding:12px 14px;background:#1e302c;border:1px solid #426458;border-radius:11px;color:#c6d8ce;font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace}.sim-readout strong{color:#f2c88f}.model-caveat{color:#879b91;font-size:10px;line-height:1.6;margin:10px 2px 0}.model-caveat b{color:#c1d0c7}.model-sources{margin-top:9px;color:#9aada3;font-size:10px;line-height:1.6}.model-sources summary{cursor:pointer;color:#b8c9c0;font-weight:650}.model-sources p{margin:7px 0}.model-sources ul{margin:5px 0 0;padding-left:18px}.model-sources a{color:#a8e3c5;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:700px){.sim-controls{grid-template-columns:1fr 1fr}.sim-rerun{grid-column:1/-1}.simulation-grid{grid-template-columns:1fr}.simviz-wide{grid-column:auto}.simviz-head{align-items:flex-start}.sim-axis{font-size:8px}.fiber-legend{gap:9px}}
+
+.concept-footer{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:20px}.concept{border-top:1px solid #405356;padding-top:12px}.concept b{display:block;font-size:11px;color:#dce9e1}.concept p{font-size:10px;color:#96aaa1;line-height:1.55;margin:5px 0 0}
+.footer-note{display:flex;justify-content:space-between;gap:18px;color:#80948c;font-size:10px;margin:22px 4px 0}.footer-note strong{color:#b2c3ba;font-weight:600}
+.hidden{display:none!important}
+@media(max-width:1020px){.workspace{grid-template-columns:1fr}.hero{grid-template-columns:1fr .7fr}.right-stack{display:grid;grid-template-columns:1fr 1fr;align-items:start}.spectrum-panel{grid-column:1/-1}}
+@media(max-width:700px){.app{padding:18px 12px 36px}header{margin-bottom:22px}.top-meta{display:none}.hero{display:block;margin-bottom:21px}.hero-note{margin-top:20px;max-width:none}.workspace{display:block}.workspace>.panel{margin-bottom:16px}.right-stack{display:flex}.wheel-layout{grid-template-columns:1fr}.wheel-holder{max-width:330px}.side-controls{display:grid;grid-template-columns:1fr 1fr}.side-controls .readout{grid-column:1/-1}.chord-grid{grid-template-columns:repeat(3,1fr)}.partials{grid-template-columns:repeat(3,1fr)}.cochlea-grid{grid-template-columns:1fr}.concept-footer{grid-template-columns:1fr}.footer-note{display:block}.footer-note span{display:block;margin-top:5px}}
+@media(max-width:390px){.side-controls{grid-template-columns:1fr 1fr}.chord-choice{padding:7px 6px}.keybed{gap:2px}.key span{font-size:8px}.mode-button{padding:9px 10px}.panel-pad{padding:17px}.partials{gap:4px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="brand-mark">∿</div><div><strong>PITCH / MATTER</strong><span>A musical naming & hearing lab</span></div></div>
+    <div class="top-meta">12-tone equal temperament · continuous morph<br>Web Audio + WebGL</div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">An instrument for understanding sound</div>
+      <h1>Names are maps.<br>Sound is the territory.</h1>
+      <p>Build notes and chords as simple relationships between numbers, then follow their energy through harmonics, the cochlea and the auditory nerve. Or travel backwards: click a hearing structure and hear a plausible reconstruction.</p>
+    </div>
+    <div class="hero-note"><b>One useful distinction</b><br>Musical names describe organised relationships. The ear does not receive labels like “C minor”; it receives pressure changes and builds a percept from overlapping mechanical and neural evidence.</div>
+  </section>
+
+  <nav class="modebar" aria-label="Direction of exploration">
+    <button class="mode-button active" id="modeSynthetic"><span>01</span> Synthetic <span class="arrow">→</span> ear</button>
+    <button class="mode-button" id="modeMemory"><span>02</span> Ear <span class="arrow">→</span> “memory”</button>
+  </nav>
+
+  <main class="workspace">
+    <section class="panel">
+      <div class="panel-pad">
+        <div class="panel-head">
+          <div><div class="panel-kicker">01 / Musical geometry</div><h2>Build a sound from intervals</h2><p class="panel-intro">Choose a root, then select the steps around the circle. A chord is a set of distances, not a mysterious shape to memorise.</p></div>
+          <span class="pill">12 steps / octave</span>
+        </div>
+
+        <div class="wheel-layout">
+          <div class="wheel-holder">
+            <svg id="wheel" viewBox="0 0 360 360" role="img" aria-label="Interactive circle of twelve pitch classes">
+              <circle class="wheel-ring" cx="180" cy="180" r="137"/><circle class="wheel-inner" cx="180" cy="180" r="91"/>
+              <g id="wheelSpokes"></g><polygon id="wheelShape" class="wheel-shape" points=""/>
+              <circle class="wheel-center" cx="180" cy="180" r="58"/>
+              <text id="wheelCenterName" class="wheel-center-text" x="180" y="175">C major</text>
+              <text class="wheel-center-sub" x="180" y="194">ROOT + INTERVALS</text>
+              <g id="wheelNodes"></g>
+            </svg>
+          </div>
+          <div class="side-controls">
+            <div><label class="control-label" for="spelling">Note spelling</label><div class="toggle-row"><button class="mini-toggle active" id="sharpNames">Sharps ♯</button><button class="mini-toggle" id="flatNames">Flats ♭</button></div></div>
+            <div><label class="control-label" for="octave">Root octave</label><select id="octave"><option value="2">2 · low</option><option value="3">3</option><option value="4" selected>4 · middle C octave</option><option value="5">5</option><option value="6">6 · high</option></select></div>
+            <div class="readout"><small>Current construction</small><strong id="chordName">C major</strong><div class="formula" id="chordFormula">C · E · G &nbsp; / &nbsp; 0–4–7</div></div>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="subhead"><b>Chord qualities</b><span>Click a name to hear its interval pattern</span></div>
+        <div class="chord-grid" id="chordGrid"></div>
+
+        <div class="section-divider"></div>
+        <div class="subhead"><b>Make your own combination</b><span>Toggle any pitch class</span></div>
+        <div class="keybed" id="keybed" aria-label="Twelve pitch class toggles"></div>
+        <div class="builder-actions">
+          <button class="action primary" id="playChord">▶ Play chord</button>
+          <button class="action" id="playArpeggio">↗ Arpeggiate</button>
+          <button class="action quiet" id="clearNotes">Clear / root only</button>
+          <button class="action warn" id="stopAudio">■ Stop</button>
+        </div>
+        <div class="section-divider"></div>
+        <div class="subhead"><b>Fast progression / auditory tracking</b><span>Capture up to twelve chords, then inspect how the excitation pattern moves</span></div>
+        <div class="builder-actions">
+          <button class="action primary" id="addProgression">＋ Add current chord</button>
+          <button class="action quiet" id="clearProgression">Clear sequence</button>
+        </div>
+        <label class="sim-control"><span>Chord onset interval <output id="progressionRateValue">180 ms</output></span><input id="progressionRate" type="range" min="60" max="1000" step="10" value="180"><small>Onsets are placed on one continuous waveform timeline. Up to twelve chord events are simulated without resetting cochlear or synaptic state.</small></label>
+        <div class="sim-controls progression-envelope-controls" style="grid-template-columns:1fr 1fr;margin-top:9px">
+          <label class="sim-control"><span>Attack envelope <output id="progressionAttackValue">8 ms</output></span><input id="progressionAttack" type="range" min="2" max="35" step="1" value="8"><small>Raised-cosine onset ramp for newly entering tones.</small></label>
+          <label class="sim-control"><span>Release envelope <output id="progressionReleaseValue">35 ms</output></span><input id="progressionRelease" type="range" min="8" max="120" step="1" value="35"><small>Raised-cosine offset ramp; common tones remain continuous across adjacent chords.</small></label>
+        </div>
+        <div class="builder-actions">
+          <button class="action primary" id="runContinuous">Run continuous neural simulation</button>
+          <button class="action" id="playProgression">▶ Play progression</button>
+        </div>
+        <div class="builder-actions">
+          <button class="action quiet" id="runOrderSwap">⇄ Compare same partial inventory, reordered</button>
+        </div>
+        <div id="orderExperimentAnalysis" class="explain-box" aria-live="polite">
+          <div class="explain-top"><b>Matched partial-exposure order experiment</b><span class="pill">Temporal history</span></div>
+          <p>Capture at least two chords, then compare the captured order with a permutation of the same chord inventory. The note/partial exposure template is held constant; cochlear and neural states are still evolved continuously. This is a peripheral-response comparison, not a test of conscious stream perception.</p>
+        </div>
+        <div id="progressionStrip" class="formula" aria-live="polite">No chords captured yet. Capture two or more chords; maximum twelve.</div>
+        <div id="progressionAnalysis" class="explain-box" aria-live="polite">
+          <div class="explain-top"><b>What the auditory system can track</b><span class="pill">Temporal integration</span></div>
+          <p>Add at least two chords. The analysis compares cochlear excitation patterns, common tones, minimum voice-leading distance, spectral-centroid movement and neural adaptation pressure. It estimates perceptual continuity; it does not claim to decode harmony from nerve spikes alone.</p>
+        </div>
+        <div class="section-divider"></div>
+        <div class="subhead"><b>Continuous chord morph</b><span>Glide between two voicings</span></div>
+        <div class="morph-panel" id="morphPanel">
+          <div class="morph-endpoints">
+            <div class="morph-endpoint">
+              <span class="endpoint-tag">Endpoint A · starting chord</span>
+              <strong id="morphALabel">C Major</strong>
+              <small id="morphATones">C4 · E4 · G4</small>
+              <button class="action quiet" id="setMorphA" type="button">Set A from current chord</button>
+            </div>
+            <div class="morph-endpoint">
+              <span class="endpoint-tag">Endpoint B · destination chord</span>
+              <strong id="morphBLabel">A Minor</strong>
+              <small id="morphBTones">A3 · C4 · E4</small>
+              <button class="action quiet" id="setMorphB" type="button">Set B from current chord</button>
+            </div>
+          </div>
+          <div class="morph-controls">
+            <label class="sim-control"><span>Transition duration <output id="morphDurationValue">2.5 s</output></span><input id="morphDuration" type="range" min="0.5" max="8" step="0.25" value="2.5"><small>Time for the full A→B pitch and voicing trajectory.</small></label>
+            <label class="sim-control"><span>Pitch path</span><select id="morphCurve"><option value="smooth">Smooth start / finish</option><option value="linear">Linear in semitones</option></select><small>Smooth mode uses a smoothstep trajectory; it does not imply a perceptual law.</small></label>
+          </div>
+          <div class="morph-position">
+            <div class="position-meta"><span>A · <b id="morphPositionReadout">0%</b> · B</span><span id="morphPositionNotes">C4 · E4 · G4</span></div>
+            <input id="morphPosition" type="range" min="0" max="100" step="1" value="0" aria-label="Scrub continuously between chord A and chord B">
+          </div>
+          <div class="morph-actions">
+            <button class="action primary" id="playMorph" type="button">↝ Play continuous morph</button>
+            <button class="action" id="simulateMorph" type="button">Run cochlear / neural morph</button>
+            <button class="action quiet" id="swapMorph" type="button">⇄ Swap A / B</button>
+            <button class="action warn" id="stopMorph" type="button">■ Stop</button>
+          </div>
+          <p class="morph-note">Matched voices glide in frequency with continuous oscillator phase. Extra voices fade in or out. Unequal chord sizes are paired by minimum semitone voice-leading; the remaining voices enter or leave with equal-power fades. The cochlear simulation uses the same continuous sample stream, not a row of independently reset chords.</p>
+        </div>
+        <div class="section-divider"></div>
+        <div class="subhead"><b>DAW export · Standard MIDI File</b><span>Independent pitch bend per voice</span></div>
+        <div class="midi-export-panel" id="midiExportPanel">
+          <p class="morph-note">Export MIDI 1.0 files with one track and one channel per voice. The file sets each channel's pitch-bend sensitivity with RPN 0, and declares an MPE lower zone (master channel 1, member channels 2–16). Morph exports contain sampled pitch-bend and expression automation; they are not flattened into a sequence of semitone notes.</p>
+          <div class="morph-controls">
+            <label class="sim-control"><span>Tempo <output id="midiTempoValue">120 BPM</output></span><input id="midiTempo" type="range" min="40" max="240" step="1" value="120"><small>Converts the lab's seconds into DAW beat positions; the MIDI tempo event is embedded.</small></label>
+            <label class="sim-control"><span>Pitch-bend range</span><select id="midiBendRange"><option value="2">±2 semitones</option><option value="12" selected>±12 semitones</option><option value="24">±24 semitones</option></select><small>Written to every voice channel. Morphs that exceed this range are rejected rather than silently clipped.</small></label>
+            <label class="sim-control"><span>Chord note length <output id="midiChordDurationValue">2.0 s</output></span><input id="midiChordDuration" type="range" min="0.25" max="12" step="0.25" value="2"><small>Duration of the current-chord export.</small></label>
+            <label class="sim-control"><span>Morph automation rate</span><select id="midiMorphRate"><option value="25">25 points / second</option><option value="50" selected>50 points / second</option><option value="100">100 points / second</option></select><small>Higher rates create smoother DAW pitch-bend curves and larger MIDI files.</small></label>
+          </div>
+          <div class="builder-actions">
+            <button class="action primary" id="exportChordMidi" type="button">♫ Export current chord .mid</button>
+            <button class="action" id="exportSequenceMidi" type="button">♫ Export captured sequence .mid</button>
+            <button class="action" id="exportMorphMidi" type="button">↝ Export A → B morph .mid</button>
+          </div>
+          <div id="midiExportStatus" class="path-status" aria-live="polite"><span class="dot"></span><div><b>MIDI export ready</b><p>Choose an export above. Each voice gets its own MIDI channel, so its pitch bend cannot bend the other notes in the chord.</p></div></div>
+          <p class="morph-note">Compatibility note: pitch bend in MIDI 1.0 is channel-wide. Separate member channels provide per-voice bends; MPE-aware instruments can use the declared lower-zone configuration. CC11 expression automation is included for voice fades, but strict MPE receivers are not required to respond to arbitrary member-channel CCs; map CC11 to expression/volume in the DAW if needed. If a DAW imports tracks onto separate instruments, route the voice tracks to one multitimbral or MPE-capable instrument. Instrument patches are intentionally not forced.</p>
+        </div>
+        <div id="morphAnalysis" class="explain-box" aria-live="polite">
+          <div class="explain-top"><b>What changes during the morph?</b><span class="pill">Continuous trajectory</span></div>
+          <p>Set A and B from the chord builder, then play the glide or run the stateful cochlear / auditory-nerve simulation. The intermediate states are generated from matched voice trajectories, not selected from a list of discrete chord labels.</p>
+        </div>
+        <div class="explain-box">
+          <div class="explain-top"><b id="explainTitle">Why “C major”?</b><span class="pill">Geometry → algebra</span></div>
+          <p id="explainText">C is the root. E is four semitones above it; G is seven. The major quality is the interval pattern 0–4–7. Move the whole shape around the circle and the quality stays the same.</p>
+          <div class="mathline" id="mathline"><span class="math-chip">root = 0</span><span class="math-chip">third = +4</span><span class="math-chip">fifth = +7</span><span class="math-chip">Z₁₂</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="right-stack">
+      <section class="panel spectrum-panel">
+        <div class="panel-pad">
+          <div class="panel-head">
+            <div><div class="panel-kicker">02 / The sound as energy</div><h2>Harmonics → cochlear excitation</h2><p class="panel-intro">Each played note contains a fundamental and a family of partials. Their overlapping responses form a pattern along the cochlea.</p></div>
+            <div class="chart-tools"><button class="chart-mode active" data-chart="all">Spectrum + spread</button><button class="chart-mode" data-chart="spectrum">Spectrum only</button><button class="chart-mode" data-chart="mechanical">Filter spread</button></div>
+          </div>
+          <canvas id="spectrum" aria-label="Interactive WebGL chart of spectral harmonics and cochlear excitation"></canvas>
+          <div class="axis"><span>30 Hz · low</span><span>125</span><span>500</span><span>2 kHz</span><span>8 kHz · high</span></div>
+          <div class="chart-legend"><span class="legend"><i class="swatch"></i> harmonic partials</span><span class="legend"><i class="swatch mechanical"></i> schematic filter spread</span><span class="legend">Neural spikes are shown in the raster below</span></div>
+          <p class="chart-hint">Click anywhere in the graph to probe that frequency. Horizontal position is logarithmic: equal distances represent equal musical ratios, not equal Hz. The filter-spread curve is a schematic preview; the ERB-channel simulation is shown below.</p>
+          <div class="partials" id="partials"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-pad">
+          <div class="panel-head">
+            <div><div class="panel-kicker">03 / The hearing pathway</div><h2>Where does the sound become a percept?</h2><p class="panel-intro">A reduced cochlear filter-bank model maps a continuous waveform onto characteristic places, transforms bundle motion into graded receptor potentials, then simulates stateful synaptic adaptation and stochastic auditory-nerve spikes.</p></div>
+            <span class="pill">Click a structure</span>
+          </div>
+          <div class="cochlea-grid">
+            <div class="cochlea-map">
+              <div class="map-label"><span>Human cochlear place map</span><span>Greenwood map · normalized</span></div>
+              <div class="place-strip" id="placeStrip">
+                <button class="place" data-region="0">APEX<em>low</em></button>
+                <button class="place" data-region="1">LOW–MID<em>rising</em></button>
+                <button class="place" data-region="2">MID–HIGH<em>rising</em></button>
+                <button class="place" data-region="3">BASE<em>high</em></button>
+              </div>
+              <div class="place-caption"><span>Apex · low CF</span><span>Base · high CF</span></div>
+            </div>
+            <div class="anatomy-list">
+              <button class="anatomy-button" data-structure="membrane"><span class="anatomy-icon">≈</span><span><b>Basilar membrane</b><small>Travelling wave · mechanical tuning</small></span></button>
+              <button class="anatomy-button" data-structure="hair"><span class="anatomy-icon">⌁</span><span><b>Inner hair cells</b><small>Deflection → receptor potential</small></span></button>
+              <button class="anatomy-button" data-structure="nerve"><span class="anatomy-icon">⋮</span><span><b>Auditory nerve</b><small>Spike timing, rate and population</small></span></button>
+            </div>
+          </div>
+          <div class="sim-controls">
+            <label class="sim-control"><span>Model input level <output id="inputLevelValue">60 dB SPL proxy</output></span><input id="inputLevel" type="range" min="30" max="90" step="1" value="60"><small>Relative model level; browser playback is not SPL-calibrated.</small></label>
+            <label class="sim-control"><span>Outer-hair-cell function <output id="ohcValue">80%</output></span><input id="ohcHealth" type="range" min="0" max="100" step="1" value="80"><small>Controls active gain and sharpness of tuning.</small></label>
+            <button class="action quiet sim-rerun" id="rerunModel">↻ Recompute model</button>
+          </div>
+          <div class="simulation-grid">
+            <section class="simviz">
+              <div class="simviz-head"><b>Basilar-membrane travelling-wave response</b><span>place × time</span></div>
+              <canvas id="bmCanvas" width="840" height="190" aria-label="Basilar membrane response heat map with cochlear place horizontally and time vertically"></canvas>
+              <div class="sim-axis"><span>APICAL BAND · 30 Hz</span><span>characteristic place →</span><span>BASAL BAND · 8 kHz</span></div>
+            </section>
+            <section class="simviz">
+              <div class="simviz-head"><b>Inner-hair-cell transduction</b><span id="ihcChannelLabel">selected characteristic frequency</span></div>
+              <canvas id="ihcCanvas" width="840" height="190" aria-label="Basilar membrane motion and inner hair cell receptor potential over time"></canvas>
+              <div class="sim-axis"><span>0 ms</span><span>time → · chord onsets marked</span><span id="ihcTimeEnd">180 ms</span></div>
+            </section>
+            <section class="simviz simviz-wide">
+              <div class="simviz-head"><b>Auditory-nerve spike raster</b><span>time × characteristic frequency · 3 fibre classes / place</span></div>
+              <canvas id="neuralCanvas" width="840" height="250" aria-label="Stochastic auditory nerve spike raster across cochlear characteristic frequencies"></canvas>
+              <div class="sim-axis"><span>0 ms</span><span>spikes are events, not continuous amplitude · onset markers shown</span><span id="neuralTimeEnd">180 ms</span></div>
+              <div class="fiber-legend"><span><i class="fiber-dot high"></i> high spontaneous rate</span><span><i class="fiber-dot medium"></i> medium spontaneous rate</span><span><i class="fiber-dot low"></i> low spontaneous rate</span></div>
+            </section>
+          </div>
+          <div class="sim-readout" id="cochleaReadout" aria-live="polite">Select a cochlear place to inspect its characteristic frequency, equivalent rectangular bandwidth, active gain, receptor potential and auditory-nerve activity.</div>
+          <p class="model-caveat"><b>Model boundary.</b> This is a time-domain educational reduction: Greenwood place mapping + ERB-tuned resonator channels + level-dependent active gain/compression + saturating hair-cell transduction + a low-pass receptor potential + adaptive stochastic synapse/fibre firing with refractoriness and timing jitter. It approximates travelling-wave delay and tuning, but does not solve cochlear-fluid hydrodynamics, the full organ-of-Corti micromechanics, or a biologically complete synapse.</p>
+          <details class="model-sources"><summary>Scientific basis and model assumptions</summary><p><b>Place map:</b> Greenwood's human frequency–position function, CF(x) = 165.4 × (10<sup>2.1x</sup> − 0.88) Hz, with x normalised from apex (0) to base (1). <b>Auditory filters:</b> equivalent rectangular bandwidth approximation, ERB = 24.7 × (4.37 CF[kHz] + 1); Q is derived from CF / (1.019 × ERB). <b>Active mechanics:</b> a 12 ms local envelope controller reduces OHC gain as drive rises; this is a phenomenological compressive controller, not a measured cochlear feedback law. <b>IHC:</b> MET uses a sigmoid with 15% resting open probability and a 0.02 model-unit slope; receptor-potential low-pass time constants vary from 0.35–1.45 ms with CF. <b>Synapse:</b> each fibre has a resource state R with recovery τ = 75 ms and drive-dependent depletion, using D = [d/(d + 0.05)]² and dR/dt = (1 − R)/0.075 − 0.6DR/0.08. <b>Spikes:</b> inhomogeneous Poisson events with 0.8 ms absolute and 4 ms relative refractoriness, plus CF-scaled timing jitter. These constants are illustrative model parameters, not universal human measurements. The three fibre classes are teaching archetypes, not a fitted population. In progression mode, resonator states, IHC potentials, synaptic resources and refractory histories persist across chord changes.</p><ul><li><a href="https://pubmed.ncbi.nlm.nih.gov/2373794/" target="_blank" rel="noopener">Greenwood (1990), cochlear frequency–position function</a></li><li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3590856/" target="_blank" rel="noopener">Robles &amp; Ruggero (2001), mechanics of the mammalian cochlea</a></li><li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5658794/" target="_blank" rel="noopener">Fettiplace (2017), hair-cell transduction and synaptic transmission</a></li><li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8127127/" target="_blank" rel="noopener">Heil et al. (2021), receptor potential to auditory-nerve discharge</a></li></ul></details>
+          <div class="path-status" id="pathStatus"><span class="dot"></span><div><b id="pathTitle">Synthetic path is active</b><p id="pathText">Click a note, chord, harmonic or cochlear structure. The object will generate sound and update the excitation display.</p></div></div>
+          <div class="memory-card" id="memoryCard"><div class="memory-label">A plausible perceptual / mnemic reconstruction</div><strong id="memoryTitle">A4 · 440 Hz</strong><p id="memoryText">The clicked region suggests a centre frequency, but nearby pitches and harmonic interpretations remain possible.</p><div class="alternatives" id="memoryAlternatives"></div></div>
+          <div class="concept-footer">
+            <div class="concept"><b>Mechanical</b><p>A fluid-driven travelling wave grows as it moves from base toward its characteristic place, then decays. Place is tonotopic; tuning is finite, level-dependent and overlapping.</p></div>
+            <div class="concept"><b>Neural</b><p>Inner hair-cell mechanoelectrical transduction is graded and saturating. Ribbon synapses drive heterogeneous fibres; spikes carry place, rate and (at low frequencies) temporal/phase-locked information.</p></div>
+            <div class="concept"><b>Perceptual</b><p>The brain infers pitch, timbre and grouping from incomplete, overlapping evidence. Context helps resolve what the spectrum alone cannot.</p></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="footer-note"><strong>Model note</strong><span>♯ raises a note by one semitone; ♭ lowers it. In 12-tone equal temperament, C♯ and D♭ share a frequency, though their spelling depends on musical context. The cochlear display is a reduced-order educational simulation, not a full fluid-mechanical or cellular model. “Memory” mode synthesises candidate sounds from ambiguous cues; it cannot access a listener’s private memory.</span></div>
+</div>
+<script>
+(() => {
+  'use strict';
+
+  const SHARP = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+  const FLAT  = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+  const CHORDS = [
+    {id:'major',name:'Major',short:'maj',intervals:[0,4,7],formula:'1 · 3 · 5',hint:'A major triad: root, major third, perfect fifth.'},
+    {id:'minor',name:'Minor',short:'m',intervals:[0,3,7],formula:'1 · ♭3 · 5',hint:'A minor triad lowers the third by one semitone. The root and fifth stay put.'},
+    {id:'dim',name:'Diminished',short:'dim',intervals:[0,3,6],formula:'1 · ♭3 · ♭5',hint:'A minor third plus a diminished fifth. The fifth is one semitone lower than in a minor triad.'},
+    {id:'aug',name:'Augmented',short:'aug',intervals:[0,4,8],formula:'1 · 3 · ♯5',hint:'A major third plus a raised fifth. The two stacked major thirds make a symmetrical shape.'},
+    {id:'sus2',name:'Suspended 2',short:'sus2',intervals:[0,2,7],formula:'1 · 2 · 5',hint:'The third is replaced by the second. “Suspended” means the usual major/minor third is absent.'},
+    {id:'sus4',name:'Suspended 4',short:'sus4',intervals:[0,5,7],formula:'1 · 4 · 5',hint:'The third is replaced by the fourth, so the chord does not declare itself major or minor.'},
+    {id:'dom7',name:'Dominant 7',short:'7',intervals:[0,4,7,10],formula:'1 · 3 · 5 · ♭7',hint:'A major triad with a minor seventh. The combination creates a strong expectation of movement.'},
+    {id:'maj7',name:'Major 7',short:'maj7',intervals:[0,4,7,11],formula:'1 · 3 · 5 · 7',hint:'A major triad plus a major seventh: the seventh is eleven semitones above the root.'},
+    {id:'min7',name:'Minor 7',short:'m7',intervals:[0,3,7,10],formula:'1 · ♭3 · 5 · ♭7',hint:'A minor triad plus a minor seventh. It combines the lowered third and lowered seventh.'},
+    {id:'dim7',name:'Diminished 7',short:'dim7',intervals:[0,3,6,9],formula:'1 · ♭3 · ♭5 · 𝄫7',hint:'A stack of minor thirds. Its symmetry means the same pitch collection can be heard from several roots.'},
+    {id:'halfdim',name:'Half-diminished',short:'m7♭5',intervals:[0,3,6,10],formula:'1 · ♭3 · ♭5 · ♭7',hint:'A diminished triad with a minor seventh; also written m7♭5.'},
+    {id:'add9',name:'Add 9',short:'add9',intervals:[0,4,7,14],formula:'1 · 3 · 5 · 9',hint:'A major triad plus the ninth (the second, placed an octave higher).'},
+    {id:'sixth',name:'Major 6',short:'6',intervals:[0,4,7,9],formula:'1 · 3 · 5 · 6',hint:'A major triad plus the major sixth. The sixth adds colour without replacing the triad.'},
+    {id:'minor6',name:'Minor 6',short:'m6',intervals:[0,3,7,9],formula:'1 · ♭3 · 5 · 6',hint:'A minor triad plus a major sixth; the sixth is not lowered with the minor third.'},
+    {id:'sixnine',name:'Six–Nine',short:'6/9',intervals:[0,4,7,9,14],formula:'1 · 3 · 5 · 6 · 9',hint:'A major triad with both sixth and ninth. It is often voiced with the added tones in the upper register.'},
+    {id:'maj9',name:'Major 9',short:'maj9',intervals:[0,4,7,11,14],formula:'1 · 3 · 5 · 7 · 9',hint:'A major-seventh chord with an added ninth.'},
+    {id:'dom9',name:'Dominant 9',short:'9',intervals:[0,4,7,10,14],formula:'1 · 3 · 5 · ♭7 · 9',hint:'A dominant seventh chord with an added ninth.'},
+    {id:'min9',name:'Minor 9',short:'m9',intervals:[0,3,7,10,14],formula:'1 · ♭3 · 5 · ♭7 · 9',hint:'A minor-seventh chord with an added ninth.'},
+    {id:'minMaj7',name:'Minor–Major 7',short:'m(maj7)',intervals:[0,3,7,11],formula:'1 · ♭3 · 5 · 7',hint:'A minor triad with a major seventh. The major seventh sits one semitone below the octave.'},
+    {id:'sevenFlat5',name:'Dominant 7 ♭5',short:'7♭5',intervals:[0,4,6,10],formula:'1 · 3 · ♭5 · ♭7',hint:'A dominant seventh with a lowered fifth. The tritone is shared by the third and seventh.'},
+    {id:'sevenSharp5',name:'Dominant 7 ♯5',short:'7♯5',intervals:[0,4,8,10],formula:'1 · 3 · ♯5 · ♭7',hint:'A dominant seventh with a raised fifth; the fifth is enharmonically close to a minor sixth.'},
+    {id:'sevenSus4',name:'7 Suspended 4',short:'7sus4',intervals:[0,5,7,10],formula:'1 · 4 · 5 · ♭7',hint:'A suspended-fourth sonority with a minor seventh and no third.'},
+    {id:'minorAdd9',name:'Minor Add 9',short:'m(add9)',intervals:[0,3,7,14],formula:'1 · ♭3 · 5 · 9',hint:'A minor triad with a ninth, but without the seventh.'},
+    {id:'add11',name:'Add 11',short:'add11',intervals:[0,4,7,17],formula:'1 · 3 · 5 · 11',hint:'A major triad with an added eleventh, two octaves plus a fourth above the root.'},
+    {id:'maj11',name:'Major 11',short:'maj11',intervals:[0,4,7,11,14,17],formula:'1 · 3 · 5 · 7 · 9 · 11',hint:'A major-ninth sonority with an added eleventh. Close voicings can be dense because the third and eleventh are near.'},
+    {id:'dom11',name:'Dominant 11',short:'11',intervals:[0,4,7,10,14,17],formula:'1 · 3 · 5 · ♭7 · 9 · 11',hint:'A dominant-ninth sonority with an added eleventh. Real arrangements often omit or redistribute notes.'},
+    {id:'dom13',name:'Dominant 13',short:'13',intervals:[0,4,7,10,14,21],formula:'1 · 3 · 5 · ♭7 · 9 · 13',hint:'A dominant seventh with ninth and thirteenth colour. This compact model omits the eleventh.'},
+    {id:'power',name:'Power Chord',short:'5',intervals:[0,7,12],formula:'1 · 5 · 8',hint:'Root, fifth and octave, with no third. The sonority does not specify major or minor quality.'},
+    {id:'quartal',name:'Quartal Stack',short:'quartal',intervals:[0,5,10,15],formula:'1 · 4 · ♭7 · ♭10',hint:'A stack of perfect fourths. The pitch collection can be heard as a voicing principle rather than a conventional tertian chord.'}
+  ];
+  const $ = id => document.getElementById(id);
+  let rootPc = 0, octave = 4, intervals = [0,4,7], spelling = 'sharp';
+  let currentChord = 'major', mode = 'synthetic', chartMode = 'all', probeFreqs = null, selectedRegion = -1;
+  let audioCtx = null, master = null, activeNodes = new Set(), gl = null, glProgram = null, glBuffer = null;
+  let cochleaModel = null, selectedChannelIndex = 30, modelLevelDb = 60, ohcFunction = 80;
+  const MAX_PEAKS = 24;
+  let peakCapacity = MAX_PEAKS;
+  const FMIN = 30, FMAX = 8000;
+  const notes = () => spelling === 'sharp' ? SHARP : FLAT;
+  const noteName = pc => notes()[(pc%12+12)%12];
+  const midiToHz = midi => 440 * Math.pow(2,(midi-69)/12);
+  const hzToMidi = hz => 69 + 12*Math.log2(hz/440);
+  const rootMidi = () => (octave+1)*12 + rootPc;
+  const currentMidis = () => intervals.map(n => rootMidi()+n).sort((a,b)=>a-b);
+  const hzLabel = hz => hz >= 1000 ? (hz/1000).toFixed(hz>=10000?0:2)+' kHz' : Math.round(hz)+' Hz';
+  const pcOfMidi = midi => ((midi%12)+12)%12;
+  const getChord = () => CHORDS.find(c=>c.id===currentChord) || null;
+  const identifyCurrent = () => {
+    const p = [...new Set(intervals.map(n=>n%12))].sort((a,b)=>a-b);
+    const match = CHORDS.find(c => {
+      const q=[...new Set(c.intervals.map(n=>n%12))].sort((a,b)=>a-b);
+      return q.length===p.length && q.every((v,i)=>v===p[i]);
+    });
+    return match || null;
+  };
+
+  function buildWheel(){
+    const spokes=$('wheelSpokes'), nodes=$('wheelNodes'); spokes.innerHTML=''; nodes.innerHTML='';
+    for(let i=0;i<12;i++){
+      const a=(-90+i*30)*Math.PI/180, x1=180+91*Math.cos(a), y1=180+91*Math.sin(a), x2=180+137*Math.cos(a), y2=180+137*Math.sin(a);
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);line.setAttribute('class','wheel-spoke');spokes.appendChild(line);
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','wheel-node');g.setAttribute('data-pc',i);g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label','Select '+noteName(i));
+      const cx=180+116*Math.cos(a),cy=180+116*Math.sin(a);
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r',15);g.appendChild(c);
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',cx);t.setAttribute('y',cy+0.5);t.textContent=noteName(i);g.appendChild(t);
+      g.addEventListener('click',()=>selectRoot(i,true));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectRoot(i,true)}});nodes.appendChild(g);
+    }
+    renderWheel();
+  }
+  function renderWheel(){
+    const nodes=[...$('wheelNodes').children];
+    nodes.forEach((g,i)=>{g.classList.toggle('root',i===rootPc);g.classList.toggle('selected',intervals.some(n=>n%12===((i-rootPc+12)%12)));g.querySelector('text').textContent=noteName(i);g.setAttribute('aria-label','Select '+noteName(i)+' as root and hear it');});
+    const pts=[...new Set(intervals.map(n=>n%12))].sort((a,b)=>a-b).map(n=>{const pc=(rootPc+n)%12,a=(-90+pc*30)*Math.PI/180;return `${180+67*Math.cos(a)},${180+67*Math.sin(a)}`}).join(' ');
+    $('wheelShape').setAttribute('points',pts);
+    $('wheelCenterName').textContent=noteName(rootPc)+' '+(getChord()?.short||'custom');
+  }
+  function selectRoot(pc,play){rootPc=pc;probeFreqs=null;renderAll();if(play)playFrequencies([midiToHz(rootMidi())]);}
+
+  function renderChordGrid(){
+    const grid=$('chordGrid');grid.innerHTML='';
+    CHORDS.forEach(c=>{
+      const b=document.createElement('button');b.className='chord-choice'+(c.id===currentChord?' active':'');b.type='button';
+      b.innerHTML=`<b>${c.name}</b><small>${c.intervals.join(' · ')} semitones</small>`;
+      b.title=`${c.name}: ${c.hint}`;b.addEventListener('click',()=>{currentChord=c.id;intervals=[...c.intervals];probeFreqs=null;renderAll();playFrequencies(currentMidis().map(midiToHz));});grid.appendChild(b);
+    });
+  }
+  function renderKeybed(){
+    const bed=$('keybed');bed.innerHTML='';
+    for(let pc=0;pc<12;pc++){
+      const rel=(pc-rootPc+12)%12, active=intervals.some(n=>n%12===rel);
+      const b=document.createElement('button');b.type='button';b.className='key'+([1,3,6,8,10].includes(pc)?' black':'')+(active?' selected':'')+(pc===rootPc?' root-key':'');
+      b.innerHTML=`<span>${noteName(pc)}</span><small>${rel===0?'root':'+'+rel}</small>`;
+      b.title=`${noteName(pc)} · ${rel} semitones from root. Click to toggle and hear.`;
+      b.addEventListener('click',()=>togglePitch(pc));bed.appendChild(b);
+    }
+  }
+  function togglePitch(pc){
+    const rel=(pc-rootPc+12)%12;
+    if(rel===0){playFrequencies([midiToHz(rootMidi())]);return;}
+    const idx=intervals.findIndex(n=>n%12===rel);
+    if(idx>=0) intervals.splice(idx,1); else intervals.push(rel);
+    intervals=[...new Set(intervals)].sort((a,b)=>a-b);
+    currentChord=identifyCurrent()?.id || 'custom';probeFreqs=null;renderAll();playFrequencies(currentMidis().map(midiToHz));
+  }
+  function renderExplanation(){
+    const chord=identifyCurrent(), tones=currentMidis().map(midi=>noteName(pcOfMidi(midi))+(Math.floor(midi/12)-1));
+    const offsets=[...new Set(intervals.map(n=>n%12))].sort((a,b)=>a-b);
+    const label=chord ? chord.name : 'Custom voicing';
+    $('chordName').textContent=noteName(rootPc)+' '+(chord?chord.short:'custom');
+    $('chordFormula').textContent=tones.join(' · ')+'  /  '+intervals.join('–');
+    $('explainTitle').textContent=chord?`Why “${noteName(rootPc)} ${chord.name.toLowerCase()}”?`:'A custom set of intervals';
+    if(chord){$('explainText').textContent=`${noteName(rootPc)} is the root. ${chord.hint} In equal temperament, the interval numbers count semitone steps; the same shape can be moved to any root without changing its quality.`;}
+    else {$('explainText').textContent=`You selected ${tones.join(', ')}. Measured from ${noteName(rootPc)}, the pitch-class offsets are ${offsets.join(', ')} semitones. This combination does not match one of the common chord templates in the library; it may have several valid names depending on musical context and bass note.`;}
+    const chips=[];
+    chips.push(`<span class="math-chip">root = 0</span>`);
+    intervals.forEach(n=>chips.push(`<span class="math-chip">${n} semitone${n===1?'':'s'}</span>`));
+    chips.push(`<span class="math-chip">ℤ₁₂</span>`);
+    chips.push(`<span class="math-chip">f(n) = f₀ · 2ⁿ⁄¹²</span>`);
+    $('mathline').innerHTML=chips.join('');
+  }
+  function renderPartials(){
+    const holder=$('partials');holder.innerHTML='';
+    const base=midiToHz(rootMidi());
+    for(let h=1;h<=6;h++){
+      const f=base*h;if(f>FMAX)continue;
+      const b=document.createElement('button');b.className='partial';b.type='button';
+      b.innerHTML=`<b>H${h}</b><small>${hzLabel(f)}</small>`;b.title=`Harmonic ${h}, at ${hzLabel(f)}. Click to hear this partial.`;
+      b.addEventListener('click',()=>{probeFreqs=[f];playFrequencies([f],{partials:false});renderSpectrum();});holder.appendChild(b);
+    }
+  }
+  function renderAll(){
+    renderWheel();renderChordGrid();renderKeybed();renderExplanation();renderPartials();renderSpectrum();
+  }
+
+  function initAudio(){
+    if(audioCtx)return;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC){setStatus('Audio unavailable','This browser does not expose the Web Audio API. The visual lesson still works.');return;}
+    audioCtx=new AC();master=audioCtx.createGain();master.gain.value=.72;
+    const comp=audioCtx.createDynamicsCompressor();comp.threshold.value=-20;comp.knee.value=18;comp.ratio.value=4;comp.attack.value=.006;comp.release.value=.18;
+    master.connect(comp);comp.connect(audioCtx.destination);
+  }
+  function playFrequencies(freqs,opts={}){
+    initAudio();if(!audioCtx||!master)return;
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const now=audioCtx.currentTime, duration=opts.duration??1.25, volume=opts.volume??.22;
+    freqs.slice(0,10).forEach((freq,index)=>{
+      if(!Number.isFinite(freq)||freq<15||freq>18000)return;
+      const amp=volume/Math.sqrt(Math.max(1,freqs.length));
+      const harmonics=opts.partials===false?1:5;
+      for(let h=1;h<=harmonics;h++){
+        const osc=audioCtx.createOscillator(),gain=audioCtx.createGain(),pan=audioCtx.createStereoPanner?audioCtx.createStereoPanner():null;
+        osc.type='sine';osc.frequency.value=freq*h;
+        if(freq*h>17500)continue;
+        const harmonicAmp=h===1?1:Math.pow(h,-1.45);
+        const peak=amp*harmonicAmp;
+        gain.gain.setValueAtTime(.0001,now);
+        gain.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),now+.018);
+        gain.gain.setValueAtTime(Math.max(.0002,peak),now+Math.max(.04,duration-.18));
+        gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+        osc.connect(gain);
+        if(pan){pan.pan.value=(index-(freqs.length-1)/2)*.16;gain.connect(pan);pan.connect(master);}else gain.connect(master);
+        const node={osc,gain,pan};activeNodes.add(node);osc.onended=()=>{activeNodes.delete(node);try{osc.disconnect();gain.disconnect();pan?.disconnect();}catch(_){}};
+        osc.start(now);osc.stop(now+duration+.03);
+      }
+    });
+  }
+  function stopAudio(){
+    if(!audioCtx)return;const now=audioCtx.currentTime;
+    activeNodes.forEach(n=>{try{n.gain.gain.cancelScheduledValues(now);n.gain.gain.setTargetAtTime(.0001,now,.025);n.osc.stop(now+.13);}catch(_){}});
+  }
+  function playCurrent(){probeFreqs=null;renderSpectrum();playFrequencies(currentMidis().map(midiToHz));}
+  function arpeggiate(){
+    initAudio();if(!audioCtx)return;if(audioCtx.state==='suspended')audioCtx.resume();
+    const fs=currentMidis().map(midiToHz);const base=audioCtx.currentTime;
+    fs.forEach((f,i)=>{const delay=i*.19;setTimeout(()=>playFrequencies([f],{duration:.8,volume:.2}),delay*1000);});
+  }
+
+  // WebGL spectrum: spectral lines, overlapping mechanical tuning curves, and illustrative neural events.
+  const VERT=`attribute vec2 a_pos; varying vec2 v_uv; void main(){v_uv=a_pos*.5+.5;gl_Position=vec4(a_pos,0.0,1.0);}`;
+  const FRAG=`precision highp float;
+    varying vec2 v_uv; uniform vec2 u_resolution; uniform float u_time; uniform int u_count; uniform vec4 u_peaks[__PEAKS__]; uniform int u_mode;
+    float line(float d,float w){return 1.0-smoothstep(w,w*2.0,abs(d));}
+    void main(){
+      vec2 uv=v_uv; float x=uv.x; float y=uv.y;
+      vec3 col=vec3(0.055,0.085,0.09);
+      float gx=0.0; for(int i=0;i<=8;i++){float xx=float(i)/8.0;gx=max(gx,line(x-xx,0.0012)*0.24);}
+      float gy=0.0;for(int j=0;j<=4;j++){float yy=.12+float(j)*.18;gy=max(gy,line(y-yy,0.0015)*.18);}
+      col+=vec3(gx*.55,gy*.72,gy*.72);
+      float exc=0.0;float spectrum=0.0;
+      for(int i=0;i<__PEAKS__;i++){
+        if(i>=u_count)break;
+        vec4 p=u_peaks[i];float dx=x-p.x;
+        float g=exp(-.5*pow(dx/max(.006,p.z),2.0))*p.y;
+        exc+=g;
+        float bar=line(dx,.0016)*step(.12,y)*step(y,.12+p.y*.58);
+        spectrum=max(spectrum,bar*p.y);
+      }
+      float mechY=.13+min(exc,1.25)*.37;
+      float mech=line(y-mechY,.0045);
+      float mechFill=step(.13,y)*step(y,mechY)*min(.16,exc*.055);
+      float glow=exp(-pow((y-mechY)/.035,2.0))*min(exc,1.0);
+      vec3 spectralColor=vec3(.93,.65,.35);
+      vec3 mechColor=vec3(.48,.84,.68);
+      if(u_mode==0||u_mode==2){col+=spectralColor*(spectrum*.9);}
+      if(u_mode==0||u_mode==1){col+=mechColor*(mech*.88+glow*.38+mechFill);}
+      
+      float edge=smoothstep(0.0,.025,x)*(1.0-smoothstep(.975,1.0,x));
+      col*=.84+.16*edge;
+      gl_FragColor=vec4(col,1.0);
+    }`;
+  function compileShader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.warn(gl.getShaderInfoLog(s));gl.deleteShader(s);return null;}return s;}
+  function initWebGL(){
+    const canvas=$('spectrum');
+    try{gl=canvas.getContext('webgl',{alpha:false,antialias:true})||canvas.getContext('experimental-webgl');}catch(_){gl=null;}
+    if(!gl){canvas.dataset.fallback='true';drawFallback();return;}
+    peakCapacity=Math.min(MAX_PEAKS,Math.max(4,gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS)-6));
+    const fragmentSource=FRAG.replace(/__PEAKS__/g,String(peakCapacity));
+    const vs=compileShader(gl.VERTEX_SHADER,VERT),fs=compileShader(gl.FRAGMENT_SHADER,fragmentSource);if(!vs||!fs){gl=null;activateCanvasFallback();return;}
+    glProgram=gl.createProgram();gl.attachShader(glProgram,vs);gl.attachShader(glProgram,fs);gl.linkProgram(glProgram);
+    if(!gl.getProgramParameter(glProgram,gl.LINK_STATUS)){console.warn(gl.getProgramInfoLog(glProgram));gl=null;activateCanvasFallback();return;}
+    gl.useProgram(glProgram);glBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,glBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+    const loc=gl.getAttribLocation(glProgram,'a_pos');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    resizeGL();renderSpectrum();
+  }
+  function resizeGL(){
+    const c=$('spectrum');const w=Math.max(300,Math.floor(c.clientWidth*(window.devicePixelRatio||1))),h=Math.max(160,Math.floor(c.clientHeight*(window.devicePixelRatio||1)));
+    if(c.width!==w||c.height!==h){c.width=w;c.height=h;}if(gl)gl.viewport(0,0,c.width,c.height);
+  }
+  function spectrumPeaks(){
+    let frequencies=[];
+    if(probeFreqs){frequencies=probeFreqs.map(f=>({f,a:1}));}
+    else currentMidis().forEach(m=>frequencies.push({f:midiToHz(m),a:1/Math.sqrt(Math.max(1,intervals.length))}));
+    const peaks=[];
+    frequencies.forEach(({f,a})=>{for(let h=1;h<=7;h++){const hz=f*h;if(hz<FMIN||hz>FMAX)continue;const x=Math.log(hz/FMIN)/Math.log(FMAX/FMIN);const amp=a*Math.pow(h,-1.18);const width=.012+(1-x)*.004;peaks.push([x,amp,width,0]);}});
+    return peaks.slice(0,MAX_PEAKS);
+  }
+  function renderSpectrum(){
+    runCochlearModel();
+    if(!gl||!glProgram){drawFallback();return;}
+    resizeGL();gl.useProgram(glProgram);gl.bindBuffer(gl.ARRAY_BUFFER,glBuffer);
+    const loc=gl.getAttribLocation(glProgram,'a_pos');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    const peaks=spectrumPeaks().slice(0,peakCapacity),packed=new Float32Array(peakCapacity*4);peaks.forEach((p,i)=>packed.set(p,i*4));
+    gl.uniform2f(gl.getUniformLocation(glProgram,'u_resolution'),$('spectrum').width,$('spectrum').height);
+    gl.uniform1f(gl.getUniformLocation(glProgram,'u_time'),performance.now()/1000);
+    gl.uniform1i(gl.getUniformLocation(glProgram,'u_count'),peaks.length);
+    gl.uniform4fv(gl.getUniformLocation(glProgram,'u_peaks[0]'),packed);
+    gl.uniform1i(gl.getUniformLocation(glProgram,'u_mode'),chartMode==='mechanical'?1:chartMode==='spectrum'?2:0);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+  function activateCanvasFallback(){
+    const old=$('spectrum');if(old){const replacement=old.cloneNode(false);old.replaceWith(replacement);}
+    drawFallback();
+  }
+  function drawFallback(){
+    const c=$('spectrum');if(!c)return;const ctx=c.getContext('2d');if(!ctx)return;
+    const w=c.width=Math.max(300,c.clientWidth*(devicePixelRatio||1)),h=c.height=Math.max(160,c.clientHeight*(devicePixelRatio||1));
+    ctx.fillStyle='#101a1c';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#2b4143';ctx.lineWidth=1;
+    for(let i=0;i<=8;i++){ctx.beginPath();ctx.moveTo(i*w/8,0);ctx.lineTo(i*w/8,h);ctx.stroke();}
+    const peaks=spectrumPeaks();ctx.strokeStyle='#f2bb73';ctx.lineWidth=2;
+    if(chartMode!=='mechanical')peaks.forEach(p=>{const x=p[0]*w;ctx.beginPath();ctx.moveTo(x,h*.88);ctx.lineTo(x,h*(.88-p[1]*.58));ctx.stroke();});
+    if(chartMode!=='spectrum'){
+      ctx.strokeStyle='#a8e3c5';ctx.lineWidth=2;ctx.beginPath();
+      for(let i=0;i<=w;i++){const x=i/w;let ex=0;peaks.forEach(p=>ex+=Math.exp(-.5*Math.pow((x-p[0])/p[2],2))*p[1]);const y=h*(.87-Math.min(ex,1.25)*.37);if(i===0)ctx.moveTo(i,y);else ctx.lineTo(i,y);}ctx.stroke();
+    }
+    
+  }
+  function frequencyAtCanvasX(clientX){const r=$('spectrum').getBoundingClientRect();const x=Math.min(1,Math.max(0,(clientX-r.left)/r.width));return FMIN*Math.pow(FMAX/FMIN,x);}
+
+  function setMode(next){
+    mode=next;$('modeSynthetic').classList.toggle('active',mode==='synthetic');$('modeMemory').classList.toggle('active',mode==='memory');
+    $('pathTitle').textContent=mode==='synthetic'?'Synthetic path is active':'Perceptual / “memory” path is active';
+    $('pathText').textContent=mode==='synthetic'?'Click a note, chord, harmonic or cochlear structure. The object generates sound and updates the excitation display.':'Click a cochlear place, hair cell or nerve element. The lab synthesises a plausible sound-memory and displays alternative interpretations.';
+    $('memoryCard').classList.remove('show');
+  }
+  function setStatus(title,text){$('pathTitle').textContent=title;$('pathText').textContent=text;}
+  // Reduced-order human cochlear model. Frequencies use Greenwood's human place map;
+  // each place has an ERB-tuned second-order resonator and a level-dependent active process.
+  const MODEL={FS:24000, DURATION:.18, NCH:56, FRAMES:240, FMIN:30, FMAX:8000, FIBERS:3};
+  const FIBER_CLASSES=[
+    {name:'high SR',spont:65,max:280,threshold:.018,slope:.055,color:'#a8e3c5'},
+    {name:'medium SR',spont:20,max:240,threshold:.055,slope:.065,color:'#f2bb73'},
+    {name:'low SR',spont:2,max:205,threshold:.115,slope:.075,color:'#b7a3e8'}
+  ];
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const greenwoodX=f=>Math.log10(Math.max(1,f)/165.4+.88)/2.1;
+  const greenwoodHz=x=>165.4*(Math.pow(10,2.1*x)-.88);
+  const erbHz=f=>24.7*(4.37*f/1000+1);
+  function makeRandom(seed){let x=seed>>>0;return ()=>{x=(1664525*x+1013904223)>>>0;return x/4294967296;};}
+  function currentInputComponents(midiOverride=null){
+    const source=midiOverride ? midiOverride.map(midiToHz) : (probeFreqs ? probeFreqs.slice() : currentMidis().map(midiToHz));
+    const fundamentals=source.map((f,i)=>({f,a:1/Math.sqrt(Math.max(1,source.length)),phase:i*.73}));
+    const partials=[];
+    fundamentals.forEach(n=>{for(let h=1;h<=7;h++){const f=n.f*h;if(f<MODEL.FS*.46)partials.push({f,a:n.a/Math.pow(h,1.15),phase:n.phase+h*.19});}});
+    const norm=partials.reduce((a,p)=>a+p.a,0)||1;partials.forEach(p=>p.a/=norm);
+    return partials;
+  }
+  function makeBiquad(cf,q,fs){
+    const w=2*Math.PI*cf/fs, c=Math.cos(w), sn=Math.sin(w), alpha=sn/(2*Math.max(.25,q));
+    const a0=1+alpha;
+    return {b0:alpha/a0,b1:0,b2:-alpha/a0,a1:-2*c/a0,a2:(1-alpha)/a0,x1:0,x2:0,y1:0,y2:0};
+  }
+  function logistic(x){return 1/(1+Math.exp(-clamp(x,-30,30)));}
+  function simulateCochlea(midiOverride=null){
+    const fs=MODEL.FS, nSamples=Math.round(fs*MODEL.DURATION), frameStride=Math.max(1,Math.floor(nSamples/MODEL.FRAMES));
+    const xA=greenwoodX(MODEL.FMIN), xB=greenwoodX(MODEL.FMAX), components=currentInputComponents(midiOverride);
+    const random=makeRandom(0x51f15e+Math.round(modelLevelDb*13)+Math.round(ohcFunction*7)+components.length*101);
+    const input=new Float32Array(nSamples), baseScale=.09*Math.pow(10,(modelLevelDb-60)/40);
+    for(let n=0;n<nSamples;n++){
+      const t=n/fs;let v=0;
+      for(let k=0;k<components.length;k++){const p=components[k];v+=p.a*Math.sin(2*Math.PI*p.f*t+p.phase);}
+      input[n]=v*baseScale;
+    }
+    const health=ohcFunction/100;
+    const levelFactor=1/(1+Math.pow(10,(modelLevelDb-43)/17));
+    const channels=[];
+    for(let c=0;c<MODEL.NCH;c++){
+      const x=xA+(xB-xA)*c/(MODEL.NCH-1), cf=greenwoodHz(x), erb=erbHz(cf);
+      const qPassive=cf/(1.019*erb), activeSharp=1+.62*health*levelFactor*(.55+.45*x);
+      const q=qPassive*activeSharp;
+      const gainDb=health*28*levelFactor*(.62+.38*x);
+      const filter=makeBiquad(cf,q,fs), delayMs=.65+7.2*Math.pow(1-x,1.28), delaySamples=Math.round(delayMs*fs/1000);
+      const bmFrames=new Float32Array(MODEL.FRAMES), bmTrace=new Float32Array(MODEL.FRAMES), ihcTrace=new Float32Array(MODEL.FRAMES);
+      const fibers=FIBER_CLASSES.map(()=>({spikes:[],available:1,last:-10,count:0,phaseX:0,phaseY:0}));
+      const tauIhc=clamp(.0015/(1+cf/3000),.00035,.00145), aIhc=1-Math.exp(-1/(fs*tauIhc));
+      const tauEnv=.0025, aEnv=1-Math.exp(-1/(fs*tauEnv));
+      const ihcRest=.15,ihcLogit=Math.log(ihcRest/(1-ihcRest)),ihcSlope=.02;
+      let ihc=ihcRest, env=0, frame=0, maxBm=0, ihcMean=0;
+      const gain=Math.pow(10,gainDb/20);
+      for(let n=0;n<nSamples;n++){
+        const delayed=n>=delaySamples?input[n-delaySamples]:0;
+        const y=filter.b0*delayed+filter.b1*filter.x1+filter.b2*filter.x2-filter.a1*filter.y1-filter.a2*filter.y2;
+        filter.x2=filter.x1;filter.x1=delayed;filter.y2=filter.y1;filter.y1=y;
+        const bm=y*gain;
+        const magnitude=Math.abs(bm);env+=aEnv*(magnitude-env);if(env>maxBm)maxBm=env;
+        // Saturating MET nonlinearity followed by an IHC membrane low-pass.
+        const openProbability=logistic(bm/ihcSlope+ihcLogit);
+        ihc+=aIhc*(openProbability-ihc);ihcMean+=ihc;
+        const t=n/fs, depol=clamp((ihc-ihcRest)/(1-ihcRest),0,1);
+        for(let f=0;f<FIBER_CLASSES.length;f++){
+          const spec=FIBER_CLASSES[f], st=fibers[f];
+          const s0=logistic(-spec.threshold/spec.slope);
+          const driven=clamp((logistic((depol-spec.threshold)/spec.slope)-s0)/(1-s0),0,1);
+          const rate=spec.spont+(spec.max-spec.spont)*driven;
+          st.available+=(1-st.available)*(1/(fs*.075));
+          const probability=rate*st.available/fs;
+          if(t-st.last>.001 && random()<probability){
+            const spikeTime=clamp(t+.00035+(random()-.5)*.00024,0,MODEL.DURATION);
+            st.spikes.push(spikeTime);st.last=spikeTime;st.count++;st.available*=.91;
+            const phase=2*Math.PI*cf*spikeTime;st.phaseX+=Math.cos(phase);st.phaseY+=Math.sin(phase);
+          }
+        }
+        if(n%frameStride===0 && frame<MODEL.FRAMES){
+          bmFrames[frame]=env;bmTrace[frame]=env;ihcTrace[frame]=ihc-.15;frame++;
+        }
+      }
+      const actualDuration=nSamples/fs;
+      let totalSpikes=0,vx=0,vy=0;
+      fibers.forEach(f=>{totalSpikes+=f.count;vx+=f.phaseX;vy+=f.phaseY;});
+      const nPhase=fibers.reduce((n,f)=>n+f.count,0);
+      const vectorStrength=nPhase?Math.hypot(vx,vy)/nPhase:0;
+      channels.push({index:c,x,cf,erb,q,gainDb,delayMs,bmFrames,bmTrace,ihcTrace,maxBm,ihcMean:ihcMean/nSamples,
+        fibers,meanRate:totalSpikes/(actualDuration*FIBER_CLASSES.length),vectorStrength});
+    }
+    return {channels,components,duration:MODEL.DURATION,level:modelLevelDb,ohc:ohcFunction,levelFactor};
+  }
+  function canvasContext(id){
+    const canvas=$(id);if(!canvas)return null;
+    const ctx=canvas.getContext('2d');if(!ctx)return null;
+    return {canvas,ctx,w:canvas.width,h:canvas.height};
+  }
+  function drawCochlearHeatmap(){
+    const c=canvasContext('bmCanvas');if(!c||!cochleaModel)return;
+    const {ctx,w,h}=c, channels=cochleaModel.channels, top=15,bottom=h-19,left=42,right=w-10;
+    ctx.fillStyle='#0d1719';ctx.fillRect(0,0,w,h);
+    const max=Math.max(.0001,...channels.map(ch=>ch.maxBm));
+    const rows=channels[0].bmFrames.length, cw=(right-left)/channels.length, rh=(bottom-top)/rows;
+    for(let t=0;t<rows;t++)for(let ch=0;ch<channels.length;ch++){
+      const v=clamp(channels[ch].bmFrames[t]/max,0,1), z=Math.pow(v,.62);
+      const r=Math.round(15+65*z),g=Math.round(29+190*z),b=Math.round(34+145*z);
+      ctx.fillStyle=`rgb(${r},${g},${b})`;ctx.fillRect(left+ch*cw,top+t*rh,Math.ceil(cw+.5),Math.ceil(rh+.5));
+    }
+    ctx.strokeStyle='#789089';ctx.lineWidth=1;ctx.strokeRect(left,top,right-left,bottom-top);
+    ctx.strokeStyle='#34494c';for(let i=1;i<4;i++){const y=top+(bottom-top)*i/4;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();}
+    const sx=left+(selectedChannelIndex/(channels.length-1))*(right-left);ctx.strokeStyle='#f2bb73';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx,top);ctx.lineTo(sx,bottom);ctx.stroke();
+    const duration=cochleaModel.duration;
+    (cochleaModel.onsets||[]).forEach((onset,i)=>{const y=top+(bottom-top)*onset/duration;ctx.strokeStyle='#f2bb73';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.setLineDash([]);if(i>0){ctx.fillStyle='#f2bb73';ctx.font='9px ui-monospace,monospace';ctx.fillText(String(i+1),left+3,y-2);}});
+    ctx.fillStyle='#94a89f';ctx.font='10px ui-monospace,monospace';ctx.fillText('0 ms',3,top+4);ctx.fillText(`${Math.round(duration*1000)} ms`,2,bottom);
+    ctx.fillStyle='#f2bb73';ctx.fillText(`${Math.round(channels[selectedChannelIndex].cf)} Hz`,Math.min(right-75,Math.max(left,sx+5)),12);
+  }
+  function drawIhcTrace(){
+    const c=canvasContext('ihcCanvas');if(!c||!cochleaModel)return;
+    const {ctx,w,h}=c,ch=cochleaModel.channels[selectedChannelIndex],n=ch.bmTrace.length,left=42,right=w-12,top=14,bottom=h-25;
+    ctx.fillStyle='#0d1719';ctx.fillRect(0,0,w,h);
+    for(let i=0;i<=4;i++){const y=top+(bottom-top)*i/4;ctx.strokeStyle='#263b3e';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();}
+    const max=Math.max(.03,...Array.from(ch.bmTrace,v=>Math.abs(v)))*1.12;
+    const draw=(arr,color,scale)=>{ctx.strokeStyle=color;ctx.lineWidth=1.6;ctx.beginPath();for(let i=0;i<n;i++){const x=left+(right-left)*i/(n-1),y=(top+bottom)/2-arr[i]/scale*(bottom-top)*.43;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();};
+    draw(ch.bmTrace,'#a8e3c5',max);draw(ch.ihcTrace,'#f2bb73',Math.max(.04,...Array.from(ch.ihcTrace,v=>Math.abs(v)))*1.12);
+    ctx.strokeStyle='#83988e';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(left,(top+bottom)/2);ctx.lineTo(right,(top+bottom)/2);ctx.stroke();ctx.setLineDash([]);
+    (cochleaModel.onsets||[]).forEach((onset,i)=>{const x=left+(right-left)*onset/cochleaModel.duration;ctx.strokeStyle='#f2bb73';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();ctx.setLineDash([]);});
+    const endLabel=$('ihcTimeEnd');if(endLabel)endLabel.textContent=`${Math.round(cochleaModel.duration*1000)} ms`;
+    ctx.fillStyle='#a8e3c5';ctx.font='10px ui-monospace,monospace';ctx.fillText('BM envelope',left+5,11);ctx.fillStyle='#f2bb73';ctx.fillText('IHC receptor potential',left+105,11);
+  }
+  function drawNeuralRaster(){
+    const c=canvasContext('neuralCanvas');if(!c||!cochleaModel)return;
+    const {ctx,w,h}=c,channels=cochleaModel.channels,left=48,right=w-10,top=12,bottom=h-24,rowH=(bottom-top)/(channels.length*3);
+    ctx.fillStyle='#0d1719';ctx.fillRect(0,0,w,h);
+    for(let i=0;i<channels.length;i++){
+      const y0=top+((channels.length-1-i)*3)*rowH;
+      if((channels.length-1-i)%7===0){ctx.strokeStyle='#253a3d';ctx.beginPath();ctx.moveTo(left,y0);ctx.lineTo(right,y0);ctx.stroke();}
+      for(let f=0;f<3;f++){
+        const yy=y0+f*rowH+rowH*.5,st=channels[i].fibers[f];ctx.fillStyle=FIBER_CLASSES[f].color;
+        for(let k=0;k<st.spikes.length;k++){const x=left+(right-left)*st.spikes[k]/cochleaModel.duration;ctx.fillRect(x,yy,1.6,Math.max(1,rowH*.72));}
+      }
+    }
+    (cochleaModel.onsets||[]).forEach((onset,i)=>{const x=left+(right-left)*onset/cochleaModel.duration;ctx.strokeStyle='#f2bb73';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();ctx.setLineDash([]);});
+    ctx.strokeStyle='#70877e';ctx.strokeRect(left,top,right-left,bottom-top);
+    ctx.fillStyle='#8ea298';ctx.font='9px ui-monospace,monospace';ctx.fillText('BASAL END · 8 kHz',2,top+7);ctx.fillText('APICAL END · 30 Hz',2,bottom-2);
+    const endLabel=$('neuralTimeEnd');if(endLabel)endLabel.textContent=`${Math.round(cochleaModel.duration*1000)} ms`;
+    const sy=top+((channels.length-1-selectedChannelIndex)*3+1.5)*rowH;ctx.strokeStyle='#f2bb73';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(left,sy);ctx.lineTo(right,sy);ctx.stroke();
+  }
+  function updateCochleaReadout(){
+    if(!cochleaModel)return;
+    const ch=cochleaModel.channels[selectedChannelIndex],rate=ch.meanRate,spont=FIBER_CLASSES.map((f,i)=>`${f.name}: ${ch.fibers[i].count/cochleaModel.duration|0} sp/s`).join(' · ');
+    const vectorLabel=cochleaModel.kind==='continuous'?'sequence-wide vector strength':'vector strength';
+    const resourceLabel=Number.isFinite(ch.synapseAvailability)?` · synaptic resource ${(ch.synapseAvailability*100).toFixed(1)}%`:'';
+    $('ihcChannelLabel').textContent=`CF ${Math.round(ch.cf)} Hz · ${ch.delayMs.toFixed(1)} ms model delay`;
+    $('cochleaReadout').innerHTML=`<strong>Selected place ${selectedChannelIndex+1}/${MODEL.NCH}</strong> · CF ${ch.cf.toFixed(1)} Hz · Greenwood position ${(ch.x*35).toFixed(1)} / 35 mm from apex · ERB ${ch.erb.toFixed(1)} Hz · effective Q ${ch.q.toFixed(2)}<br><strong>OHC active gain</strong> ${ch.gainDb.toFixed(1)} dB · BM envelope peak ${ch.maxBm.toFixed(3)} model units · <strong>Mean IHC depolarisation above rest</strong> ${(clamp((ch.ihcMean-.15)/.85,0,1)*100).toFixed(1)}% of MET range<br><strong>Auditory-nerve average</strong> ${rate.toFixed(1)} spikes/s/fibre · ${vectorLabel} ${ch.vectorStrength.toFixed(2)}${resourceLabel} · ${spont}`;
+  }
+  function drawCochlearModel(){drawCochlearHeatmap();drawIhcTrace();drawNeuralRaster();updateCochleaReadout();}
+  function runCochlearModel(){
+    if(!$('bmCanvas'))return;
+    cochleaModel=simulateCochlea();
+    drawCochlearModel();
+  }
+  function nearestChannel(freq){
+    if(!cochleaModel)return 30;let best=0,err=Infinity;
+    cochleaModel.channels.forEach((ch,i)=>{const e=Math.abs(Math.log(ch.cf/freq));if(e<err){err=e;best=i;}});return best;
+  }
+  function pitchLabel(midi){return noteName(pcOfMidi(midi))+(Math.floor(midi/12)-1);}
+  function showMemory(title,text,alternatives){
+    $('memoryTitle').textContent=title;$('memoryText').textContent=text;
+    $('memoryAlternatives').innerHTML='';alternatives.forEach(a=>{const s=document.createElement('span');s.className='alternative';s.textContent=a;$('memoryAlternatives').appendChild(s);});
+    $('memoryCard').classList.add('show');
+  }
+  function recallChannel(index,source='cochlear place'){
+    if(!cochleaModel)return;selectedChannelIndex=clamp(index,0,MODEL.NCH-1)|0;
+    const ch=cochleaModel.channels[selectedChannelIndex],cf=ch.cf,m=Math.round(hzToMidi(cf)),label=pitchLabel(m);
+    drawCochlearModel();
+    if(mode==='synthetic'){
+      probeFreqs=[cf];renderSpectrum();playFrequencies([cf],{volume:.19,duration:1.15});
+      $('memoryCard').classList.remove('show');
+      setStatus(`Cochlear channel · ${hzLabel(cf)}`,`${source} selects a filter channel with CF ${cf.toFixed(1)} Hz, ERB ${ch.erb.toFixed(1)} Hz and modelled active gain ${ch.gainDb.toFixed(1)} dB. A pure probe tone excites this place and neighbouring filters.`);
+    }else{
+      const candidates=[cf,midiToHz(m-12),midiToHz(m-1),midiToHz(m+1)].filter(f=>f>=30&&f<=10000);
+      probeFreqs=candidates;renderSpectrum();playFrequencies(candidates,{volume:.14,duration:1.35});
+      showMemory(`${label} · place-based hypothesis`,`${source} selects CF ${cf.toFixed(1)} Hz. The model's local activity is ${ch.meanRate.toFixed(1)} spikes/s/fibre with vector strength ${ch.vectorStrength.toFixed(2)}. A place cue does not uniquely specify a musical pitch: tuning is broad, neural firing is stochastic, and harmonics can support a missing-fundamental interpretation.`,[`${label} · nearest equal-tempered note`,`${pitchLabel(m-12)} · octave-lower / missing-fundamental candidate`,`${pitchLabel(m-1)} / ${pitchLabel(m+1)} · neighbours`]);
+      setStatus('Ambiguous auditory reconstruction',`A selected nerve/cochlear population is translated into candidate tones, not a literal neural “note label”. The alternatives are intentional.`);
+    }
+  }
+  const REGIONS=[{name:'Apex',hz:120},{name:'Lower-middle',hz:350},{name:'Upper-middle',hz:1400},{name:'Base',hz:5200}];
+  function triggerRegion(index,structure='place'){
+    const r=REGIONS[index];if(!r)return;
+    const nearest=nearestChannel(r.hz);document.querySelectorAll('.place').forEach((b,i)=>b.classList.toggle('active',i===index));
+    recallChannel(nearest,structure==='place'?`${r.name} button`:'anatomy structure click');
+  }
+  function triggerStructure(which){
+    if(mode==='synthetic'){
+      $('memoryCard').classList.remove('show');
+      if(which==='membrane'){
+        probeFreqs=null;renderSpectrum();playCurrent();
+        setStatus('Basilar membrane · travelling-wave population',`The current sound drives all ${MODEL.NCH} characteristic-frequency channels. Peak motion travels from the basal end toward frequency-specific places; the map shows finite tuning, delay and level-dependent gain.`);
+      }else if(which==='hair'){
+        const f=cochleaModel.channels[selectedChannelIndex].cf;probeFreqs=[f];renderSpectrum();playFrequencies([f,f*2].filter(v=>v<10000),{volume:.18});
+        setStatus('Inner hair cells · graded transduction',`A probe around ${hzLabel(f)} drives a saturating mechanoelectrical-transduction curve and membrane low-pass. The receptor potential is graded; it is not a discrete note detector.`);
+      }else{
+        const f=cochleaModel.channels[selectedChannelIndex].cf;probeFreqs=[f];renderSpectrum();playFrequencies([f],{volume:.18});
+        setStatus('Auditory nerve · stochastic population code',`The selected CF population uses high-, medium- and low-spontaneous-rate fibres. Their raster shows discrete, probabilistic spikes; rate and phase locking vary with level and frequency.`);
+      }
+    }else{
+      const ch=cochleaModel.channels[selectedChannelIndex],cf=ch.cf,m=Math.round(hzToMidi(cf)),name=pitchLabel(m);
+      let freqs=[cf,midiToHz(m-12)],title='',body='',alts=[];
+      if(which==='membrane'){
+        title=`${name} · place-based pitch guess`;
+        body=`The selected basilar-membrane channel has CF ${cf.toFixed(1)} Hz, with a finite ERB of ${ch.erb.toFixed(1)} Hz. A peak-place estimate is not a unique pitch: upper harmonics can support a lower missing fundamental, and neighbouring filters overlap.`;
+        alts=[`${name} · nearest pitch`,`${pitchLabel(m-12)} · octave-lower candidate`,'harmonic / missing-fundamental ambiguity'];
+      }else if(which==='hair'){
+        freqs=[cf,midiToHz(m-1),midiToHz(m+1)];title=`${name} · transduction hypothesis`;
+        body=`The modelled IHC potential is a low-pass-filtered, saturating response to bundle motion. It carries level and waveform-envelope information, but the same receptor potential can arise from different combinations of spectrum and level.`;
+        alts=[`${pitchLabel(m-1)} · lower neighbour`,`${pitchLabel(m+1)} · upper neighbour`,'level / timbre unresolved'];
+      }else{
+        freqs=[cf,midiToHz(m-12),midiToHz(m+12)].filter(f=>f<10000);title=`${name} · auditory-nerve population guess`;
+        body=`This channel has ${ch.meanRate.toFixed(1)} spikes/s/fibre on average and vector strength ${ch.vectorStrength.toFixed(2)} in this finite stochastic run. Neural rate and timing constrain a percept, but do not uniquely encode a chord name or harmonic role.`;
+        alts=[`${name} · place estimate`,`same pitch class · octave alternatives`,'alternate harmonic grouping'];
+      }
+      probeFreqs=freqs;renderSpectrum();playFrequencies(freqs,{volume:.15,duration:1.45});
+      showMemory(title,body,alts);setStatus('Candidate sound reconstructed from model activity',`The sound is a deliberately non-unique interpretation of ${which} activity. The simulation does not retrieve a real memory or decode a complete perceptual state.`);
+    }
+  }
+
+  // A chord sequence is treated as a succession of acoustic scenes, not as symbolic labels.
+  // Each scene is passed through the same cochlear front-end; pattern movement is compared
+  // with cosine similarity, excitation centroid, common tones and minimum voice-leading.
+  const progression=[];
+  let morphA={midis:[60,64,67],root:0,label:'C Major'};
+  let morphB={midis:[57,60,64],root:9,label:'A Minor'};
+  function chordSnapshot(midis,root,label){return {midis:midis.slice().sort((a,b)=>a-b),root,label,time:0};}
+  function currentChordSnapshot(){
+    const midis=currentMidis().slice().sort((a,b)=>a-b);
+    const chord=identifyCurrent();
+    return {midis,root:rootPc,label:`${noteName(rootPc)} ${chord?chord.name:'custom'}`,time:progression.length};
+  }
+  function minimumVoiceLeading(a,b){
+    // Minimum one-to-one assignment of the smaller voicing to a subset of the larger.
+    // O(n 2^m), bounded by 12 pitch classes; avoids factorial blow-ups for dense chords.
+    const small=a.length<=b.length?a:b, large=a.length<=b.length?b:a;
+    const m=large.length, size=1<<m, dp=new Float64Array(size);dp.fill(Infinity);dp[0]=0;
+    for(let mask=0;mask<size;mask++){
+      const i=popcount(mask);if(i>=small.length||!Number.isFinite(dp[mask]))continue;
+      for(let j=0;j<m;j++)if(!(mask&(1<<j))){const next=mask|(1<<j),cost=dp[mask]+Math.abs(small[i]-large[j]);if(cost<dp[next])dp[next]=cost;}
+    }
+    let best=Infinity;for(let mask=0;mask<size;mask++)if(popcount(mask)===small.length&&dp[mask]<best)best=dp[mask];return best;
+  }
+  function popcount(v){let n=0;while(v){v&=v-1;n++;}return n;}
+  const MAX_PROGRESSION_CHORDS=12;
+  function progressionSettings(){return {isi:Number($('progressionRate').value)/1000,attack:Number($('progressionAttack').value)/1000,release:Number($('progressionRelease').value)/1000};}
+  function buildProgressionSegments(settings,sequence=progression,mergeCommonTones=true){
+    const {isi}=settings,segments=[];
+    sequence.forEach((chord,i)=>{
+      const start=i*isi,end=(i+1)*isi;
+      chord.midis.forEach(midi=>{
+        if(!mergeCommonTones){segments.push({midi,start,end,level:1/Math.sqrt(Math.max(1,chord.midis.length)),firstChord:i,lastChord:i});return;}
+        const prior=segments.find(seg=>seg.midi===midi&&Math.abs(seg.end-start)<1e-9);
+        if(prior)prior.end=end;
+        else segments.push({midi,start,end,level:1/Math.sqrt(Math.max(1,chord.midis.length)),firstChord:i,lastChord:i});
+        const seg=segments.find(seg=>seg.midi===midi&&Math.abs(seg.end-end)<1e-9);
+        if(seg)seg.lastChord=i;
+      });
+    });
+    segments.sort((a,b)=>a.start-b.start||a.midi-b.midi);
+    return segments;
+  }
+  function renderProgression(){
+    const host=$('progressionStrip');
+    host.innerHTML=progression.length?progression.map((c,i)=>`<span class="progression-chip"><b>${i+1}.</b> ${c.label}</span>`).join(''):'No chords captured yet.';
+    $('addProgression').disabled=progression.length>=MAX_PROGRESSION_CHORDS;
+    $('addProgression').textContent=progression.length>=MAX_PROGRESSION_CHORDS?'Sequence full (12 chords)':'＋ Add current chord';
+  }
+  function cosineSimilarity(a,b){let dot=0,aa=0,bb=0;for(let i=0;i<a.length;i++){dot+=a[i]*b[i];aa+=a[i]*a[i];bb+=b[i]*b[i];}return aa&&bb?dot/Math.sqrt(aa*bb):0;}
+  function localExcitationPeaks(profile,channels){
+    const peak=Math.max(0,...profile),out=[];if(peak<=1e-12)return out;
+    for(let i=1;i<profile.length-1;i++)if(profile[i]>=profile[i-1]&&profile[i]>profile[i+1]&&profile[i]>.22*peak){
+      if(!out.length||i-out[out.length-1].index>=2)out.push({index:i,cf:channels[i].cf,amp:profile[i]});
+      else if(profile[i]>out[out.length-1].amp)out[out.length-1]={index:i,cf:channels[i].cf,amp:profile[i]};
+    }
+    return out;
+  }
+  function peakTrackContinuity(a,b,channels){
+    const pa=localExcitationPeaks(a,channels),pb=localExcitationPeaks(b,channels);if(!pa.length&&!pb.length)return 1;
+    let matched=0;const used=new Set();
+    pa.forEach(x=>{let best=-1,err=Infinity;pb.forEach((y,j)=>{if(used.has(j))return;const d=Math.abs(12*Math.log2(x.cf/y.cf));if(d<err){err=d;best=j;}});if(best>=0&&err<=2.5){matched++;used.add(best);}});
+    return matched/Math.max(1,Math.max(pa.length,pb.length));
+  }
+  function trackExcitationPeaks(profiles,channels){
+    const tracks=[];let active=[];
+    profiles.forEach((profile,chordIndex)=>{
+      const peaks=localExcitationPeaks(profile,channels),used=new Set(),next=[];
+      peaks.forEach(peak=>{
+        let best=null,bestErr=Infinity;
+        active.forEach(track=>{if(used.has(track.id)||track.lastChord!==chordIndex-1)return;const err=Math.abs(12*Math.log2(track.lastCf/peak.cf));if(err<=2.5&&err<bestErr){best=track;bestErr=err;}});
+        if(best){used.add(best.id);best.lastCf=peak.cf;best.lastChord=chordIndex;best.hits++;best.history.push(peak.cf);next.push(best);}
+        else{const track={id:tracks.length+1,firstChord:chordIndex,lastChord:chordIndex,lastCf:peak.cf,hits:1,history:[peak.cf]};tracks.push(track);next.push(track);}
+      });
+      active=next;
+    });
+    return {tracks,persistent:tracks.filter(t=>t.hits>=2),throughAll:tracks.filter(t=>t.hits===profiles.length)};
+  }
+  function knownCommonToneRuns(sequence=progression){
+    const runs=new Map();
+    sequence.forEach((chord,i)=>chord.midis.forEach(midi=>{
+      let r=runs.get(midi);if(!r){r={midi,count:0,last:-2,current:0,longest:0};runs.set(midi,r);}
+      r.count++;r.current=r.last===i-1?r.current+1:1;r.longest=Math.max(r.longest,r.current);r.last=i;
+    }));
+    return [...runs.values()].filter(r=>r.longest>=2).sort((a,b)=>b.longest-a.longest||a.midi-b.midi);
+  }
+  function simulateContinuousProgression(settings,sequence=progression,options={}){
+    const fs=MODEL.FS,isi=settings.isi,attack=settings.attack,release=settings.release;
+    const segments=options.morph?[]:buildProgressionSegments(settings,sequence,!options.independentEvents),baseDuration=options.morph?options.morph.duration:sequence.length*isi;
+    const duration=baseDuration+Math.max(.08,release*2.5),nSamples=Math.ceil(duration*fs);
+    const frameCount=clamp(Math.round(duration*60),240,900)|0,frameStride=Math.max(1,Math.floor(nSamples/frameCount));
+    const input=new Float32Array(nSamples),baseScale=.09*Math.pow(10,(modelLevelDb-60)/40);
+    if(options.morph){
+      // One sample-wise pitch trajectory. Fundamental phase is accumulated continuously,
+      // avoiding the phase resets and staircase artifacts of a sequence of micro-chords.
+      const voices=options.morph.voices,phase=voices.map((v,i)=>(i*.731)% (Math.PI*2));
+      const norm=1/Math.sqrt(Math.max(1,voices.length)),morphDuration=options.morph.duration;
+      const curveAt=options.morph.curve==='linear'?p=>p:p=>p*p*(3-2*p);
+      const attackSamples=Math.max(1,Math.round(attack*fs)),releaseSamples=Math.max(1,Math.round(release*fs));
+      for(let n=0;n<nSamples;n++){
+        const t=n/fs,p=clamp(t/morphDuration,0,1),u=curveAt(p);
+        const envIn=attack>0?.5-.5*Math.cos(Math.PI*clamp(t/attack,0,1)):1;
+        const tail=t-morphDuration,envOut=tail<=0?1:(release>0?.5+.5*Math.cos(Math.PI*clamp(tail/release,0,1)):0);
+        const env=envIn*envOut*norm*baseScale;let sample=0;
+        for(let v=0;v<voices.length;v++){
+          const voice=voices[v];
+          const midi=voice.a!==null&&voice.b!==null?voice.a+(voice.b-voice.a)*u:(voice.a!==null?voice.a:voice.b);
+          let voiceGain=1;
+          if(voice.a===null)voiceGain=Math.sin(u*Math.PI/2);
+          else if(voice.b===null)voiceGain=Math.cos(u*Math.PI/2);
+          const hz=midiToHz(midi);phase[v]=(phase[v]+2*Math.PI*hz/fs)%(2*Math.PI);
+          if(voiceGain<1e-6)continue;
+          for(let h=1;h<=7;h++){
+            if(hz*h>=fs*.46)break;
+            sample+=voiceGain*Math.pow(h,-1.15)*Math.sin(phase[v]*h);
+          }
+        }
+        input[n]=env*sample;
+      }
+    }else{
+      // One continuous additive waveform. Common MIDI notes are merged across adjacent chords,
+      // so they are not artificially re-attacked at every chord boundary.
+      segments.forEach(seg=>{
+      const first=Math.max(0,Math.floor(seg.start*fs)),last=Math.min(nSamples,Math.ceil((seg.end+(options.independentEvents?0:release))*fs));
+      const freqs=[];for(let h=1;h<=7;h++){const f=midiToHz(seg.midi)*h;if(f>=fs*.46)break;freqs.push({f,h,amp:Math.pow(h,-1.15)});}
+      const phase0=(seg.midi*.371)% (Math.PI*2);
+      for(let n=first;n<last;n++){
+        const t=n/fs,from=t-seg.start,afterOff=t-seg.end;
+        let a,r;
+        if(options.independentEvents){
+          // Matched order experiment: each chord occupies one fixed window, with the same
+          // attack/release shape for every event. No common-tone merging or cross-window tail.
+          const aEvent=Math.min(attack,isi*.4),rEvent=Math.min(release,isi*.4),untilEnd=seg.end-t;
+          a=aEvent>0?(.5-.5*Math.cos(Math.PI*clamp(from/aEvent,0,1))):1;
+          r=rEvent>0?(.5-.5*Math.cos(Math.PI*clamp(untilEnd/rEvent,0,1))):Number(untilEnd>0);
+        }else{
+          a=attack>0?(.5-.5*Math.cos(Math.PI*clamp(from/attack,0,1))):1;
+          r=release>0?(afterOff<=0?1:(.5+.5*Math.cos(Math.PI*clamp(afterOff/release,0,1)))):Number(afterOff<=0);
+        }
+        const env=a*r*seg.level*baseScale;
+        if(env<1e-9)continue;
+        let sample=0;for(let k=0;k<freqs.length;k++){const q=freqs[k];sample+=q.amp*Math.sin(2*Math.PI*q.f*t+phase0);}
+        input[n]+=env*sample;
+      }
+      });
+    }
+    const health=ohcFunction/100,levelFactor=1/(1+Math.pow(10,(modelLevelDb-43)/17));
+    const xA=greenwoodX(MODEL.FMIN),xB=greenwoodX(MODEL.FMAX),channels=[];
+    const win=Math.min(.025,isi*.35),profileSums=Array.from({length:sequence.length},()=>new Float64Array(MODEL.NCH));
+    const profileCounts=new Uint32Array(sequence.length);profileCounts.fill(Math.max(1,Math.ceil(win*fs)));
+    const resourcesAtOnset=Array.from({length:sequence.length},()=>new Float64Array(MODEL.NCH));
+    for(let c=0;c<MODEL.NCH;c++){
+      const x=xA+(xB-xA)*c/(MODEL.NCH-1),cf=greenwoodHz(x),erb=erbHz(cf),qPassive=cf/(1.019*erb);
+      const activeSharp=1+.62*health*levelFactor*(.55+.45*x),q=qPassive*activeSharp;
+      const gainDb=health*28*levelFactor*(.62+.38*x),filter=makeBiquad(cf,q,fs);
+      const delayMs=.65+7.2*Math.pow(1-x,1.28),delaySamples=Math.round(delayMs*fs/1000);
+      const bmFrames=new Float32Array(frameCount),bmTrace=new Float32Array(frameCount),ihcTrace=new Float32Array(frameCount);
+      const fibers=FIBER_CLASSES.map(()=>({spikes:[],last:-1e9,count:0,phaseX:0,phaseY:0,resource:1,resourceSum:0}));
+      const ihcRest=.15,ihcLogit=Math.log(ihcRest/(1-ihcRest)),ihcSlope=.02;
+      let ihc=ihcRest,ohcEnv=0,bmEnv=0,frame=0,maxBm=0,ihcSum=0;
+      const tauIhc=clamp(.0015/(1+cf/3000),.00035,.00145),aIhc=1-Math.exp(-1/(fs*tauIhc));
+      const aOhc=1-Math.exp(-1/(fs*.012));
+      const random=makeRandom((0x51f15e+c*7919+Math.round(modelLevelDb*13)+Math.round(ohcFunction*7))>>>0);
+      const tauEnvAttack=.0018,tauEnvRelease=.006;
+      const onsetSample=sequence.map((_,i)=>Math.round(i*isi*fs));
+      const onsetStored=new Uint8Array(sequence.length);
+      for(let n=0;n<nSamples;n++){
+        const t=n/fs,delayed=n>=delaySamples?input[n-delaySamples]:0;
+        const y=filter.b0*delayed+filter.b1*filter.x1+filter.b2*filter.x2-filter.a1*filter.y1-filter.a2*filter.y2;
+        filter.x2=filter.x1;filter.x1=delayed;filter.y2=filter.y1;filter.y1=y;
+        const raw=Math.abs(y);ohcEnv+=aOhc*(raw-ohcEnv);
+        // Reduced active-process compression: gain falls as local mechanical drive rises.
+        const compression=1/(1+Math.pow(ohcEnv/.045,.72));
+        const dynamicGainDb=gainDb*(.32+.68*compression),bm=y*Math.pow(10,dynamicGainDb/20);
+        const mag=Math.abs(bm),aEnv=1-Math.exp(-1/(fs*(mag>bmEnv?tauEnvAttack:tauEnvRelease)));
+        bmEnv+=aEnv*(mag-bmEnv);if(bmEnv>maxBm)maxBm=bmEnv;
+        const openProbability=logistic(bm/ihcSlope+ihcLogit);
+        ihc+=aIhc*(openProbability-ihc);ihcSum+=ihc;
+        const depol=clamp((ihc-ihcRest)/(1-ihcRest),0,1),releaseDrive=Math.pow(depol/(depol+.05),2);
+        // Record pre-transition synaptic state and the late-window excitation pattern.
+        const chordIndex=Math.min(sequence.length-1,Math.floor(t/isi));
+        if(chordIndex>0&&!onsetStored[chordIndex]&&n>=onsetSample[chordIndex]){
+          onsetStored[chordIndex]=1;let r=0;for(let fi=0;fi<fibers.length;fi++)r+=fibers[fi].resource;
+          resourcesAtOnset[chordIndex][c]=r/fibers.length;
+        }
+        const chordEnd=(chordIndex+1)*isi;
+        if(t>=chordEnd-win&&t<chordEnd)profileSums[chordIndex][c]+=bmEnv;
+        for(let f=0;f<FIBER_CLASSES.length;f++){
+          const spec=FIBER_CLASSES[f],st=fibers[f];
+          // Continuous vesicle-resource depression and recovery; independent state per fibre.
+          st.resource+=((1-st.resource)/.075-.6*releaseDrive*st.resource/.08)/fs;
+          st.resource=clamp(st.resource,0,1);st.resourceSum+=st.resource;
+          const s0=logistic(-spec.threshold/spec.slope);
+          const driven=clamp((logistic((depol-spec.threshold)/spec.slope)-s0)/(1-s0),0,1);
+          const rate=spec.spont+(spec.max-spec.spont)*driven*st.resource;
+          const since=t-st.last,relative=since<.004?(1-Math.exp(-Math.max(0,since)/.0015)):1;
+          const p=rate*relative/fs;
+          // Bernoulli time discretisation of an inhomogeneous Poisson process; dt*rate << 1.
+          if(since>=.0008&&random()<p){
+            const jitter=(random()-.5)*(.000025+.000075*cf/MODEL.FMAX),spikeTime=clamp(t+jitter,0,duration);
+            st.spikes.push(spikeTime);st.last=t;st.count++;
+            const phase=2*Math.PI*cf*(spikeTime-delayMs/1000);st.phaseX+=Math.cos(phase);st.phaseY+=Math.sin(phase);
+          }
+        }
+        if(n%frameStride===0&&frame<frameCount){bmFrames[frame]=bmEnv;bmTrace[frame]=bmEnv;ihcTrace[frame]=ihc-.15;frame++;}
+      }
+      let totalSpikes=0,vx=0,vy=0,phaseN=0,meanResource=0;
+      fibers.forEach(f=>{totalSpikes+=f.count;vx+=f.phaseX;vy+=f.phaseY;phaseN+=f.count;meanResource+=f.resourceSum/nSamples;});
+      const vectorStrength=phaseN?Math.hypot(vx,vy)/phaseN:0;
+      channels.push({index:c,x,cf,erb,q,gainDb,delayMs,bmFrames,bmTrace,ihcTrace,maxBm,ihcMean:ihcSum/nSamples,
+        fibers,meanRate:totalSpikes/(duration*FIBER_CLASSES.length),vectorStrength,synapseAvailability:meanResource/FIBER_CLASSES.length});
+    }
+    const profiles=profileSums.map((sum,i)=>Float64Array.from(sum,v=>v/Math.max(1,profileCounts[i])));
+    const transitionStates=resourcesAtOnset.map((r,i)=>i?Array.from(r).reduce((a,v)=>a+v,0)/MODEL.NCH:1);
+    // Aggregate the actual stochastic fibre events in the same late chord windows as the BM profiles.
+    // Each feature is a per-fibre event rate; count totals remain available for a sampling-uncertainty cue.
+    const neuralProfiles=Array.from({length:sequence.length},()=>new Float64Array(MODEL.NCH*FIBER_CLASSES.length));
+    const neuralSpikeCounts=new Uint32Array(sequence.length);
+    for(let c=0;c<channels.length;c++){
+      const ch=channels[c];
+      for(let f=0;f<ch.fibers.length;f++){
+        const spikes=ch.fibers[f].spikes,feature=c*FIBER_CLASSES.length+f;
+        for(let k=0;k<spikes.length;k++){
+          const st=spikes[k],i=Math.floor(st/isi);
+          if(i>=0&&i<sequence.length&&st>=((i+1)*isi-win)){
+            neuralProfiles[i][feature]+=1/win;
+            neuralSpikeCounts[i]++;
+          }
+        }
+      }
+    }
+    return {kind:'continuous',channels,components:options.morph?options.morph.voices.map(v=>({f:midiToHz(v.a!==null?v.a:v.b),a:1/Math.sqrt(Math.max(1,options.morph.voices.length)),phase:0})):segments.map(s=>({f:midiToHz(s.midi),a:s.level,phase:0})),duration,level:modelLevelDb,ohc:ohcFunction,
+      onsets:options.morph?[0,.25,.5,.75,1].map(p=>p*options.morph.duration):sequence.map((_,i)=>i*isi),profiles,neuralProfiles,neuralSpikeCounts,neuralWindow:win,transitionStates,segments,sequence:sequence.map(ch=>({midis:ch.midis.slice(),root:ch.root,label:ch.label,time:ch.time})),settings:{...settings,fs,nSamples,frameStride,envelopeAttack:options.independentEvents?Math.min(attack,isi*.4):attack,envelopeRelease:options.independentEvents?Math.min(release,isi*.4):release,independentEvents:!!options.independentEvents,morph:!!options.morph},inputPeak:input.reduce((m,v)=>Math.max(m,Math.abs(v)),0)};
+  }
+  function analyseContinuousResult(result,sequence=result.sequence||progression){
+    const profiles=result.profiles,neural=result.neuralProfiles,transitions=[];
+    for(let i=1;i<sequence.length;i++){
+      const a=sequence[i-1],b=sequence[i],sim=cosineSimilarity(profiles[i-1],profiles[i]);
+      const peakContinuity=peakTrackContinuity(profiles[i-1],profiles[i],result.channels);
+      const nerveSim=cosineSimilarity(neural[i-1],neural[i]);
+      const common=a.midis.filter(m=>b.midis.includes(m)).length,vl=minimumVoiceLeading(a.midis,b.midis);
+      const centroid=p=>{let n=0,d=0;for(let c=0;c<p.length;c++){n+=Math.log2(result.channels[c].cf)*p[c];d+=p[c];}return d?n/d:0;};
+      const shift=(centroid(profiles[i])-centroid(profiles[i-1]))*12;
+      const availability=result.transitionStates[i],spikes=result.neuralSpikeCounts[i-1]+result.neuralSpikeCounts[i];
+      const poissonCv=1/Math.sqrt(Math.max(1,spikes));
+      const continuity=.5*sim+.5*peakContinuity;
+      transitions.push({from:a.label,to:b.label,common,vl,sim,peakContinuity,nerveSim,shift,availability,continuity,spikes,poissonCv});
+    }
+    const mean=k=>transitions.reduce((s,t)=>s+t[k],0)/Math.max(1,transitions.length);
+    const meanContinuity=mean('continuity'),meanAvailability=mean('availability'),meanSim=mean('sim'),meanVL=mean('vl'),meanNerve=mean('nerveSim'),meanShift=transitions.reduce((s,t)=>s+Math.abs(t.shift),0)/Math.max(1,transitions.length);
+    const meanPeak=mean('peakContinuity'),meanCv=mean('poissonCv');
+    const label=meanSim>.95&&meanPeak>.78?'strong peripheral place-pattern continuity':meanContinuity>.65?'moderate peripheral place-pattern continuity':'large peripheral place-pattern change';
+    const peakTracks=trackExcitationPeaks(profiles,result.channels),toneRuns=knownCommonToneRuns(sequence);
+    const peakTrackText=peakTracks.persistent.length?peakTracks.persistent.length+' CF-peak track(s) persist across at least one chord boundary':'no CF-peak track persists across a boundary';
+    const allTrackText=peakTracks.throughAll.length?peakTracks.throughAll.length+' CF-peak track(s) persist through the entire sequence':'no CF-peak track persists through every chord window';
+    const toneText=toneRuns.length?toneRuns.map(r=>`${pitchLabel(r.midi)} ×${r.longest}`).join(', '):'none';
+    const pace=result.settings.isi<.12?'very rapid':result.settings.isi<.25?'rapid':result.settings.isi<.5?'moderate':'slow';
+    const summary=transitions.map(t=>`<span><strong>${t.from} → ${t.to}</strong>${t.common} exact shared pitch(es) · ${t.vl.toFixed(1)} st minimum voice-leading reference<br>BM-pattern similarity ${(t.sim*100).toFixed(0)}% · CF-peak continuity ${(t.peakContinuity*100).toFixed(0)}% · nerve-population similarity ${(t.nerveSim*100).toFixed(0)}%<br>Mean pre-transition synaptic resource ${(t.availability*100).toFixed(0)}% · ${t.spikes} nerve spikes in the two response windows · count CV ≈ ${(t.poissonCv*100).toFixed(0)}%</span>`).join('');
+    return `<div class="explain-top"><b>Continuous auditory-decoding result</b><span class="pill">${label}</span></div>
+      <p>One ${result.duration.toFixed(2)} s waveform was processed continuously at ${result.settings.fs/1000} kHz through ${MODEL.NCH} persistent cochlear channels and ${MODEL.NCH*FIBER_CLASSES.length} stateful auditory-nerve fibre models. Chord onsets were ${Math.round(result.settings.isi*1000)} ms apart (${pace}); attack ${Math.round(result.settings.attack*1000)} ms, release ${Math.round(result.settings.release*1000)} ms. Filter, IHC, synaptic-resource and refractory states were not reset at chord boundaries.</p>
+      <div class="progression-metric"><span><strong>${(meanSim*100).toFixed(0)}%</strong>mean BM-pattern similarity</span><span><strong>${(meanPeak*100).toFixed(0)}%</strong>matched CF-peak continuity</span><span><strong>${(meanNerve*100).toFixed(0)}%</strong>mean nerve-population similarity</span><span><strong>${(meanAvailability*100).toFixed(0)}%</strong>mean synaptic resource at transition</span><span><strong>${meanVL.toFixed(1)} st</strong>minimum voice-leading reference</span><span><strong>${meanShift.toFixed(2)} st</strong>mean place-centroid shift</span><span><strong>${result.segments.length}</strong>legato note segments</span><span><strong>${(meanCv*100).toFixed(0)}%</strong>rough Poisson count CV across compared windows</span></div>
+      <div class="progression-metric"><span><strong>${peakTracks.persistent.length}</strong>${peakTrackText}</span><span><strong>${peakTracks.throughAll.length}</strong>${allTrackText}</span><span><strong>${toneRuns.length}</strong>known pitch(es) with consecutive persistence</span><span><strong>${toneText}</strong>input-reference common-tone runs</span></div>
+      <div class="progression-metric">${summary}</div>
+      <p><b>What the nerve metric means:</b> nerve-population similarity is a cosine comparison of time-windowed spike rates across CF × fibre-class bins. The displayed count CV is the rough Poisson sampling scale, not a confidence interval and not a measure of perceptual certainty. Low spike counts make similarity estimates unstable.</p>
+      <p><b>Grouping interpretation:</b> BM patterns, CF-peak tracks and the binned nerve response are peripheral population cues. Exact shared pitches and voice-leading are <i>known input references</i>, not decoded from nerve spikes. Persistent activity may support continuity of an excitation component, but cannot establish a single perceptual stream. Auditory object formation and tonal expectation require central processing not represented here.</p>
+      <p><b>Model boundary:</b> filters are independent ERB-tuned resonators with Greenwood place delays, not a coupled fluid/partition model. OHC gain control is a phenomenological compressive state; IHC MET and membrane filtering are reduced; synaptic resource depletion/recovery and fibre refractoriness are stochastic teaching approximations. Spike phase-locking is measured from simulated event times; no cortical prediction or conscious memory is inferred.</p>`;
+  }
+  function exposureTemplate(sequence){
+    // Order-invariant partial-energy template from equal-duration chord windows; not an FFT of the rendered waveform.
+    const bins=new Float64Array(96),lo=Math.log2(30),hi=Math.log2(11000);
+    sequence.forEach(ch=>ch.midis.forEach(midi=>{
+      const level=1/Math.sqrt(Math.max(1,ch.midis.length)),f0=midiToHz(midi);
+      for(let h=1;h<=7;h++){
+        const f=f0*h;if(f>=MODEL.FS*.46)break;
+        const x=clamp((Math.log2(f)-lo)/(hi-lo),0,.999999),k=Math.floor(x*bins.length),a=level*Math.pow(h,-1.15);
+        bins[k]+=a*a;
+      }
+    }));
+    const norm=Math.sqrt(bins.reduce((sum,v)=>sum+v*v,0));
+    if(norm>0)for(let i=0;i<bins.length;i++)bins[i]/=norm;
+    return bins;
+  }
+  function averagePattern(profiles){
+    if(!profiles.length)return new Float64Array(0);
+    const out=new Float64Array(profiles[0].length);
+    profiles.forEach(p=>{for(let i=0;i<p.length;i++)out[i]+=p[i]/profiles.length;});
+    return out;
+  }
+  function sameChordKey(ch){return ch.midis.slice().sort((a,b)=>a-b).join(',');}
+  function matchedChordContextSimilarity(a,b,field){
+    const groupsA=new Map(),groupsB=new Map();
+    a.sequence.forEach((ch,i)=>{const k=sameChordKey(ch);if(!groupsA.has(k))groupsA.set(k,[]);groupsA.get(k).push(i);});
+    b.sequence.forEach((ch,i)=>{const k=sameChordKey(ch);if(!groupsB.has(k))groupsB.set(k,[]);groupsB.get(k).push(i);});
+    let sum=0,n=0;
+    groupsA.forEach((idxA,key)=>{const idxB=groupsB.get(key)||[],count=Math.min(idxA.length,idxB.length);for(let j=0;j<count;j++){sum+=cosineSimilarity(a[field][idxA[j]],b[field][idxB[j]]);n++;}});
+    return {similarity:n?sum/n:0,count:n};
+  }
+  function meanSlotSimilarity(a,b,field){
+    const n=Math.min(a[field].length,b[field].length);let sum=0;for(let i=0;i<n;i++)sum+=cosineSimilarity(a[field][i],b[field][i]);return n?sum/n:0;
+  }
+  function analyseOrderSwap(a,b){
+    const seqA=a.sequence,seqB=b.sequence,sourceSim=cosineSimilarity(exposureTemplate(seqA),exposureTemplate(seqB));
+    const bmContext=matchedChordContextSimilarity(a,b,'profiles'),nerveContext=matchedChordContextSimilarity(a,b,'neuralProfiles');
+    const bmSlot=meanSlotSimilarity(a,b,'profiles'),nerveSlot=meanSlotSimilarity(a,b,'neuralProfiles');
+    const bmMean=cosineSimilarity(averagePattern(a.profiles),averagePattern(b.profiles));
+    const nerveMean=cosineSimilarity(averagePattern(a.neuralProfiles),averagePattern(b.neuralProfiles));
+    const countA=Array.from(a.neuralSpikeCounts).reduce((x,y)=>x+y,0),countB=Array.from(b.neuralSpikeCounts).reduce((x,y)=>x+y,0);
+    const cvA=1/Math.sqrt(Math.max(1,countA)),cvB=1/Math.sqrt(Math.max(1,countB));
+    const lines=seqA.map((ch,i)=>`<span><strong>Window ${i+1}</strong>${ch.label} <span style="color:var(--muted)">vs</span> ${seqB[i].label}</span>`).join('');
+    return `<div class="explain-top"><b>Order-swap comparison</b><span class="pill">same note inventory</span></div>
+      <p>Both runs contain the same chord events for the same duration and level, using an identical within-window envelope for every event (effective attack ${(a.settings.envelopeAttack*1000).toFixed(0)} ms; release ${(a.settings.envelopeRelease*1000).toFixed(0)} ms). Each ramp is capped at 40% of the onset interval so the ramps do not overlap. Common-tone legato merging is disabled only for this controlled comparison. Only event order changes. The source partial-exposure template matches ${(sourceSim*100).toFixed(1)}% by construction; this is an order-invariant note/harmonic-energy summary, not a claim that the full waveform FFTs are identical.</p>
+      <div class="progression-metric"><span><strong>${(sourceSim*100).toFixed(1)}%</strong>source partial-exposure-template match</span><span><strong>${(bmContext.similarity*100).toFixed(1)}%</strong>BM response to the same chord under different histories</span><span><strong>${(nerveContext.similarity*100).toFixed(1)}%</strong>nerve response to the same chord under different histories</span><span><strong>${(bmMean*100).toFixed(1)}%</strong>sequence-averaged BM population match</span><span><strong>${(nerveMean*100).toFixed(1)}%</strong>sequence-averaged nerve population match</span><span><strong>${(bmSlot*100).toFixed(1)}%</strong>same-time-slot BM pattern match after reordering</span><span><strong>${(nerveSlot*100).toFixed(1)}%</strong>same-time-slot nerve pattern match after reordering</span></div>
+      <div class="progression-metric"><span><strong>${countA.toLocaleString()}</strong>spikes in order A response windows · rough count CV ${(cvA*100).toFixed(1)}%</span><span><strong>${countB.toLocaleString()}</strong>spikes in order B response windows · rough count CV ${(cvB*100).toFixed(1)}%</span></div>
+      <div class="progression-metric">${lines}</div>
+      <p><b>Context test:</b> the same chord’s response is compared across its two positions, so the BM and nerve-context similarities ask whether the peripheral response changes with preceding history. The same-time-slot measure instead compares different chords placed at the same temporal position. These are descriptive comparisons from one seeded stochastic realization, not statistical inference across listeners or repeated trials.</p>
+      <p><b>Uncertainty:</b> count CV uses the rough Poisson scale 1/√N. It ignores fibre dependence, refractory-induced deviations from Poisson statistics, parameter uncertainty, and variability across model seeds. A high similarity can reflect broad overlapping filters or spontaneous activity; a low similarity can reflect sparse spike samples. Neither value is a cortical grouping judgement.</p>`;
+  }
+  function resetOrderExperiment(){
+    $('orderExperimentAnalysis').innerHTML='<div class="explain-top"><b>Matched partial-exposure order experiment</b><span class="pill">Temporal history</span></div><p>Capture at least two chords, then compare the captured order with a permutation of the same chord inventory. The note/partial exposure template is held constant; cochlear and neural states are still evolved continuously. Run again after changing the sequence or timing controls.</p>';
+  }
+  function runOrderSwapExperiment(){
+    const out=$('orderExperimentAnalysis'),button=$('runOrderSwap');
+    if(progression.length<2){out.innerHTML='<div class="explain-top"><b>Matched partial-exposure order experiment</b><span class="pill">Need ≥2 chords</span></div><p>Capture two or more chords first.</p>';return;}
+    const orderA=progression.map(ch=>({midis:ch.midis.slice(),root:ch.root,label:ch.label,time:ch.time}));
+    let orderB=orderA.slice().reverse();
+    const identical=(x,y)=>x.length===y.length&&x.every((ch,i)=>sameChordKey(ch)===sameChordKey(y[i]));
+    if(identical(orderA,orderB))orderB=orderA.slice(1).concat(orderA.slice(0,1));
+    if(identical(orderA,orderB)){out.innerHTML='<div class="explain-top"><b>No order contrast available</b><span class="pill">Identical events</span></div><p>Every captured event has the same pitch set, so reordering cannot create a different temporal sequence. Capture at least two different chords.</p>';return;}
+    const settings=progressionSettings();
+    button.disabled=true;button.textContent='Comparing orders…';
+    out.innerHTML='<div class="explain-top"><b>Running paired continuous simulations…</b><span class="pill">Persistent state</span></div><p>Each order gets its own uninterrupted cochlear/neural run. The same channel-specific random seed schedule is used in both runs. Each chord has a fixed event window and identical onset/offset envelope; no signal tail crosses a window, but cochlear, receptor, synaptic and refractory states remain continuous.</p>';
+    setTimeout(()=>{
+      try{
+        const resultA=simulateContinuousProgression(settings,orderA,{independentEvents:true}),resultB=simulateContinuousProgression(settings,orderB,{independentEvents:true});
+        cochleaModel=resultB;drawCochlearModel();out.innerHTML=analyseOrderSwap(resultA,resultB);
+        setStatus('Matched-inventory order experiment complete',`Two ${orderA.length}-event sequences shared the same note/partial exposure inventory but used a different order. Cochlear and neural state evolved continuously in each run.`);
+      }catch(err){console.error(err);out.innerHTML=`<div class="explain-top"><b>Order experiment failed</b><span class="pill">Numerical / runtime error</span></div><p>${String(err&&err.message||err)}</p>`;}
+      finally{button.disabled=false;button.textContent='⇄ Compare same partial inventory, reordered';}
+    },20);
+  }
+  function matchMorphVoices(aMidis,bMidis){
+    const a=aMidis.slice().sort((x,y)=>x-y),b=bMidis.slice().sort((x,y)=>x-y);
+    if(!a.length)return b.map(midi=>({a:null,b:midi}));
+    if(!b.length)return a.map(midi=>({a:midi,b:null}));
+    const small=a.length<=b.length?a:b,large=a.length<=b.length?b:a,m=large.length,size=1<<m;
+    const dp=new Float64Array(size);dp.fill(Infinity);dp[0]=0;const prevMask=new Int32Array(size);prevMask.fill(-1);const prevJ=new Int8Array(size);prevJ.fill(-1);
+    for(let mask=0;mask<size;mask++){
+      const i=popcount(mask);if(i>=small.length||!Number.isFinite(dp[mask]))continue;
+      for(let j=0;j<m;j++)if(!(mask&(1<<j))){const next=mask|(1<<j),cost=dp[mask]+Math.abs(small[i]-large[j]);if(cost<dp[next]){dp[next]=cost;prevMask[next]=mask;prevJ[next]=j;}}
+    }
+    let maskBest=-1,best=Infinity;for(let mask=0;mask<size;mask++)if(popcount(mask)===small.length&&dp[mask]<best){best=dp[mask];maskBest=mask;}
+    const pairs=new Array(small.length);let mask=maskBest;
+    for(let i=small.length-1;i>=0;i--){const j=prevJ[mask];pairs[i]=a.length<=b.length?{a:small[i],b:large[j]}:{a:large[j],b:small[i]};mask=prevMask[mask];}
+    const usedA=new Set(pairs.map(v=>v.a)),usedB=new Set(pairs.map(v=>v.b));
+    a.forEach(v=>{if(!usedA.has(v))pairs.push({a:v,b:null});});
+    b.forEach(v=>{if(!usedB.has(v))pairs.push({a:null,b:v});});
+    return pairs;
+  }
+  function morphCurve(p){return $('morphCurve').value==='linear'?p:p*p*(3-2*p);}
+  function morphVoicePairs(){return matchMorphVoices(morphA.midis,morphB.midis);}
+  function morphMidisAt(p){
+    const u=morphCurve(clamp(p,0,1)),out=[];
+    morphVoicePairs().forEach(v=>{if(v.a!==null&&v.b!==null)out.push(v.a+(v.b-v.a)*u);else if(v.a!==null&&u<.985)out.push(v.a);else if(v.b!==null&&u>.015)out.push(v.b);});
+    return out.sort((a,b)=>a-b);
+  }
+  function morphMidiLabels(midis){return midis.map(m=>pitchLabel(Math.round(m))).join(' · ')||'—';}
+  function renderMorphEndpoints(){
+    $('morphALabel').textContent=morphA.label;$('morphATones').textContent=morphMidiLabels(morphA.midis);
+    $('morphBLabel').textContent=morphB.label;$('morphBTones').textContent=morphMidiLabels(morphB.midis);
+    updateMorphPosition();
+  }
+  function updateMorphPosition(){
+    const p=Number($('morphPosition').value)/100,midis=morphMidisAt(p);
+    $('morphPositionReadout').textContent=`${Math.round(p*100)}%`;$('morphPositionNotes').textContent=morphMidiLabels(midis);
+  }
+  function setMorphEndpoint(which){
+    const snap=currentChordSnapshot();
+    if(which==='A')morphA=chordSnapshot(snap.midis,snap.root,snap.label);else morphB=chordSnapshot(snap.midis,snap.root,snap.label);
+    renderMorphEndpoints();$('morphAnalysis').innerHTML=`<div class="explain-top"><b>Endpoint ${which} updated</b><span class="pill">${which==='A'?'Starting':'Destination'} voicing</span></div><p>${snap.label} · ${morphMidiLabels(snap.midis)}. Change the root, octave or chord quality in the builder and set the other endpoint to construct a morph.</p>`;
+  }
+  function morphSettings(){return {duration:Number($('morphDuration').value),curve:$('morphCurve').value};}
+  function playContinuousMorph(){
+    const voices=morphVoicePairs();if(!voices.length){setStatus('Morph needs notes','Set non-empty chord A and B before playback.');return;}
+    stopAudio();initAudio();if(!audioCtx||!master)return;if(audioCtx.state==='suspended')audioCtx.resume();
+    const settings=morphSettings(),now=audioCtx.currentTime+.045,duration=settings.duration,curve=settings.curve==='linear'?p=>p:p=>p*p*(3-2*p);
+    const attack=.018,release=.08,nCurve=160;
+    voices.forEach((v,index)=>{
+      const a=v.a,b=v.b,curveValues=new Float32Array(nCurve),gainValues=new Float32Array(nCurve);
+      for(let i=0;i<nCurve;i++){
+        const p=i/(nCurve-1),u=curve(p),midi=a!==null&&b!==null?a+(b-a)*u:(a!==null?a:b);
+        curveValues[i]=midiToHz(midi);
+        const voiceFade=a===null?Math.sin(u*Math.PI/2):b===null?Math.cos(u*Math.PI/2):1;
+        const attackEnv=.5-.5*Math.cos(Math.PI*clamp((p*duration)/attack,0,1));
+        gainValues[i]=voiceFade*attackEnv;
+      }
+      for(let h=1;h<=6;h++){
+        const osc=audioCtx.createOscillator(),gain=audioCtx.createGain(),peak=.18/Math.sqrt(Math.max(1,voices.length))*Math.pow(h,-1.35);
+        osc.type='sine';
+        const harmonicCurve=Float32Array.from(curveValues,f=>f*h);
+        if(harmonicCurve[0]>17500||harmonicCurve[harmonicCurve.length-1]>17500)continue;
+        // The curves themselves establish the value at `now`; do not schedule a second
+        // value at the same instant, which some Web Audio implementations reject.
+        osc.frequency.setValueCurveAtTime(harmonicCurve,now,duration);
+        gain.gain.setValueCurveAtTime(Float32Array.from(gainValues,g=>Math.max(.0001,peak*g)),now,duration);
+        gain.gain.exponentialRampToValueAtTime(.0001,now+duration+release);
+        osc.connect(gain);gain.connect(master);const node={osc,gain};activeNodes.add(node);
+        osc.onended=()=>{activeNodes.delete(node);try{osc.disconnect();gain.disconnect();}catch(_){}};
+        osc.start(now);osc.stop(now+duration+release+.025);
+      }
+    });
+    setStatus('Playing continuous chord morph',`${morphA.label} → ${morphB.label} over ${duration.toFixed(2)} s. Matched voices glide in semitone space; unmatched voices fade in or out. Web Audio oscillator phase remains continuous during frequency automation.`);
+  }
+  function analyseMorphResult(result,settings){
+    const n=result.profiles.length,first=result.profiles[0],last=result.profiles[n-1],nFirst=result.neuralProfiles[0],nLast=result.neuralProfiles[n-1];
+    const bmSim=cosineSimilarity(first,last),nerveSim=cosineSimilarity(nFirst,nLast);
+    const meanResource=result.transitionStates.reduce((a,b)=>a+b,0)/Math.max(1,result.transitionStates.length);
+    const checkpoints=[0,.25,.5,.75,1].map(p=>{const i=clamp(Math.round(p*(n-1)),0,n-1),state=result.sequence[i];return `<span class="progression-chip"><b>${Math.round(p*100)}%</b> ${state.label} · ${morphMidiLabels(state.midis)}</span>`;}).join('');
+    return `<div class="explain-top"><b>Continuous morph simulation complete</b><span class="pill">No state resets</span></div>
+      <p>A sample-wise waveform was generated for <b>${settings.duration.toFixed(2)} s</b> at ${result.settings.fs/1000} kHz, then processed through ${MODEL.NCH} persistent cochlear channels and ${MODEL.NCH*FIBER_CLASSES.length} auditory-nerve fibre models. Matched voice frequencies move continuously; oscillator phase is integrated sample by sample. Cochlear filter, OHC envelope, IHC potential, synaptic resource and refractory states persist throughout.</p>
+      <div>${checkpoints}</div>
+      <div class="progression-metric"><span><strong>${(bmSim*100).toFixed(1)}%</strong>start/end BM-pattern similarity</span><span><strong>${(nerveSim*100).toFixed(1)}%</strong>start/end nerve-profile similarity</span><span><strong>${(meanResource*100).toFixed(1)}%</strong>mean synaptic resource across sampled windows</span><span><strong>${result.channels.length*FIBER_CLASSES.length}</strong>stateful fibre models</span><span><strong>${result.neuralSpikeCounts.reduce((a,b)=>a+b,0).toLocaleString()}</strong>spikes in the finite simulated run</span><span><strong>${result.inputPeak.toExponential(2)}</strong>peak waveform sample</span></div>
+      <p><b>Interpretation limit:</b> these are peripheral response summaries along a synthetic glide. They do not establish that a listener hears a continuously changing chord identity, nor do they infer cortical auditory objects or harmonic function.</p>`;
+  }
+  function runMorphSimulation(){
+    const out=$('morphAnalysis'),button=$('simulateMorph'),voices=morphVoicePairs();
+    if(!voices.length){out.innerHTML='<div class="explain-top"><b>Cannot simulate morph</b><span class="pill">Missing endpoints</span></div><p>Set non-empty chord A and B first.</p>';return;}
+    const settings=morphSettings(),windows=clamp(Math.round(settings.duration/.04),20,180),isi=settings.duration/windows;
+    const sequence=Array.from({length:windows},(_,i)=>{
+      const p=i/(windows-1),midis=morphMidisAt(p).map(Math.round);
+      return {midis:[...new Set(midis)].sort((a,b)=>a-b),root:null,label:`Morph ${Math.round(p*100)}%`,time:i};
+    });
+    const simSettings={isi,attack:.008,release:.08};
+    button.disabled=true;button.textContent='Simulating morph…';
+    out.innerHTML='<div class="explain-top"><b>Running one continuous morph waveform…</b><span class="pill">Persistent cochlear / neural state</span></div><p>Pitch trajectories are interpolated per sample and passed through the same filter-bank, hair-cell and stochastic auditory-nerve loop.</p>';
+    setTimeout(()=>{
+      try{
+        const result=simulateContinuousProgression(simSettings,sequence,{morph:{voices,duration:settings.duration,curve:settings.curve}});
+        cochleaModel=result;drawCochlearModel();out.innerHTML=analyseMorphResult(result,settings);
+        setStatus('Continuous morph simulation complete',`${morphA.label} to ${morphB.label} was processed as a sample-wise glide over ${settings.duration.toFixed(2)} s. Peripheral state was retained.`);
+      }catch(err){console.error(err);out.innerHTML=`<div class="explain-top"><b>Morph simulation failed</b><span class="pill">Numerical / runtime error</span></div><p>${String(err&&err.message||err)}</p>`;}
+      finally{button.disabled=false;button.textContent='Run cochlear / neural morph';}
+    },20);
+  }
+
+  function runContinuousProgression(){
+    const out=$('progressionAnalysis');
+    if(progression.length<2){out.innerHTML='<div class="explain-top"><b>Continuous auditory decoding</b><span class="pill">Need ≥2 chords</span></div><p>Capture at least two chords first. The simulator needs a time-ordered sequence to preserve state across transitions.</p>';return null;}
+    if(progression.length>MAX_PROGRESSION_CHORDS)progression.length=MAX_PROGRESSION_CHORDS;
+    const runButton=$('runContinuous');runButton.disabled=true;runButton.textContent='Simulating…';
+    out.innerHTML='<div class="explain-top"><b>Running continuous simulation…</b><span class="pill">Persistent state</span></div><p>Rendering one waveform and passing it through the complete cochlear and neural chain. This may take a moment for long intervals.</p>';
+    // Yield once so the status is painted before the bounded numerical pass.
+    setTimeout(()=>{
+      try{
+        const settings=progressionSettings(),result=simulateContinuousProgression(settings);
+        cochleaModel=result;drawCochlearModel();out.innerHTML=analyseContinuousResult(result,result.sequence);
+        setStatus('Continuous progression simulation complete',`${progression.length} chord events were processed on one waveform timeline. Cochlear filters, IHC states, synaptic resources and refractory history persist across all transitions.`);
+      }catch(err){console.error(err);out.innerHTML=`<div class="explain-top"><b>Simulation failed</b><span class="pill">Numerical / runtime error</span></div><p>${String(err&&err.message||err)}</p>`;}
+      finally{runButton.disabled=false;runButton.textContent='Run continuous neural simulation';}
+    },20);
+    return true;
+  }
+  function playProgressionAudio(){
+    if(progression.length<2){setStatus('Sequence too short','Capture at least two chords before playback.');return;}
+    stopAudio();initAudio();if(!audioCtx||!master)return;if(audioCtx.state==='suspended')audioCtx.resume();
+    const settings=progressionSettings(),segments=buildProgressionSegments(settings),base=audioCtx.currentTime+.035;
+    segments.forEach(seg=>{
+      const f0=midiToHz(seg.midi),start=base+seg.start,end=base+seg.end,attack=Math.min(settings.attack,Math.max(.003,(end-start)*.35)),release=settings.release;
+      for(let h=1;h<=5;h++){
+        const f=f0*h;if(f>17500)break;
+        const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type='sine';osc.frequency.value=f;
+        const peak=.15*seg.level*Math.pow(h,-1.35);
+        gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),start+attack);
+        gain.gain.setValueAtTime(Math.max(.0002,peak),end);
+        gain.gain.exponentialRampToValueAtTime(.0001,end+release);
+        osc.connect(gain);gain.connect(master);const node={osc,gain};activeNodes.add(node);
+        osc.onended=()=>{activeNodes.delete(node);try{osc.disconnect();gain.disconnect();}catch(_){}};
+        osc.start(start);osc.stop(end+release+.025);
+      }
+    });
+    setStatus('Playing the captured progression',`Common tones are sustained legato; entering and leaving tones use the same attack/release settings as the simulation. Playback is not SPL-calibrated.`);
+  }
+  // Standard MIDI File (SMF 1.0) writer. Every independently bent voice gets
+  // its own MIDI channel (MPE lower-zone members 2–16); RPN 0 configures the
+  // receiver's channel pitch-bend sensitivity before notes are started.
+  const MIDI_PPQ = 960;
+  const MIDI_MAX_VOICES = 15;
+  const MIDI_MEMBER_CHANNELS = Array.from({length:MIDI_MAX_VOICES},(_,i)=>i+1); // zero-based channels 1..15
+  const midiClamp = (v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  // One-tick lead guarantees the MPE zone declaration on track 0 precedes
+  // member-channel RPN 0 bend-range setup, even in readers that merge tracks by tick.
+  const midiTickAt = (seconds,bpm)=>1+Math.max(0,Math.round(seconds*MIDI_PPQ*bpm/60));
+  const midiAscii = text=>Array.from(String(text),c=>c.charCodeAt(0)&127);
+  function midiUtf8(text){return Array.from(new TextEncoder().encode(String(text)));}
+  function midiVLQ(value){
+    if(!Number.isFinite(value)||value<0||value>0x0fffffff)throw new Error('MIDI delta-time is outside the Standard MIDI File range.');
+    let v=Math.floor(value),out=[v&0x7f];
+    while((v=Math.floor(v/128))>0)out.unshift((v&0x7f)|0x80);
+    return out;
+  }
+  function midiU32(v){return [(v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255];}
+  function midiMeta(type,text){const data=midiUtf8(text);return [0xff,type,...midiVLQ(data.length),...data];}
+  function midiPush(track,tick,order,bytes){
+    if(!Number.isFinite(tick)||tick<0)throw new Error('Invalid MIDI event time.');
+    track.events.push({tick:Math.round(tick),order,bytes});
+  }
+  function midiCC(track,tick,channel,controller,value,order=0){
+    midiPush(track,tick,order,[0xb0|channel,controller,midiClamp(Math.round(value),0,127)]);
+  }
+  function midiPitchBendValue(semitones,range){
+    const x=midiClamp(semitones/range,-1,1);
+    const signed=x<0?Math.round(x*8192):Math.round(x*8191);
+    return signed+8192;
+  }
+  function midiPitchBend(track,tick,channel,semitones,range,order=-10){
+    const value=midiPitchBendValue(semitones,range);
+    midiPush(track,tick,order,[0xe0|channel,value&127,(value>>7)&127]);
+  }
+  function midiNoteOn(track,tick,channel,note,velocity=96){midiPush(track,tick,10,[0x90|channel,note,midiClamp(Math.round(velocity),1,127)]);}
+  function midiNoteOff(track,tick,channel,note){midiPush(track,tick,-30,[0x80|channel,note,64]);}
+  function midiMakeVoiceTrack(name,channel,bendRange){
+    const track={name,channel,events:[]};
+    midiPush(track,0,-120,midiMeta(0x03,name));
+    // RPN 0,0: pitch-bend sensitivity in semitones + cents, followed by RPN null.
+    midiCC(track,1,channel,101,0,-110);midiCC(track,1,channel,100,0,-109);
+    midiCC(track,1,channel,6,bendRange,-108);midiCC(track,1,channel,38,0,-107);
+    midiCC(track,1,channel,101,127,-106);midiCC(track,1,channel,100,127,-105);
+    midiCC(track,1,channel,11,127,-104);
+    return track;
+  }
+  function midiConductorTrack(bpm){
+    const track={name:'Tempo and MPE setup',channel:0,events:[]};
+    midiPush(track,0,-120,midiMeta(0x03,'Tempo and MPE lower-zone setup'));
+    const micros=Math.round(60000000/bpm);
+    midiPush(track,0,-110,[0xff,0x51,0x03,(micros>>16)&255,(micros>>8)&255,micros&255]);
+    midiPush(track,0,-109,[0xff,0x58,0x04,4,2,24,8]);
+    midiPush(track,0,-108,midiMeta(0x01,'Pitch bend range is set per member channel using RPN 0. MPE lower zone: master ch 1, members ch 2-16.'));
+    // RPN 6 on lower-zone master channel: declare fifteen member channels.
+    midiCC(track,0,0,101,0,-100);midiCC(track,0,0,100,6,-99);
+    midiCC(track,0,0,6,MIDI_MAX_VOICES,-98);midiCC(track,0,0,38,0,-97);
+    midiCC(track,0,0,101,127,-96);midiCC(track,0,0,100,127,-95);
+    return track;
+  }
+  function midiTrackChunk(track){
+    const events=track.events.slice().sort((a,b)=>a.tick-b.tick||a.order-b.order);
+    const data=[];let lastTick=0;
+    for(const event of events){
+      const tick=Math.max(lastTick,event.tick),delta=tick-lastTick;
+      data.push(...midiVLQ(delta),...event.bytes);lastTick=tick;
+    }
+    data.push(0x00,0xff,0x2f,0x00);
+    return [...midiAscii('MTrk'),...midiU32(data.length),...data];
+  }
+  function midiAsBytes(voiceTracks,bpm){
+    if(!voiceTracks.length)throw new Error('There are no voices to export.');
+    if(voiceTracks.length>MIDI_MAX_VOICES)throw new Error(`This export needs ${voiceTracks.length} independent voices; MIDI 1.0 MPE has ${MIDI_MAX_VOICES} member channels in this file layout.`);
+    const all=[midiConductorTrack(bpm),...voiceTracks],header=[...midiAscii('MThd'),0,0,0,6,0,1,(all.length>>8)&255,all.length&255,(MIDI_PPQ>>8)&255,MIDI_PPQ&255];
+    const bytes=[...header];all.forEach(track=>bytes.push(...midiTrackChunk(track)));
+    return new Uint8Array(bytes);
+  }
+  function midiBendBaseForRange(low,high,range){
+    const base=Math.round((low+high)/2),needed=Math.max(Math.abs(low-base),Math.abs(high-base));
+    if(needed>range+1e-7)throw new Error(`This voice glides ${high-low} semitones. With a ±${range}-semitone bend range, the required offset is ±${needed.toFixed(2)}. Select a wider pitch-bend range.`);
+    if(base<0||base>127)throw new Error('A morph voice falls outside the MIDI note-number range 0–127.');
+    return base;
+  }
+  function midiAddAttackRelease(track,channel,startSec,endSec,bpm,attackSec,releaseSec){
+    const duration=Math.max(0,endSec-startSec),attack=Math.min(Math.max(0,attackSec),duration*.25),release=Math.min(Math.max(0,releaseSec),duration*.25);
+    midiCC(track,midiTickAt(startSec,bpm),channel,11,0,-5);
+    if(attack>0){
+      const n=Math.max(1,Math.ceil(attack*100));
+      for(let i=1;i<=n;i++){const p=i/n,t=startSec+attack*p,v=127*(.5-.5*Math.cos(Math.PI*p));midiCC(track,midiTickAt(t,bpm),channel,11,v,i===n?-5:0);}
+    }else midiCC(track,midiTickAt(startSec,bpm),channel,11,127,-5);
+    if(release>0){
+      const n=Math.max(1,Math.ceil(release*100)),releaseStart=endSec-release;
+      for(let i=1;i<=n;i++){const p=i/n,t=releaseStart+release*p,v=127*(.5+.5*Math.cos(Math.PI*p));midiCC(track,midiTickAt(t,bpm),channel,11,v,i===n?-40:0);}
+    }
+  }
+  function midiBuildChordBytes(midis,label,settings){
+    if(!midis.length)throw new Error('The current chord contains no notes.');
+    if(midis.length>MIDI_MAX_VOICES)throw new Error(`The chord has ${midis.length} notes; the current MPE layout supports ${MIDI_MAX_VOICES} independently bent voices.`);
+    const tracks=[],duration=settings.chordDuration;
+    midis.slice().sort((a,b)=>a-b).forEach((midi,i)=>{
+      const note=Math.round(midi),offset=midi-note,channel=MIDI_MEMBER_CHANNELS[i];
+      if(note<0||note>127)throw new Error(`MIDI note ${note} is outside the supported 0–127 range.`);
+      if(Math.abs(offset)>settings.bendRange)throw new Error(`Voice ${i+1} needs a ${Math.abs(offset).toFixed(2)}-semitone bend, outside the selected range.`);
+      const track=midiMakeVoiceTrack(`Voice ${String(i+1).padStart(2,'0')} - ${pitchLabel(note)}`,channel,settings.bendRange);
+      const startTick=midiTickAt(0,settings.bpm);
+      midiPitchBend(track,startTick,channel,offset,settings.bendRange,-10);
+      midiNoteOn(track,startTick,channel,note,96);
+      midiAddAttackRelease(track,channel,0,duration,settings.bpm,.018,.08);
+      const end=midiTickAt(duration,settings.bpm);
+      midiNoteOff(track,end,channel,note);
+      midiCC(track,end,channel,11,127,-20);midiPitchBend(track,end,channel,0,settings.bendRange,-19);
+      tracks.push(track);
+    });
+    return midiAsBytes(tracks,settings.bpm);
+  }
+  function midiAssignSequenceLanes(segments){
+    const lanes=[];
+    const ordered=segments.slice().sort((a,b)=>a.start-b.start||a.end-b.end||a.midi-b.midi);
+    for(const segment of ordered){
+      let lane=lanes.find(v=>v.end<=segment.start+1e-9);
+      if(!lane){if(lanes.length>=MIDI_MAX_VOICES)throw new Error(`The progression needs more than ${MIDI_MAX_VOICES} simultaneous independent voices.`);lane={end:-Infinity,segments:[]};lanes.push(lane);}
+      lane.segments.push(segment);lane.end=segment.end;
+    }
+    return lanes;
+  }
+  function midiBuildSequenceBytes(sequence,settings){
+    if(!sequence.length)throw new Error('Capture at least one chord before exporting a progression.');
+    const segments=buildProgressionSegments({isi:settings.isi},sequence,true),lanes=midiAssignSequenceLanes(segments),tracks=[];
+    lanes.forEach((lane,i)=>{
+      const channel=MIDI_MEMBER_CHANNELS[i],track=midiMakeVoiceTrack(`Voice ${String(i+1).padStart(2,'0')} - progression lane`,channel,settings.bendRange);
+      lane.segments.forEach(seg=>{
+        const note=Math.round(seg.midi),start=seg.start,end=seg.end;
+        if(note<0||note>127)throw new Error(`MIDI note ${note} is outside the supported 0–127 range.`);
+        const startTick=midiTickAt(start,settings.bpm),endTick=midiTickAt(end,settings.bpm);
+        midiPitchBend(track,startTick,channel,seg.midi-note,settings.bendRange,-10);
+        const velocity=midiClamp(Math.round(90*Math.sqrt(3)*seg.level),40,112);
+        midiNoteOn(track,startTick,channel,note,velocity);
+        midiAddAttackRelease(track,channel,start,end,settings.bpm,settings.attack,settings.release);
+        // At a shared boundary: fade to zero, note-off, reset the old voice,
+        // then bend/setup and note-on for the next segment on this reused lane.
+        midiNoteOff(track,endTick,channel,note);
+        midiCC(track,endTick,channel,11,127,-20);midiPitchBend(track,endTick,channel,0,settings.bendRange,-19);
+      });
+      tracks.push(track);
+    });
+    return midiAsBytes(tracks,settings.bpm);
+  }
+  function midiBuildMorphBytes(voices,morph,settings){
+    if(!voices.length)throw new Error('Set non-empty chord A and chord B before exporting the morph.');
+    if(voices.length>MIDI_MAX_VOICES)throw new Error(`The morph has ${voices.length} voices; the current MPE layout supports ${MIDI_MAX_VOICES}.`);
+    const tracks=[],duration=morph.duration,curve=morph.curve==='linear'?p=>p:p=>p*p*(3-2*p),samples=Math.max(1,Math.ceil(duration*settings.morphRate));
+    voices.forEach((voice,i)=>{
+      const a=voice.a,b=voice.b,lo=Math.min(a===null?b:a,b===null?a:b),hi=Math.max(a===null?b:a,b===null?a:b);
+      const base=midiBendBaseForRange(lo,hi,settings.bendRange),channel=MIDI_MEMBER_CHANNELS[i];
+      const track=midiMakeVoiceTrack(`Voice ${String(i+1).padStart(2,'0')} - morph`,channel,settings.bendRange);
+      for(let k=0;k<=samples;k++){
+        const p=k/samples,u=curve(p),midi=a!==null&&b!==null?a+(b-a)*u:(a!==null?a:b),tick=midiTickAt(p*duration,settings.bpm);
+        const fade=a===null?Math.sin(u*Math.PI/2):b===null?Math.cos(u*Math.PI/2):1;
+        const attack=.5-.5*Math.cos(Math.PI*midiClamp((p*duration)/.018,0,1));
+        const expression=midiClamp(Math.round(127*fade*attack),0,127),isEnd=k===samples;
+        midiPitchBend(track,tick,channel,midi-base,settings.bendRange,isEnd?-41:-10);
+        midiCC(track,tick,channel,11,expression,isEnd?-40:-5);
+      }
+      const end=midiTickAt(duration,settings.bpm),note=base;
+      midiNoteOn(track,midiTickAt(0,settings.bpm),channel,note,96);
+      midiNoteOff(track,end,channel,note);
+      midiCC(track,end,channel,11,127,-20);midiPitchBend(track,end,channel,0,settings.bendRange,-19);
+      tracks.push(track);
+    });
+    return midiAsBytes(tracks,settings.bpm);
+  }
+  function midiReadSettings(){
+    const bpm=Number($('midiTempo').value),bendRange=Number($('midiBendRange').value),chordDuration=Number($('midiChordDuration').value),morphRate=Number($('midiMorphRate').value);
+    if(!Number.isFinite(bpm)||bpm<40||bpm>240)throw new Error('Tempo must be between 40 and 240 BPM.');
+    if(![2,12,24].includes(bendRange))throw new Error('Choose a supported pitch-bend range.');
+    if(!Number.isFinite(chordDuration)||chordDuration<.25||chordDuration>12)throw new Error('Chord length must be between 0.25 and 12 seconds.');
+    if(![25,50,100].includes(morphRate))throw new Error('Choose a supported morph automation rate.');
+    const morphDuration=Number($('morphDuration').value);
+    if(!Number.isFinite(morphDuration)||morphDuration<.5||morphDuration>8)throw new Error('Morph duration must be between 0.5 and 8 seconds.');
+    const progressionOpts=progressionSettings();
+    return {bpm,bendRange,chordDuration,morphRate,isi:progressionOpts.isi,attack:progressionOpts.attack,release:progressionOpts.release};
+  }
+  function midiDownload(bytes,filename){
+    const blob=new Blob([bytes],{type:'audio/midi'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=filename;a.style.display='none';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    return blob.size;
+  }
+  function midiSafeFilename(text){return String(text||'pitch-matter').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase()||'pitch-matter';}
+  function runMidiExport(kind,builder,filenameHint,summary){
+    const status=$('midiExportStatus');
+    try{
+      const settings=midiReadSettings(),bytes=builder(settings),filename=`pitch-matter-${midiSafeFilename(filenameHint)}.mid`,size=midiDownload(bytes,filename);
+      status.innerHTML=`<span class="dot"></span><div><b>MIDI file created · ${filename}</b><p>${summary} · ${(size/1024).toFixed(1)} KB · ${settings.bpm} BPM · ${settings.bendRange}-semitone pitch-bend range · format 1, 960 PPQ.</p></div>`;
+      setStatus('MIDI exported for DAW import',`${filename} contains independent per-voice channels and embedded pitch-bend sensitivity setup.`);
+    }catch(err){
+      console.error(err);status.innerHTML=`<span class="dot"></span><div><b>MIDI export not created</b><p>${String(err&&err.message||err).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</p></div>`;
+    }
+  }
+  $('midiTempo').addEventListener('input',e=>{$('midiTempoValue').textContent=`${e.target.value} BPM`;});
+  $('midiChordDuration').addEventListener('input',e=>{$('midiChordDurationValue').textContent=`${Number(e.target.value).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')} s`;});
+  $('exportChordMidi').addEventListener('click',()=>{
+    const snapshot=currentChordSnapshot();
+    runMidiExport('chord',settings=>midiBuildChordBytes(snapshot.midis,snapshot.label,settings),snapshot.label,`${snapshot.label}: ${snapshot.midis.length} voice track(s)`);
+  });
+  $('exportSequenceMidi').addEventListener('click',()=>{
+    const snapshot=progression.map(ch=>({midis:ch.midis.slice(),root:ch.root,label:ch.label}));
+    runMidiExport('sequence',settings=>midiBuildSequenceBytes(snapshot,settings),`sequence-${snapshot.length}-chords`,`${snapshot.length} captured chords, common tones legato-merged`);
+  });
+  $('exportMorphMidi').addEventListener('click',()=>{
+    const voices=morphVoicePairs().map(v=>({a:v.a,b:v.b})),morph=morphSettings();
+    runMidiExport('morph',settings=>midiBuildMorphBytes(voices,morph,settings),`${midiSafeFilename(morphA.label)}-to-${midiSafeFilename(morphB.label)}-morph`,`${voices.length} continuous voice trajectory tracks, ${morph.duration.toFixed(2)} s, ${Number($('midiMorphRate').value)} automation points/s`);
+  });
+
+  $('progressionRate').addEventListener('input',e=>{$('progressionRateValue').textContent=`${e.target.value} ms`;resetOrderExperiment();});
+  $('progressionAttack').addEventListener('input',e=>{$('progressionAttackValue').textContent=`${e.target.value} ms`;resetOrderExperiment();});
+  $('progressionRelease').addEventListener('input',e=>{$('progressionReleaseValue').textContent=`${e.target.value} ms`;resetOrderExperiment();});
+  $('setMorphA').addEventListener('click',()=>setMorphEndpoint('A'));
+  $('setMorphB').addEventListener('click',()=>setMorphEndpoint('B'));
+  $('swapMorph').addEventListener('click',()=>{const t=morphA;morphA=morphB;morphB=t;renderMorphEndpoints();$('morphPosition').value=String(100-Number($('morphPosition').value));updateMorphPosition();});
+  $('morphPosition').addEventListener('input',updateMorphPosition);
+  $('morphPosition').addEventListener('change',()=>{const midis=morphMidisAt(Number($('morphPosition').value)/100);if(midis.length)playFrequencies(midis.map(midiToHz),{duration:.8,volume:.16});});
+  $('morphDuration').addEventListener('input',e=>{$('morphDurationValue').textContent=`${Number(e.target.value).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')} s`;});
+  $('morphCurve').addEventListener('change',updateMorphPosition);
+  $('playMorph').addEventListener('click',playContinuousMorph);
+  $('simulateMorph').addEventListener('click',runMorphSimulation);
+  $('stopMorph').addEventListener('click',stopAudio);
+  $('addProgression').addEventListener('click',()=>{if(progression.length>=MAX_PROGRESSION_CHORDS)return;progression.push(currentChordSnapshot());renderProgression();resetOrderExperiment();});
+  $('clearProgression').addEventListener('click',()=>{progression.length=0;renderProgression();resetOrderExperiment();$('progressionAnalysis').innerHTML='<div class="explain-top"><b>What the auditory system can track</b><span class="pill">Temporal integration</span></div><p>Add at least two chords. The model will process them as one continuous waveform while retaining filter, receptor-potential, synaptic-resource and refractory states.</p>';runCochlearModel();});
+  $('runContinuous').addEventListener('click',runContinuousProgression);
+  $('runOrderSwap').addEventListener('click',runOrderSwapExperiment);
+  $('playProgression').addEventListener('click',()=>{runContinuousProgression();playProgressionAudio();});
+
+  $('modeSynthetic').addEventListener('click',()=>setMode('synthetic'));
+  $('modeMemory').addEventListener('click',()=>setMode('memory'));
+  $('sharpNames').addEventListener('click',()=>{spelling='sharp';$('sharpNames').classList.add('active');$('flatNames').classList.remove('active');renderAll();});
+  $('flatNames').addEventListener('click',()=>{spelling='flat';$('flatNames').classList.add('active');$('sharpNames').classList.remove('active');renderAll();});
+  $('octave').addEventListener('change',e=>{octave=Number(e.target.value);probeFreqs=null;renderAll();});
+  $('playChord').addEventListener('click',playCurrent);
+  $('playArpeggio').addEventListener('click',arpeggiate);
+  $('clearNotes').addEventListener('click',()=>{intervals=[0];currentChord='custom';probeFreqs=null;renderAll();});
+  $('stopAudio').addEventListener('click',stopAudio);
+  $('inputLevel').addEventListener('input',e=>{modelLevelDb=Number(e.target.value);$('inputLevelValue').textContent=`${modelLevelDb} dB SPL proxy`;renderSpectrum();});
+  $('ohcHealth').addEventListener('input',e=>{ohcFunction=Number(e.target.value);$('ohcValue').textContent=`${ohcFunction}%`;renderSpectrum();});
+  $('rerunModel').addEventListener('click',()=>renderSpectrum());
+  $('bmCanvas').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect(),x=clamp((e.clientX-r.left)/r.width,0,1);recallChannel(Math.round(x*(MODEL.NCH-1)),'basilar-membrane map click');});
+  $('ihcCanvas').addEventListener('click',()=>triggerStructure('hair')); 
+  $('neuralCanvas').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect(),y=clamp((e.clientY-r.top)/r.height,0,1);recallChannel(Math.round((1-y)*(MODEL.NCH-1)),'auditory-nerve raster click');});
+  document.querySelectorAll('.chart-mode').forEach(b=>b.addEventListener('click',()=>{chartMode=b.dataset.chart;document.querySelectorAll('.chart-mode').forEach(x=>x.classList.toggle('active',x===b));renderSpectrum();}));
+  document.querySelectorAll('.place').forEach(b=>b.addEventListener('click',()=>triggerRegion(Number(b.dataset.region),'place')));
+  document.querySelectorAll('.anatomy-button').forEach(b=>b.addEventListener('click',()=>triggerStructure(b.dataset.structure)));
+  $('spectrum').addEventListener('click',e=>{
+    const f=frequencyAtCanvasX(e.clientX),m=Math.round(hzToMidi(f));
+    if(mode==='synthetic'){probeFreqs=[f];renderSpectrum();playFrequencies([f]);setStatus(`Frequency probe · ${hzLabel(f)}`,`The cursor maps to approximately ${pitchLabel(m)} (${hzLabel(midiToHz(m))}) in 12-tone equal temperament. The exact probe frequency may sit between equal-tempered notes.`);}
+    else{
+      const center=m;const fs=[midiToHz(center),midiToHz(center-1),midiToHz(center+1)];probeFreqs=fs;renderSpectrum();playFrequencies(fs,{volume:.16});
+      showMemory(`${pitchLabel(center)} · nearest pitch candidate`,`The clicked frequency is ${hzLabel(f)}. The nearest equal-tempered note is ${pitchLabel(center)}; adjacent semitones remain plausible under broad tuning, masking or noisy evidence.`,[`${pitchLabel(center-1)} · −1 semitone`,`${pitchLabel(center+1)} · +1 semitone`,`frequency estimate: ${hzLabel(f)}`]);
+      setStatus('Frequency cue converted to a candidate','The displayed label is a quantised interpretation, not a note literally present in the cochlea.');
+    }
+  });
+  window.addEventListener('resize',()=>{if(gl)resizeGL();renderSpectrum();});
+
+  // Start with C major as a familiar reference. No audio starts until the user acts.
+  buildWheel();initWebGL();renderAll();renderMorphEndpoints();
+})();
+</script>
+</body>
+</html>
